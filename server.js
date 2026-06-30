@@ -24,17 +24,90 @@ const APP_URL = process.env.APP_URL || `http://localhost:${PORT}`;
 const FIREBASE_PROJECT_ID = process.env.FIREBASE_PROJECT_ID;
 const FIREBASE_API_KEY = process.env.FIREBASE_API_KEY;
 
-// ─── In-Memory OTP Store ───
-// key: USN (uppercase), value: { otp, email, expiresAt, attempts, name }
-const otpStore = new Map();
+// ─── Firestore OTP Helpers (for Serverless statelessness) ───
+function firestoreSaveOTP(usn, data) {
+  return new Promise((resolve, reject) => {
+    const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/otps/${usn}?key=${FIREBASE_API_KEY}`;
+    const urlObj = new URL(url);
+    const body = JSON.stringify({
+      fields: {
+        otp: { stringValue: data.otp },
+        email: { stringValue: data.email },
+        name: { stringValue: data.name },
+        expiresAt: { integerValue: String(data.expiresAt) },
+        attempts: { integerValue: String(data.attempts) }
+      }
+    });
 
-// Auto-cleanup expired OTPs every 10 minutes
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, val] of otpStore.entries()) {
-    if (val.expiresAt < now) otpStore.delete(key);
-  }
-}, 10 * 60 * 1000);
+    const options = {
+      hostname: urlObj.hostname,
+      path: urlObj.pathname + urlObj.search,
+      method: 'PATCH',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(body)
+      }
+    };
+
+    const req = https.request(options, (res) => {
+      let responseData = '';
+      res.on('data', chunk => responseData += chunk);
+      res.on('end', () => {
+        resolve({ status: res.statusCode });
+      });
+    });
+    req.on('error', reject);
+    req.write(body);
+    req.end();
+  });
+}
+
+function firestoreGetOTP(usn) {
+  return new Promise((resolve, reject) => {
+    const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/otps/${usn}?key=${FIREBASE_API_KEY}`;
+    const urlObj = new URL(url);
+    const options = {
+      hostname: urlObj.hostname,
+      path: urlObj.pathname + urlObj.search,
+      method: 'GET'
+    };
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        if (res.statusCode === 200) {
+          try {
+            resolve(parseDoc(JSON.parse(data)));
+          } catch (e) {
+            resolve(null);
+          }
+        } else {
+          resolve(null);
+        }
+      });
+    });
+    req.on('error', reject);
+    req.end();
+  });
+}
+
+function firestoreDeleteOTP(usn) {
+  return new Promise((resolve, reject) => {
+    const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/otps/${usn}?key=${FIREBASE_API_KEY}`;
+    const urlObj = new URL(url);
+    const options = {
+      hostname: urlObj.hostname,
+      path: urlObj.pathname + urlObj.search,
+      method: 'DELETE'
+    };
+    const req = https.request(options, (res) => {
+      res.on('data', () => {});
+      res.on('end', () => resolve(true));
+    });
+    req.on('error', reject);
+    req.end();
+  });
+}
 
 // ─── Middleware ───
 app.use(cors());
@@ -208,8 +281,8 @@ app.post('/api/send-otp', otpLimiter, async (req, res) => {
     const otp = generateOTP();
     const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes from now
 
-    // Store OTP in memory
-    otpStore.set(usnUpper, {
+    // Store OTP in Firestore (Serverless stateless fix)
+    await firestoreSaveOTP(usnUpper, {
       otp,
       email: emailLower,
       name: name || usnUpper,
@@ -258,7 +331,7 @@ app.post('/api/verify-otp', verifyLimiter, async (req, res) => {
   const usnUpper = usn.trim().toUpperCase();
   const otpStr = otp.toString().trim();
 
-  const record = otpStore.get(usnUpper);
+  const record = await firestoreGetOTP(usnUpper);
 
   if (!record) {
     return res.status(404).json({
@@ -270,7 +343,7 @@ app.post('/api/verify-otp', verifyLimiter, async (req, res) => {
 
   // Check expiry
   if (record.expiresAt < Date.now()) {
-    otpStore.delete(usnUpper);
+    await firestoreDeleteOTP(usnUpper);
     return res.status(400).json({
       success: false,
       error: 'OTP has expired. Please request a new one.',
@@ -280,7 +353,7 @@ app.post('/api/verify-otp', verifyLimiter, async (req, res) => {
 
   // Check attempts
   if (record.attempts >= 3) {
-    otpStore.delete(usnUpper);
+    await firestoreDeleteOTP(usnUpper);
     return res.status(429).json({
       success: false,
       error: 'Too many incorrect attempts. Please request a new OTP.',
@@ -291,6 +364,7 @@ app.post('/api/verify-otp', verifyLimiter, async (req, res) => {
   // Verify OTP
   if (record.otp !== otpStr) {
     record.attempts++;
+    await firestoreSaveOTP(usnUpper, record);
     const remaining = 3 - record.attempts;
     return res.status(400).json({
       success: false,
@@ -301,7 +375,7 @@ app.post('/api/verify-otp', verifyLimiter, async (req, res) => {
 
   // ✅ OTP is correct — remove from store and return verified email
   const verifiedEmail = record.email;
-  otpStore.delete(usnUpper);
+  await firestoreDeleteOTP(usnUpper);
 
   console.log(`✅ OTP verified for USN ${usnUpper}: ${verifiedEmail}`);
   res.json({
