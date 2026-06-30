@@ -510,6 +510,120 @@ import { $, val } from '../core/helpers.js';
     }
 
 
+    /* ===========================================
+       👮 ADMIN ACCOUNTS MANAGEMENT
+    =========================================== */
+    window.loadAdminsList = async function () {
+      const container = document.getElementById("admins-list-container");
+      if (!container) return;
+
+      container.innerHTML = '<p style="text-align:center;padding:20px;color:var(--text-secondary);">⏳ Loading admins...</p>';
+
+      try {
+        const snap = await getDocs(collection(db, "admins"));
+        if (snap.empty) {
+          container.innerHTML = '<p style="text-align:center;padding:20px;color:var(--text-secondary);">No administrator accounts found.</p>';
+          return;
+        }
+
+        let html = "";
+        snap.forEach(docSnap => {
+          const u = docSnap.id;
+          const data = docSnap.data();
+          const r = data.role || "admin";
+          const isSuper = (r === "super_admin");
+
+          html += `
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:8px;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-weight:700;color:#0f172a;">${u}</span>
+                <span style="font-size:10px;padding:3px 8px;background:${isSuper ? '#ede9fe' : '#e0f2fe'};color:${isSuper ? '#7c3aed' : '#0369a1'};border-radius:20px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">
+                  ${isSuper ? 'Super Admin' : 'Admin'}
+                </span>
+              </div>
+              ${u !== 'admin' && u !== window._currentAdminUser ? `
+                <button onclick="window.deleteAdminAccount('${u}')" 
+                  style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:16px;padding:4px;transition:transform 0.2s;"
+                  onmouseover="this.style.transform='scale(1.1)'"
+                  onmouseout="this.style.transform='scale(1)'"
+                  title="Delete Admin">
+                  🗑️
+                </button>
+              ` : ''}
+            </div>
+          `;
+        });
+
+        container.innerHTML = html;
+      } catch (err) {
+        console.error("loadAdminsList error:", err);
+        container.innerHTML = `<p style="text-align:center;padding:20px;color:#ef4444;">Error loading admins: ${err.message}</p>`;
+      }
+    };
+
+    window.deleteAdminAccount = async function (username) {
+      if (!confirm(`Are you sure you want to delete admin account "${username}"?`)) return;
+
+      try {
+        await deleteDoc(doc(db, "admins", username));
+        alert(`✓ Admin account "${username}" deleted successfully.`);
+        window.loadAdminsList();
+      } catch (err) {
+        console.error("deleteAdminAccount error:", err);
+        alert(`Error deleting admin: ${err.message}`);
+      }
+    };
+
+    // Bind create admin button
+    document.getElementById("btn-create-admin")?.addEventListener("click", async () => {
+      const usernameInput = document.getElementById("new-admin-user");
+      const passwordInput = document.getElementById("new-admin-pass");
+      const roleSelect = document.getElementById("new-admin-role");
+
+      if (!usernameInput || !passwordInput || !roleSelect) return;
+
+      const userVal = usernameInput.value.trim().toLowerCase();
+      const passVal = passwordInput.value;
+      const roleVal = roleSelect.value;
+
+      if (!userVal || !passVal) {
+        return msg("admin-manage-msg", "Please fill all fields", "error");
+      }
+
+      if (!/^[a-z0-9_@.-]+$/.test(userVal)) {
+        return msg("admin-manage-msg", "Username can only contain letters, numbers, underscores, dots, hyphens, and @", "error");
+      }
+
+      if (passVal.length < 6) {
+        return msg("admin-manage-msg", "Password must be at least 6 characters", "error");
+      }
+
+      try {
+        const adminRef = doc(db, "admins", userVal);
+        const adminSnap = await getDoc(adminRef);
+
+        if (adminSnap.exists()) {
+          return msg("admin-manage-msg", "Username is already taken", "error");
+        }
+
+        const passHash = CryptoJS.SHA256(passVal).toString();
+        await setDoc(adminRef, {
+          passwordHash: passHash,
+          role: roleVal,
+          createdAt: serverTimestamp()
+        });
+
+        msg("admin-manage-msg", "✓ Admin account created successfully!", "success");
+        usernameInput.value = "";
+        passwordInput.value = "";
+        window.loadAdminsList();
+      } catch (err) {
+        console.error("Create admin error:", err);
+        msg("admin-manage-msg", "Error: " + err.message, "error");
+      }
+    });
+
+
     /* ===============================
        🔄 MANUAL REFRESH
     =============================== */
@@ -1453,6 +1567,12 @@ service cloud.firestore {
       if (backLabel) {
         const btn = document.querySelector(`.admin-nav-btn[data-section="${sectionId}"]`);
         backLabel.textContent = targetSection.getAttribute("data-label") || (btn ? btn.innerText : "Section");
+      }
+
+      if (sectionId === 'sec-admins') {
+        if (typeof window.loadAdminsList === 'function') {
+          window.loadAdminsList();
+        }
       }
 
       document.querySelectorAll(".admin-section").forEach(sec => {
