@@ -3,7 +3,7 @@ import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-
 
 export const $ = id => document.getElementById(id);
 export const val = id => { const el = $(id); return el ? el.value.trim() : ""; };
-export const API_BASE_URL = 'https://techbook-ek0s.onrender.com';
+export const API_BASE_URL = 'https://tech-book-two.vercel.app';
 window.API_BASE_URL = API_BASE_URL;
 
 // PDF Viewer Modal controller
