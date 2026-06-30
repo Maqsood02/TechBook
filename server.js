@@ -54,10 +54,11 @@ const verifyLimiter = rateLimit({
 });
 
 // ─── Email Transporter ───
+const SMTP_PORT = parseInt(process.env.SMTP_PORT || '465');
 const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true, // SSL
+  host: process.env.SMTP_HOST || 'smtp.gmail.com',
+  port: SMTP_PORT,
+  secure: SMTP_PORT === 465,
   auth: {
     user: process.env.SMTP_EMAIL,
     pass: process.env.SMTP_PASSWORD
@@ -471,10 +472,7 @@ app.post('/api/notify-quiz-result', async (req, res) => {
 });
 
 // ─── Serve index.html for all unmatched routes ───
-app.use((req, res, next) => {
-  if (req.path.startsWith('/api')) {
-    return next();
-  }
+app.get('*', (req, res) => {
   res.sendFile(path.join(process.cwd(), 'index.html'));
 });
 
