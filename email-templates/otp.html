@@ -7,14 +7,17 @@
 <meta name="supported-color-schemes" content="light">
 <title>Email Verification - TechBook</title>
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+  
   :root {
     color-scheme: light;
     supported-color-schemes: light;
   }
+  
   /* Enforce light theme styling via linear-gradient hack for Gmail Dark Mode */
   body, .body-bg {
-    background: linear-gradient(#f4f6fb, #f4f6fb) !important;
-    background-color: #f4f6fb !important;
+    background: linear-gradient(#f8fafc, #f8fafc) !important;
+    background-color: #f8fafc !important;
   }
   .main-table {
     background: linear-gradient(#ffffff, #ffffff) !important;
@@ -39,7 +42,7 @@
 
   /* Force dark text color on Gmail mobile app */
   u + .body {
-    background: linear-gradient(#f4f6fb, #f4f6fb) !important;
+    background: linear-gradient(#f8fafc, #f8fafc) !important;
   }
   u + .body .main-table { background: linear-gradient(#ffffff, #ffffff) !important; }
   u + .body .header-box { background: linear-gradient(#ffffff, #ffffff) !important; }
@@ -48,74 +51,81 @@
   u + .body .detail-card { background: linear-gradient(#f8fafc, #f8fafc) !important; }
   
   u + .body h1, u + .body .text-dark, u + .body .welcome-text, u + .body strong, u + .body td, u + .body p, u + .body span, u + .body div {
-    color: #1e293b !important;
+    color: #0f172a !important;
   }
-  u + .body .text-muted { color: #64748b !important; }
+  u + .body .text-muted { color: #475569 !important; }
   u + .body .text-light { color: #94a3b8 !important; }
   u + .body .otp-code { color: #4f46e5 !important; }
-  u + .body .security-text { color: #c2410c !important; }
+  u + .body .security-text { color: #b45309 !important; }
 
   /* Force dark text color on Gmail web client */
   [data-ogsc] h1, [data-ogsc] .text-dark, [data-ogsc] .welcome-text, [data-ogsc] strong, [data-ogsc] td, [data-ogsc] p, [data-ogsc] span, [data-ogsc] div {
-    color: #1e293b !important;
+    color: #0f172a !important;
   }
-  [data-ogsc] .text-muted { color: #64748b !important; }
+  [data-ogsc] .text-muted { color: #475569 !important; }
   [data-ogsc] .text-light { color: #94a3b8 !important; }
   [data-ogsc] .otp-code { color: #4f46e5 !important; }
-  [data-ogsc] .security-text { color: #c2410c !important; }
+  [data-ogsc] .security-text { color: #b45309 !important; }
 </style>
 </head>
-<body class="body" style="margin:0;padding:0;background-color:#f4f6fb;font-family:'Segoe UI',Arial,sans-serif;">
-<div class="body-bg" style="background-color:#f4f6fb;padding:40px 0;width:100%;min-height:100vh;">
+<body class="body" style="margin:0;padding:0;background-color:#f8fafc;font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+<div class="body-bg" style="background-color:#f8fafc;padding:50px 0;width:100%;min-height:100vh;">
   <table width="100%" cellpadding="0" cellspacing="0" border="0">
     <tr><td align="center" style="padding:0 20px;">
-      <table width="100%" class="main-table" style="max-width:520px;border-radius:20px;overflow:hidden;border:1px solid #e2e8f0;box-shadow:0 8px 40px rgba(0,0,0,0.08);background-color:#ffffff;" cellpadding="0" cellspacing="0" border="0">
+      <table width="100%" class="main-table" style="max-width:500px;border-radius:24px;overflow:hidden;border:1px solid #e2e8f0;box-shadow:0 20px 40px rgba(15,23,42,0.06);background-color:#ffffff;" cellpadding="0" cellspacing="0" border="0">
 
         <!-- Top Gradient Bar -->
-        <tr><td style="background:linear-gradient(90deg,#4f46e5,#7c3aed,#06b6d4);height:5px;line-height:5px;font-size:0;">&nbsp;</td></tr>
+        <tr><td style="background:linear-gradient(90deg,#4f46e5,#7c3aed,#06b6d4);height:6px;line-height:6px;font-size:0;">&nbsp;</td></tr>
 
         <!-- Header -->
-        <tr><td class="header-box" style="background-color:#ffffff;padding:36px 40px 24px;text-align:center;border-bottom:1px solid #f1f5f9;">
-          <div style="margin-bottom:6px;">
-            <span style="font-size:26px;font-weight:900;color:#4f46e5;">Tech</span><span class="text-dark" style="font-size:26px;font-weight:900;color:#1e293b;">Book</span>
+        <tr><td class="header-box" style="background-color:#ffffff;padding:40px 40px 10px;text-align:center;">
+          <div style="margin-bottom:4px;">
+            <span style="font-size:28px;font-weight:800;color:#4f46e5;font-family:'Outfit',sans-serif;letter-spacing:-0.5px;">Tech</span><span class="text-dark" style="font-size:28px;font-weight:800;color:#0f172a;font-family:'Outfit',sans-serif;letter-spacing:-0.5px;">Book</span>
           </div>
-          <div class="text-light" style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#94a3b8;font-weight:600;">Learning Platform</div>
+          <div class="text-light" style="font-size:10px;letter-spacing:4px;text-transform:uppercase;color:#94a3b8;font-weight:700;">Learning Platform</div>
 
           <!-- Icon Circle -->
-          <div style="margin:24px auto 0;width:70px;height:70px;background-color:#ede9fe;border-radius:50%;text-align:center;line-height:70px;">
-            <span style="font-size:30px;">🔐</span>
+          <div style="margin:28px auto 0;width:64px;height:64px;background:linear-gradient(135deg,#ede9fe,#e0e7ff);border-radius:20px;text-align:center;line-height:64px;box-shadow:0 8px 16px rgba(79,70,229,0.08);">
+            <span style="font-size:28px;display:inline-block;vertical-align:middle;">🔑</span>
           </div>
 
-          <h1 class="text-dark" style="color:#1e293b;font-size:22px;font-weight:800;margin:18px 0 6px;">Verify Your Email</h1>
-          <p class="text-muted" style="color:#64748b;font-size:14px;margin:0;">Your one-time verification code</p>
+          <h1 class="text-dark" style="color:#0f172a;font-size:22px;font-weight:800;margin:20px 0 6px;font-family:'Outfit',sans-serif;letter-spacing:-0.5px;">Verify Your Email</h1>
+          <p class="text-muted" style="color:#475569;font-size:14px;margin:0;">Your one-time security code</p>
         </td></tr>
 
         <!-- Body -->
-        <tr><td class="body-box" style="background-color:#ffffff;padding:32px 40px;">
-          <p class="welcome-text" style="color:#334155;font-size:15px;line-height:1.6;margin:0 0 10px;">Hi <strong class="text-dark" style="color:#1e293b;">{{STUDENT_NAME}}</strong>,</p>
-          <p class="text-muted" style="color:#64748b;font-size:14px;line-height:1.6;margin:0 0 28px;">Use the code below to verify your email on TechBook. It expires in <strong style="color:#4f46e5;">5 minutes</strong>.</p>
+        <tr><td class="body-box" style="background-color:#ffffff;padding:20px 40px 40px;">
+          <p class="welcome-text" style="color:#334155;font-size:15px;line-height:1.6;margin:0 0 8px;">Hi <strong class="text-dark" style="color:#0f172a;">{{STUDENT_NAME}}</strong>,</p>
+          <p class="text-muted" style="color:#475569;font-size:14px;line-height:1.6;margin:0 0 24px;">Use the code below to verify your email on TechBook. It expires in <strong style="color:#4f46e5;">5 minutes</strong>.</p>
 
           <!-- OTP Box -->
-          <div class="detail-card" style="background-color:#f8fafc;border:2px dashed #c7d2fe;border-radius:16px;padding:28px;text-align:center;margin-bottom:28px;">
-            <p class="text-muted" style="color:#64748b;font-size:12px;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin:0 0 14px;">Verification Code</p>
-            <div class="otp-code" style="font-size:44px;font-weight:900;letter-spacing:12px;color:#4f46e5;font-family:'Courier New',monospace;padding:0 8px;">{{OTP_CODE}}</div>
-            <p class="text-light" style="color:#94a3b8;font-size:12px;margin:12px 0 0;">Valid for 5 minutes only</p>
+          <div class="detail-card" style="background-color:#f8fafc;border:1px solid #e2e8f0;border-radius:20px;padding:32px 20px;text-align:center;margin-bottom:24px;box-shadow:inset 0 2px 4px rgba(0,0,0,0.02);">
+            <p class="text-muted" style="color:#475569;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin:0 0 16px;">One-Time Verification Code</p>
+            <div class="otp-code" style="font-size:40px;font-weight:800;letter-spacing:14px;text-indent:14px;color:#4f46e5;font-family:'Courier New',Monaco,monospace;text-shadow:0 2px 4px rgba(79,70,229,0.1);">{{OTP_CODE}}</div>
+            <p class="text-light" style="color:#94a3b8;font-size:12px;margin:16px 0 0;">Valid for 5 minutes only</p>
           </div>
 
           <!-- Warning Box -->
-          <div style="background-color:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:14px 18px;margin-bottom:28px;">
-            <p class="security-text" style="color:#c2410c;font-size:12px;line-height:1.5;margin:0;">⚠️ <strong class="security-text">Security Notice:</strong> Never share this code with anyone. TechBook will never ask for your OTP via phone or chat.</p>
+          <div style="background-color:#fffbeb;border:1px solid #fef3c7;border-radius:14px;padding:14px 18px;margin-bottom:28px;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td width="24" valign="top" style="font-size:16px;line-height:1.4;">⚠️</td>
+                <td class="security-text" style="color:#b45309;font-size:12px;line-height:1.5;font-weight:500;">
+                  <strong>Security Check:</strong> Never share this code with anyone. TechBook will never ask for your OTP via call or chat.
+                </td>
+              </tr>
+            </table>
           </div>
 
           <!-- CTA Button -->
-          <div style="text-align:center;margin-bottom:8px;">
-            <a href="{{APP_URL}}" class="btn-link" style="display:inline-block;background-color:#4f46e5;color:#ffffff;text-decoration:none;font-weight:700;font-size:14px;padding:14px 36px;border-radius:12px;letter-spacing:0.3px;">Open TechBook →</a>
+          <div style="text-align:center;margin-bottom:4px;">
+            <a href="{{APP_URL}}" class="btn-link" style="display:inline-block;background:linear-gradient(135deg,#4f46e5,#6366f1);color:#ffffff;text-decoration:none;font-weight:700;font-size:14px;padding:15px 44px;border-radius:14px;letter-spacing:0.2px;box-shadow:0 10px 20px rgba(79,70,229,0.18);">Open TechBook →</a>
           </div>
         </td></tr>
 
         <!-- Footer -->
-        <tr><td class="footer-box" style="background-color:#f8fafc;padding:20px 40px;text-align:center;border-top:1px solid #e2e8f0;">
-          <p class="text-light" style="color:#94a3b8;font-size:11px;margin:0;">© 2024 TechBook · College Learning Platform · <a href="{{APP_URL}}" style="color:#4f46e5;text-decoration:none;">Visit App</a></p>
+        <tr><td class="footer-box" style="background-color:#f8fafc;padding:24px 40px;text-align:center;border-top:1px solid #f1f5f9;">
+          <p class="text-light" style="color:#94a3b8;font-size:11px;margin:0;line-height:1.6;">© 2024 TechBook · College Learning Platform<br/><a href="{{APP_URL}}" style="color:#4f46e5;text-decoration:none;font-weight:600;margin-top:4px;display:inline-block;">Visit App</a></p>
         </td></tr>
 
       </table>
