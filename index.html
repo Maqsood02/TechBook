@@ -3995,7 +3995,7 @@
       verifyModalClearMsg();
 
       try {
-        const res = await fetch('/api/send-otp', {
+        const res = await fetch((window.API_BASE_URL || '') + '/api/send-otp', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ usn, email, name })
@@ -4033,7 +4033,7 @@
       verifyModalClearMsg();
 
       try {
-        const res = await fetch('/api/verify-otp', {
+        const res = await fetch((window.API_BASE_URL || '') + '/api/verify-otp', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ usn, otp })
