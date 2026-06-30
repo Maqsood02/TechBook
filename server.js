@@ -68,6 +68,8 @@ const transporter = nodemailer.createTransport({
   }
 });
 
+const SMTP_SENDER = process.env.SMTP_SENDER || 'techbook.ac.in@gmail.com';
+
 // ─── Firestore REST API Helpers (for notification queries only) ───
 function firestoreRunQuery(query) {
   return new Promise((resolve, reject) => {
@@ -178,7 +180,7 @@ app.post('/api/send-otp', otpLimiter, async (req, res) => {
     });
 
     await transporter.sendMail({
-      from: `"TechBook" <${process.env.SMTP_EMAIL}>`,
+      from: `"TechBook" <${SMTP_SENDER}>`,
       to: emailLower,
       subject: `${otp} — Your TechBook Verification Code`,
       html
@@ -329,7 +331,7 @@ app.post('/api/notify-upload', async (req, res) => {
             APP_URL
           });
           await transporter.sendMail({
-            from: `"TechBook" <${process.env.SMTP_EMAIL}>`,
+            from: `"TechBook" <${SMTP_SENDER}>`,
             to: student.email,
             subject: `New ${contentType} Uploaded: ${subject} — TechBook`,
             html
@@ -397,7 +399,7 @@ app.post('/api/notify-quiz', async (req, res) => {
           APP_URL
         });
         await transporter.sendMail({
-          from: `"TechBook" <${process.env.SMTP_EMAIL}>`,
+          from: `"TechBook" <${SMTP_SENDER}>`,
           to: student.email,
           subject: `New Quiz: ${quizName} (${subject}) — TechBook`,
           html
@@ -456,7 +458,7 @@ app.post('/api/notify-quiz-result', async (req, res) => {
     });
 
     await transporter.sendMail({
-      from: `"TechBook" <${process.env.SMTP_EMAIL}>`,
+      from: `"TechBook" <${SMTP_SENDER}>`,
       to: email,
       subject: `Your Quiz Result: ${quizName} — ${pct}% ${passed ? '✅ Passed' : '❌ Failed'}`,
       html
