@@ -66,15 +66,6 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-// Verify email transporter on startup
-transporter.verify((err) => {
-  if (err) {
-    console.error('❌ SMTP connection failed:', err.message);
-  } else {
-    console.log('✅ SMTP connected — ready to send emails');
-  }
-});
-
 // ─── Firestore REST API Helpers (for notification queries only) ───
 function firestoreRunQuery(query) {
   return new Promise((resolve, reject) => {
