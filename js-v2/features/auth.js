@@ -753,9 +753,9 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
         return msg("change-username-msg", "Please fill all fields", "error");
       }
 
-      // Check if username has invalid characters (should be alphanumeric only)
-      if (!/^[a-z0-9_]+$/.test(newUsername)) {
-        return msg("change-username-msg", "Username can only contain lowercase letters, numbers, and underscores", "error");
+      // Check if username has invalid characters (allow letters, numbers, underscores, dots, hyphens, and @)
+      if (!/^[a-z0-9_@.-]+$/.test(newUsername)) {
+        return msg("change-username-msg", "Username can only contain lowercase letters, numbers, underscores, dots, hyphens, and @", "error");
       }
 
       if (newUsername === window._currentAdminUser) {
