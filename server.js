@@ -479,13 +479,18 @@ app.post('/api/notify-quiz-result', async (req, res) => {
 });
 
 // ─── Serve index.html for all unmatched routes ───
-app.get('/{*splat}', (req, res) => {
+app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // ─── Start Server ───
-app.listen(PORT, () => {
-  console.log(`\n🚀 TechBook Server running at http://localhost:${PORT}`);
-  console.log(`📧 SMTP Email: ${process.env.SMTP_EMAIL}`);
-  console.log(`🔥 Firebase Project: ${FIREBASE_PROJECT_ID}\n`);
-});
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`\n🚀 TechBook Server running at http://localhost:${PORT}`);
+    console.log(`📧 SMTP Email: ${process.env.SMTP_EMAIL}`);
+    console.log(`🔥 Firebase Project: ${FIREBASE_PROJECT_ID}\n`);
+  });
+}
+
+// Export for Vercel serverless function wrapper
+module.exports = app;
