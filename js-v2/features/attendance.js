@@ -1423,7 +1423,7 @@ service cloud.firestore {
 
       if (!sectionId) {
         if (!window._adminHistoryNavLock) {
-          window.history.back();
+          window.location.hash = '#admin';
           return;
         }
         if (navGrid) {

@@ -19,7 +19,7 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
 
       if (!tab) {
         if (!window._studentHistoryNavLock) {
-          window.history.back();
+          window.location.hash = '#student';
           return;
         }
         // Back to nav grid
