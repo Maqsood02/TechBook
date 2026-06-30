@@ -309,40 +309,37 @@ app.post('/api/notify-upload', async (req, res) => {
     const icon = icons[contentType] || '📁';
     const uploadDate = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' });
 
-    // Send response instantly to the frontend to eliminate loading delay
-    res.json({ success: true, sentCount: targetStudents.length, total: targetStudents.length });
-
-    // Send emails asynchronously in the background
-    (async () => {
-      let sentCount = 0;
-      for (const student of targetStudents) {
-        if (!student.email) continue;
-        try {
-          const html = loadTemplate('content-upload.html', {
-            STUDENT_NAME: student.name || student.usn,
-            CONTENT_TYPE: contentType,
-            CONTENT_ICON: icon,
-            SUBJECT: subject,
-            TITLE: title || subject,
-            DEPT: dept,
-            YEAR: String(year),
-            SEM: String(sem),
-            UPLOAD_DATE: uploadDate,
-            APP_URL
-          });
-          await transporter.sendMail({
-            from: `"TechBook" <${SMTP_SENDER}>`,
-            to: student.email,
-            subject: `New ${contentType} Uploaded: ${subject} — TechBook`,
-            html
-          });
-          sentCount++;
-        } catch (emailErr) {
-          console.error(`Failed email to ${student.email}:`, emailErr.message);
-        }
+    // Send emails synchronously before responding (required for Serverless environment like Vercel)
+    let sentCount = 0;
+    for (const student of targetStudents) {
+      if (!student.email) continue;
+      try {
+        const html = loadTemplate('content-upload.html', {
+          STUDENT_NAME: student.name || student.usn,
+          CONTENT_TYPE: contentType,
+          CONTENT_ICON: icon,
+          SUBJECT: subject,
+          TITLE: title || subject,
+          DEPT: dept,
+          YEAR: String(year),
+          SEM: String(sem),
+          UPLOAD_DATE: uploadDate,
+          APP_URL
+        });
+        await transporter.sendMail({
+          from: `"TechBook" <${SMTP_SENDER}>`,
+          to: student.email,
+          subject: `New ${contentType} Uploaded: ${subject} — TechBook`,
+          html
+        });
+        sentCount++;
+      } catch (emailErr) {
+        console.error(`Failed email to ${student.email}:`, emailErr.message);
       }
-      console.log(`✅ Background upload notification complete: ${sentCount}/${targetStudents.length} emails sent`);
-    })().catch(err => console.error('Background upload email loop failed:', err));
+    }
+
+    console.log(`✅ Upload notification complete: ${sentCount}/${targetStudents.length} emails sent`);
+    res.json({ success: true, sentCount, total: targetStudents.length });
 
   } catch (err) {
     console.error('Notify upload error:', err.message);
