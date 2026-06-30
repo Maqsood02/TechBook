@@ -125,7 +125,7 @@ function parseDoc(doc) {
 
 // ─── Read Email Template & Replace Placeholders ───
 function loadTemplate(filename, replacements) {
-  const templatePath = path.join(__dirname, 'email-templates', filename);
+  const templatePath = path.join(process.cwd(), 'email-templates', filename);
   let html = fs.readFileSync(templatePath, 'utf8');
   for (const [key, val] of Object.entries(replacements)) {
     html = html.replace(new RegExp(`{{${key}}}`, 'g'), val != null ? val : '');
@@ -480,7 +480,7 @@ app.post('/api/notify-quiz-result', async (req, res) => {
 
 // ─── Serve index.html for all unmatched routes ───
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.sendFile(path.join(process.cwd(), 'index.html'));
 });
 
 // ─── Start Server ───
