@@ -4075,7 +4075,10 @@
           }
 
           verifyModalSetMsg('✅ Email verified successfully! Welcome to TechBook!', 'success');
-          setTimeout(() => { hideVerifyModal(); }, 1200);
+          setTimeout(() => { 
+            hideVerifyModal(); 
+            window.location.reload();
+          }, 1200);
 
         } else {
           verifyModalSetMsg('❌ ' + (data.error || 'Incorrect OTP.'), 'error');
