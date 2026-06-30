@@ -746,19 +746,23 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
       const password = val("change-username-pass");
 
       if (!window._currentAdminUser) {
+        alert("Error: You are not logged in as admin. Active session user: " + window._currentAdminUser);
         return msg("change-username-msg", "You must be logged in to change username", "error");
       }
 
       if (!newUsername || !password) {
+        alert("Error: Please fill all fields (New Username and Current Password).");
         return msg("change-username-msg", "Please fill all fields", "error");
       }
 
       // Check if username has invalid characters (allow letters, numbers, underscores, dots, hyphens, and @)
       if (!/^[a-z0-9_@.-]+$/.test(newUsername)) {
+        alert("Error: Username can only contain lowercase letters, numbers, underscores, dots, hyphens, and @");
         return msg("change-username-msg", "Username can only contain lowercase letters, numbers, underscores, dots, hyphens, and @", "error");
       }
 
       if (newUsername === window._currentAdminUser) {
+        alert("Error: New username is the same as the current username.");
         return msg("change-username-msg", "New username must be different from current username", "error");
       }
 
@@ -768,7 +772,13 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
         const currentAdminRef = doc(db, "admins", window._currentAdminUser);
         const currentAdminSnap = await getDoc(currentAdminRef);
 
-        if (!currentAdminSnap.exists() || currentAdminSnap.data().passwordHash !== passHash) {
+        if (!currentAdminSnap.exists()) {
+          alert("Error: Current admin record '" + window._currentAdminUser + "' not found in database.");
+          return msg("change-username-msg", "Current admin record not found", "error");
+        }
+
+        if (currentAdminSnap.data().passwordHash !== passHash) {
+          alert("Error: Current password is incorrect.");
           return msg("change-username-msg", "Incorrect password", "error");
         }
 
@@ -776,6 +786,7 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
         const newAdminSnap = await getDoc(newAdminRef);
 
         if (newAdminSnap.exists()) {
+          alert("Error: Username '" + newUsername + "' is already taken.");
           return msg("change-username-msg", "Username is already taken", "error");
         }
 
@@ -789,6 +800,7 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
         // Delete old admin doc
         await deleteDoc(currentAdminRef);
 
+        alert("✓ Username updated successfully! Logging out to apply changes...");
         msg("change-username-msg", "✓ Username updated successfully! Logging out...", "success");
         
         // Log out after 2 seconds to force sign in with new username
@@ -802,6 +814,7 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
 
       } catch (e) {
         console.error("Username change error:", e);
+        alert("Database error: " + e.message);
         msg("change-username-msg", "Error: " + e.message, "error");
       }
     });
