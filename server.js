@@ -70,6 +70,54 @@ const transporter = nodemailer.createTransport({
 
 const SMTP_SENDER = process.env.SMTP_SENDER || 'techbook.ac.in@gmail.com';
 
+function sendEmail({ to, subject, html }) {
+  if (process.env.SMTP_HOST && process.env.SMTP_HOST.includes('brevo')) {
+    return new Promise((resolve, reject) => {
+      const data = JSON.stringify({
+        sender: { name: 'TechBook', email: SMTP_SENDER },
+        to: [{ email: to }],
+        subject: subject,
+        htmlContent: html
+      });
+
+      const options = {
+        hostname: 'api.brevo.com',
+        path: '/v3/smtp/email',
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'api-key': process.env.SMTP_PASSWORD,
+          'content-type': 'application/json',
+          'content-length': Buffer.byteLength(data)
+        }
+      };
+
+      const req = https.request(options, (res) => {
+        let responseBody = '';
+        res.on('data', chunk => responseBody += chunk);
+        res.on('end', () => {
+          if (res.statusCode >= 200 && res.statusCode < 300) {
+            resolve(true);
+          } else {
+            reject(new Error(`Brevo API Error: ${res.statusCode} - ${responseBody}`));
+          }
+        });
+      });
+
+      req.on('error', reject);
+      req.write(data);
+      req.end();
+    });
+  } else {
+    return transporter.sendMail({
+      from: `"TechBook" <${SMTP_SENDER}>`,
+      to,
+      subject,
+      html
+    });
+  }
+}
+
 // ─── Firestore REST API Helpers (for notification queries only) ───
 function firestoreRunQuery(query) {
   return new Promise((resolve, reject) => {
@@ -179,8 +227,7 @@ app.post('/api/send-otp', otpLimiter, async (req, res) => {
       APP_URL
     });
 
-    await transporter.sendMail({
-      from: `"TechBook" <${SMTP_SENDER}>`,
+    await sendEmail({
       to: emailLower,
       subject: `${otp} — Your TechBook Verification Code`,
       html
@@ -326,8 +373,7 @@ app.post('/api/notify-upload', async (req, res) => {
           UPLOAD_DATE: uploadDate,
           APP_URL
         });
-        await transporter.sendMail({
-          from: `"TechBook" <${SMTP_SENDER}>`,
+        await sendEmail({
           to: student.email,
           subject: `New ${contentType} Uploaded: ${subject} — TechBook`,
           html
@@ -395,8 +441,7 @@ app.post('/api/notify-quiz', async (req, res) => {
           INSTRUCTIONS: instructions || '',
           APP_URL
         });
-        await transporter.sendMail({
-          from: `"TechBook" <${SMTP_SENDER}>`,
+        await sendEmail({
           to: student.email,
           subject: `New Quiz: ${quizName} (${subject}) — TechBook`,
           html
@@ -454,8 +499,7 @@ app.post('/api/notify-quiz-result', async (req, res) => {
       APP_URL
     });
 
-    await transporter.sendMail({
-      from: `"TechBook" <${SMTP_SENDER}>`,
+    await sendEmail({
       to: email,
       subject: `Your Quiz Result: ${quizName} — ${pct}% ${passed ? '✅ Passed' : '❌ Failed'}`,
       html
