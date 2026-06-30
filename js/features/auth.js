@@ -12,7 +12,7 @@ import {
   confirmPasswordReset 
 } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
 import { doc, setDoc, getDoc, addDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
-import { $, val } from '../core/helpers.js';
+import { $, val, API_BASE_URL } from '../core/helpers.js';
 
     /* ===============================
        🔑 FIREBASE ACTION HANDLER
@@ -274,7 +274,7 @@ import { $, val } from '../core/helpers.js';
       // ── Send OTP for email verification ──
       msg("register-msg", "⏳ Sending OTP to your email...", "info");
       try {
-        const otpRes = await fetch('/api/send-otp', {
+        const otpRes = await fetch(`${API_BASE_URL}/api/send-otp`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ usn, email: personalEmail, name })
@@ -284,7 +284,7 @@ import { $, val } from '../core/helpers.js';
           return msg("register-msg", '❌ ' + (otpData.error || 'Failed to send OTP'), "error");
         }
       } catch (fetchErr) {
-        return msg("register-msg", '❌ Cannot reach server. Make sure TechBook server is running (node server.js).', "error");
+        return msg("register-msg", '❌ Cannot reach server. Make sure TechBook server is running.', "error");
       }
 
       // ── Show inline OTP dialog ──
@@ -327,7 +327,7 @@ import { $, val } from '../core/helpers.js';
         if (verifyBtn) { verifyBtn.disabled = true; verifyBtn.textContent = '⏳ Verifying...'; }
 
         try {
-          const verifyRes = await fetch('/api/verify-otp', {
+          const verifyRes = await fetch(`${API_BASE_URL}/api/verify-otp`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ usn, otp })

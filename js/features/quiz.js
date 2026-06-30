@@ -1,7 +1,7 @@
 import { auth, db } from '../core/firebase.js';
 import { signOut } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
 import { doc, setDoc, getDoc, addDoc, collection, query, where, getDocs, orderBy, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
-import { $, val } from '../core/helpers.js';
+import { $, val, API_BASE_URL } from '../core/helpers.js';
 
     /* === STUDENT TABS === */
 
@@ -504,7 +504,7 @@ import { $, val } from '../core/helpers.js';
         try {
           const studentData = window._currentStudentData || {};
           if (studentData.email && studentData.email_verified) {
-            fetch('/api/notify-quiz-result', {
+            fetch(`${API_BASE_URL}/api/notify-quiz-result`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -915,7 +915,7 @@ Strict rules:
           const year = document.getElementById('qz-year')?.value || '';
           const sem = document.getElementById('qz-sem')?.value || '';
           if (dept || year || sem) {
-            fetch('/api/notify-quiz', {
+            fetch(`${API_BASE_URL}/api/notify-quiz`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({

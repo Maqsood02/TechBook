@@ -1,6 +1,6 @@
 import { auth, db } from '../core/firebase.js';
 import { doc, setDoc, getDoc, addDoc, collection, query, where, getDocs, orderBy, deleteDoc, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
-import { $, val, base64ToBlob, esc, PdfDbCache, jsEsc, readFileBase64, getStudentProfile } from '../core/helpers.js';
+import { $, val, base64ToBlob, esc, PdfDbCache, jsEsc, readFileBase64, getStudentProfile, API_BASE_URL } from '../core/helpers.js';
 
 const CHUNK_SIZE = 700 * 1024;
 let admSelectedFiles = [];
@@ -202,7 +202,7 @@ let lastNotesFetchTime = 0;
         // ── Send email notifications to eligible students ──
         try {
           const dept = document.getElementById('adm-dept')?.value || '';
-          fetch('/api/notify-upload', {
+          fetch(`${API_BASE_URL}/api/notify-upload`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
