@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "attendance-system-54b30"
+  },
+  "targets": {
+    "attendance-system-54b30": {
+      "hosting": {
+        "techbook": [
+          "techbook"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

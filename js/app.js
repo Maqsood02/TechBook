@@ -1,0 +1,231 @@
+// TechBook App — Core Entry Point & Module Coordinator
+
+// Config & Utilities
+import './core/firebase.js';
+import './core/helpers.js';
+
+// Features & Components
+import './features/auth.js';
+import './features/promos.js';
+import './features/attendance.js';
+import './features/notes.js';
+import './features/qbank.js';
+import './features/pyq.js';
+import './features/quiz.js';
+import './features/chatbot.js';
+import './features/manage_students.js';
+
+
+console.log('🚀 TechBook App fully initialized');
+
+// ─── LANDING PAGE ROLE ROUTING & NAVIGATION ───
+
+function initNavigation() {
+  // Bind role buttons on the landing page
+  const roleButtons = document.querySelectorAll('.role-button');
+  roleButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const role = btn.getAttribute('data-role');
+      if (role) {
+        selectRole(role);
+      }
+    });
+  });
+
+  // Bind Home button in navbar
+  const homeBtn = document.getElementById('btn-home');
+  if (homeBtn) {
+    homeBtn.addEventListener('click', showLandingPage);
+  }
+}
+
+// Select Role function
+function selectRole(role) {
+  // Hide landing page
+  const landing = document.getElementById('landing-page');
+  if (landing) landing.classList.add('hidden');
+
+  // Show main panel
+  const mainPanel = document.getElementById('main-panel');
+  if (mainPanel) mainPanel.classList.remove('hidden');
+
+  // Hide all views first
+  const views = ['student-view', 'admin-view', 'about-view'];
+  views.forEach(v => {
+    const el = document.getElementById(v);
+    if (el) el.classList.add('hidden');
+  });
+
+  // Show selected view
+  const activeView = document.getElementById(`${role}-view`);
+  if (activeView) activeView.classList.remove('hidden');
+
+  // Update navbar role label
+  const label = document.getElementById('navbar-role-label');
+  if (label) {
+    if (role === 'student') label.textContent = 'Student Portal';
+    else if (role === 'admin') label.textContent = 'Admin Portal';
+    else if (role === 'about') label.textContent = 'About TechBook';
+  }
+
+  // Handle specific transitions
+  if (role === 'student') {
+    // If student is logged in, show student area; else show login
+    if (window._currentStudentUSN) {
+      document.getElementById('student-auth').classList.add('hidden');
+      document.getElementById('student-area').classList.remove('hidden');
+    } else {
+      document.getElementById('student-auth').classList.remove('hidden');
+      document.getElementById('student-area').classList.add('hidden');
+    }
+  } else if (role === 'admin') {
+    // If admin is logged in, show admin area; else show login
+    if (window.adminLoggedIn) {
+      document.getElementById('admin-login-block').classList.add('hidden');
+      document.getElementById('admin-area').classList.remove('hidden');
+    } else {
+      document.getElementById('admin-login-block').classList.remove('hidden');
+      document.getElementById('admin-area').classList.add('hidden');
+    }
+  }
+
+  if (!window._historyNavLock) {
+    window.history.pushState({ role: role, tab: null, section: null }, '', '#' + role);
+  }
+}
+
+// Show Landing Page function
+function showLandingPage() {
+  // Hide main panel
+  const mainPanel = document.getElementById('main-panel');
+  if (mainPanel) mainPanel.classList.add('hidden');
+
+  // Show landing page
+  const landing = document.getElementById('landing-page');
+  if (landing) landing.classList.remove('hidden');
+
+  if (!window._historyNavLock) {
+    window.history.pushState({ role: 'landing' }, '', '#');
+  }
+}
+
+// Global History & Routing System
+window._historyNavLock = false;
+
+window.addEventListener('popstate', (event) => {
+  // Always close open developer modal on back navigation
+  var devModal = document.getElementById('founder-modal');
+  if (devModal && devModal.style.display === 'flex') {
+    devModal.style.display = 'none';
+  }
+
+  const state = event.state;
+  if (!state) return;
+
+  window._historyNavLock = true;
+
+  if (state.role === 'landing') {
+    showLandingPage();
+  } else if (state.role === 'student') {
+    selectRole('student');
+    if (typeof window.switchStudentTab === 'function') {
+      window._studentHistoryNavLock = true;
+      window.switchStudentTab(state.tab || null);
+      window._studentHistoryNavLock = false;
+    }
+  } else if (state.role === 'admin') {
+    selectRole('admin');
+    if (typeof window.switchAdminSection === 'function') {
+      window._adminHistoryNavLock = true;
+      window.switchAdminSection(state.section || null);
+      window._adminHistoryNavLock = false;
+    }
+  } else if (state.role === 'about') {
+    selectRole('about');
+  }
+
+  window._historyNavLock = false;
+});
+
+function handleInitialRoute() {
+  const hash = window.location.hash;
+  if (hash.startsWith('#student')) {
+    const parts = hash.split('-');
+    const tab = parts[1] || null;
+
+    window._historyNavLock = true;
+    selectRole('student');
+    window._historyNavLock = false;
+
+    window.history.replaceState({ role: 'student', tab: null }, '', '#student');
+
+    if (tab && typeof window.switchStudentTab === 'function') {
+      window.history.pushState({ role: 'student', tab: tab }, '', '#student-' + tab);
+      window._studentHistoryNavLock = true;
+      window.switchStudentTab(tab);
+      window._studentHistoryNavLock = false;
+    }
+  } else if (hash.startsWith('#admin')) {
+    const parts = hash.split('-');
+    const section = parts[1] || null;
+
+    window._historyNavLock = true;
+    selectRole('admin');
+    window._historyNavLock = false;
+
+    window.history.replaceState({ role: 'admin', section: null }, '', '#admin');
+
+    if (section && typeof window.switchAdminSection === 'function') {
+      const sectionId = 'sec-' + section;
+      window.history.pushState({ role: 'admin', section: sectionId }, '', '#admin-' + section);
+      window._adminHistoryNavLock = true;
+      window.switchAdminSection(sectionId);
+      window._adminHistoryNavLock = false;
+
+      // Automatically trigger load on direct refresh/access of user details section
+      if (sectionId === 'sec-users-list') {
+        setTimeout(() => {
+          const btn = document.getElementById("btn-load-users");
+          if (btn) btn.click();
+        }, 150);
+      }
+    }
+
+  } else if (hash === '#about') {
+    window._historyNavLock = true;
+    selectRole('about');
+    window._historyNavLock = false;
+  } else if (hash === '#developer') {
+    window._historyNavLock = true;
+    showLandingPage();
+    window._historyNavLock = false;
+
+    window.history.replaceState({ role: 'landing' }, '', window.location.pathname);
+    window.history.pushState({ role: 'landing', modal: 'founder' }, '', '#developer');
+
+    var modal = document.getElementById('founder-modal');
+    if (modal) modal.style.display = 'flex';
+  } else {
+    window.history.replaceState({ role: 'landing' }, '', window.location.pathname);
+  }
+}
+
+// Run immediately since DOM is parsed when module script runs
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    initNavigation();
+    handleInitialRoute();
+    if (typeof window._initStudentManagement === 'function') window._initStudentManagement();
+  });
+} else {
+  initNavigation();
+  handleInitialRoute();
+  if (typeof window._initStudentManagement === 'function') window._initStudentManagement();
+}
+
+// Bind to window so that inline HTML handlers or other modules can call them
+window.selectRole = selectRole;
+window.showLandingPage = showLandingPage;
+window._showLanding = showLandingPage;
+
+

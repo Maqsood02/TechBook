@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="supported-color-schemes" content="light">
+<title>New Quiz Published - TechBook</title>
+<style>
+  :root {
+    color-scheme: light;
+    supported-color-schemes: light;
+  }
+  /* Enforce light theme styling */
+  body, .body-bg {
+    background: #f4f6fb !important;
+    background-color: #f4f6fb !important;
+  }
+  .main-table, .header-box, .body-box {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+  }
+  .footer-box {
+    background: #f8fafc !important;
+    background-color: #f8fafc !important;
+  }
+  .detail-card {
+    background: #faf5ff !important;
+    background-color: #faf5ff !important;
+  }
+
+  /* Gmail Dark Mode App Overrides using u + .body hack */
+  u + .body .body-bg { background: #f4f6fb !important; background-color: #f4f6fb !important; }
+  u + .body .main-table { background: #ffffff !important; background-color: #ffffff !important; }
+  u + .body .header-box { background: #ffffff !important; background-color: #ffffff !important; }
+  u + .body .body-box { background: #ffffff !important; background-color: #ffffff !important; }
+  u + .body .footer-box { background: #f8fafc !important; background-color: #f8fafc !important; }
+  u + .body .detail-card { background: #faf5ff !important; background-color: #faf5ff !important; }
+  u + .body h1, u + .body .text-dark, u + .body .welcome-text, u + .body strong { color: #1e293b !important; }
+  u + .body .text-muted { color: #64748b !important; }
+  u + .body .text-light { color: #94a3b8 !important; }
+  u + .body .value-text { color: #1e293b !important; }
+
+  /* Gmail OGSC / OGSB Overrides */
+  [data-ogsc] .body-bg { background: #f4f6fb !important; background-color: #f4f6fb !important; }
+  [data-ogsb] .body-bg { background: #f4f6fb !important; background-color: #f4f6fb !important; }
+  [data-ogsc] .main-table { background: #ffffff !important; background-color: #ffffff !important; }
+  [data-ogsb] .main-table { background: #ffffff !important; background-color: #ffffff !important; }
+  [data-ogsc] .header-box { background: #ffffff !important; background-color: #ffffff !important; }
+  [data-ogsb] .header-box { background: #ffffff !important; background-color: #ffffff !important; }
+  [data-ogsc] .body-box { background: #ffffff !important; background-color: #ffffff !important; }
+  [data-ogsb] .body-box { background: #ffffff !important; background-color: #ffffff !important; }
+  [data-ogsc] .footer-box { background: #f8fafc !important; background-color: #f8fafc !important; }
+  [data-ogsb] .footer-box { background: #f8fafc !important; background-color: #f8fafc !important; }
+  [data-ogsc] .detail-card { background: #faf5ff !important; background-color: #faf5ff !important; }
+  [data-ogsb] .detail-card { background: #faf5ff !important; background-color: #faf5ff !important; }
+  [data-ogsc] h1, [data-ogsc] .text-dark, [data-ogsc] .welcome-text, [data-ogsc] strong { color: #1e293b !important; }
+  [data-ogsc] .text-muted { color: #64748b !important; }
+  [data-ogsc] .text-light { color: #94a3b8 !important; }
+  [data-ogsc] .value-text { color: #1e293b !important; }
+</style>
+</head>
+<body class="body" style="margin:0;padding:0;background-color:#f4f6fb;font-family:'Segoe UI',Arial,sans-serif;">
+<div class="body-bg" style="background-color:#f4f6fb;padding:40px 0;width:100%;min-height:100vh;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+    <tr><td align="center" style="padding:0 20px;">
+      <table width="100%" class="main-table" style="max-width:520px;border-radius:20px;overflow:hidden;border:1px solid #e2e8f0;box-shadow:0 8px 40px rgba(0,0,0,0.08);background-color:#ffffff;" cellpadding="0" cellspacing="0" border="0">
+
+        <!-- Top Gradient Bar -->
+        <tr><td style="background:linear-gradient(90deg,#7c3aed,#4f46e5,#06b6d4);height:5px;line-height:5px;font-size:0;">&nbsp;</td></tr>
+
+        <!-- Header -->
+        <tr><td class="header-box" style="background-color:#ffffff;padding:36px 40px 24px;text-align:center;border-bottom:1px solid #f1f5f9;">
+          <div style="margin-bottom:6px;">
+            <span style="font-size:26px;font-weight:900;color:#4f46e5;">Tech</span><span class="text-dark" style="font-size:26px;font-weight:900;color:#1e293b;">Book</span>
+          </div>
+          <div class="text-light" style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#94a3b8;font-weight:600;">Learning Platform</div>
+          <div style="margin:24px auto 0;width:70px;height:70px;background-color:#f3e8ff;border-radius:50%;text-align:center;line-height:70px;">
+            <span style="font-size:30px;">🧠</span>
+          </div>
+          <h1 class="text-dark" style="color:#1e293b;font-size:22px;font-weight:800;margin:18px 0 6px;">New Quiz is Live!</h1>
+          <p class="text-muted" style="color:#64748b;font-size:14px;margin:0;">Test your knowledge now</p>
+        </td></tr>
+
+        <!-- Body -->
+        <tr><td class="body-box" style="background-color:#ffffff;padding:32px 40px;">
+          <p class="welcome-text" style="color:#334155;font-size:15px;line-height:1.6;margin:0 0 10px;">Hi <strong class="text-dark" style="color:#1e293b;">{{STUDENT_NAME}}</strong>,</p>
+          <p class="text-muted" style="color:#64748b;font-size:14px;line-height:1.6;margin:0 0 24px;">A new quiz has been published for you on TechBook. Attempt it before the deadline!</p>
+
+          <!-- Quiz Card -->
+          <div class="detail-card" style="background-color:#faf5ff;border:1px solid #ddd6fe;border-radius:14px;padding:24px;margin-bottom:28px;">
+            <p class="text-dark" style="font-size:16px;font-weight:800;color:#1e293b;margin:0 0 16px;padding-bottom:12px;border-bottom:1px solid #ede9fe;word-wrap:break-word;">{{QUIZ_NAME}}</p>
+            <table width="100%" cellpadding="0" cellspacing="0" style="table-layout:fixed;">
+              <tr>
+                <td class="text-muted" style="padding:10px 0;color:#64748b;font-size:13px;width:120px;font-weight:600;border-bottom:1px solid #f1f5f9;vertical-align:middle;">📚 Subject</td>
+                <td class="value-text" style="padding:10px 0;color:#1e293b;font-size:13px;font-weight:700;border-bottom:1px solid #f1f5f9;vertical-align:middle;word-wrap:break-word;">{{SUBJECT}}</td>
+              </tr>
+              <tr>
+                <td class="text-muted" style="padding:10px 0;color:#64748b;font-size:13px;width:120px;font-weight:600;border-bottom:1px solid #f1f5f9;vertical-align:middle;">❓ Questions</td>
+                <td class="value-text" style="padding:10px 0;color:#1e293b;font-size:13px;font-weight:600;border-bottom:1px solid #f1f5f9;vertical-align:middle;word-wrap:break-word;">{{QUESTION_COUNT}} Questions</td>
+              </tr>
+              <tr>
+                <td class="text-muted" style="padding:10px 0;color:#64748b;font-size:13px;width:120px;font-weight:600;border-bottom:1px solid #f1f5f9;vertical-align:middle;">⏱ Time Limit</td>
+                <td style="padding:10px 0;color:#7c3aed;font-size:13px;font-weight:700;border-bottom:1px solid #f1f5f9;vertical-align:middle;word-wrap:break-word;">{{DURATION}}</td>
+              </tr>
+              <tr>
+                <td class="text-muted" style="padding:10px 0;color:#64748b;font-size:13px;width:120px;font-weight:600;vertical-align:middle;">📊 Difficulty</td>
+                <td class="value-text" style="padding:10px 0;color:#1e293b;font-size:13px;font-weight:600;vertical-align:middle;word-wrap:break-word;">{{DIFFICULTY}}</td>
+              </tr>
+            </table>
+          </div>
+
+          <!-- CTA -->
+          <div style="text-align:center;margin-bottom:8px;">
+            <a href="{{APP_URL}}" class="btn-link" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#ffffff;text-decoration:none;font-weight:700;font-size:14px;padding:14px 36px;border-radius:12px;">Start Quiz Now →</a>
+          </div>
+        </td></tr>
+
+        <!-- Footer -->
+        <tr><td class="footer-box" style="background-color:#f8fafc;padding:20px 40px;text-align:center;border-top:1px solid #e2e8f0;">
+          <p class="text-light" style="color:#94a3b8;font-size:11px;margin:0;">© 2024 TechBook · <a href="{{APP_URL}}" style="color:#4f46e5;text-decoration:none;">Open TechBook</a></p>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</div>
+</body>
+</html>

@@ -1,0 +1,27 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /students/{studentId}          { allow read, write: if true; }
+    match /attendance/{attendanceId}     { allow read, write: if true; }
+    match /attendance_codes/{codeId}     { allow read, write: if true; }
+    match /password_reset_requests/{id}  { allow read, write: if true; }
+    match /settings/{settingId}          { allow read, write: if true; }
+    match /quizzes/{id}                  { allow read, write: if true; }
+    match /quiz_results/{id}             { allow read, write: if true; }
+    
+    // Notes, Q-Banks & PYQs (Permissive)
+    match /techbook_notes/{id}           { allow read, write: if true; }
+    match /techbook_notes/{id}/chunks/{chunkId} { allow read, write: if true; }
+    
+    match /qbank_papers/{id}              { allow read, write: if true; }
+    match /qbank_papers/{id}/chunks/{chunkId} { allow read, write: if true; }
+    
+    match /pyq_papers/{id}              { allow read, write: if true; }
+    match /pyq_papers/{id}/chunks/{chunkId} { allow read, write: if true; }
+    
+    match /help_messages/{tid}/msgs/{msgId} { allow read, write: if true; }
+    match /help_threads/{tid}               { allow read, write: if true; }
+    match /admins/{adminId}              { allow read, write: if true; }
+    match /promos/{id}                   { allow read, write: if true; }
+  }
+}
