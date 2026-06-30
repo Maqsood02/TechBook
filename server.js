@@ -27,7 +27,7 @@ const FIREBASE_API_KEY = process.env.FIREBASE_API_KEY;
 // ─── Firestore OTP Helpers (for Serverless statelessness) ───
 function firestoreSaveOTP(usn, data) {
   return new Promise((resolve, reject) => {
-    const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/otps/${usn}?key=${FIREBASE_API_KEY}`;
+    const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/settings/otp_${usn}?key=${FIREBASE_API_KEY}`;
     const urlObj = new URL(url);
     const body = JSON.stringify({
       fields: {
@@ -64,7 +64,7 @@ function firestoreSaveOTP(usn, data) {
 
 function firestoreGetOTP(usn) {
   return new Promise((resolve, reject) => {
-    const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/otps/${usn}?key=${FIREBASE_API_KEY}`;
+    const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/settings/otp_${usn}?key=${FIREBASE_API_KEY}`;
     const urlObj = new URL(url);
     const options = {
       hostname: urlObj.hostname,
@@ -93,7 +93,7 @@ function firestoreGetOTP(usn) {
 
 function firestoreDeleteOTP(usn) {
   return new Promise((resolve, reject) => {
-    const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/otps/${usn}?key=${FIREBASE_API_KEY}`;
+    const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/settings/otp_${usn}?key=${FIREBASE_API_KEY}`;
     const urlObj = new URL(url);
     const options = {
       hostname: urlObj.hostname,
