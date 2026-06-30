@@ -11,46 +11,53 @@
     color-scheme: light;
     supported-color-schemes: light;
   }
-  /* Enforce light theme styling */
+  /* Enforce light theme styling via linear-gradient hack for Gmail Dark Mode */
   body, .body-bg {
-    background: #f4f6fb !important;
+    background: linear-gradient(#f4f6fb, #f4f6fb) !important;
     background-color: #f4f6fb !important;
   }
-  .main-table, .header-box, .body-box {
-    background: #ffffff !important;
+  .main-table {
+    background: linear-gradient(#ffffff, #ffffff) !important;
     background-color: #ffffff !important;
   }
-  .footer-box, .detail-card {
-    background: #f8fafc !important;
+  .header-box {
+    background: linear-gradient(#ffffff, #ffffff) !important;
+    background-color: #ffffff !important;
+  }
+  .body-box {
+    background: linear-gradient(#ffffff, #ffffff) !important;
+    background-color: #ffffff !important;
+  }
+  .footer-box {
+    background: linear-gradient(#f8fafc, #f8fafc) !important;
+    background-color: #f8fafc !important;
+  }
+  .detail-card {
+    background: linear-gradient(#f8fafc, #f8fafc) !important;
     background-color: #f8fafc !important;
   }
 
-  /* Gmail Dark Mode App Overrides using u + .body hack */
-  u + .body .body-bg { background: #f4f6fb !important; background-color: #f4f6fb !important; }
-  u + .body .main-table { background: #ffffff !important; background-color: #ffffff !important; }
-  u + .body .header-box { background: #ffffff !important; background-color: #ffffff !important; }
-  u + .body .body-box { background: #ffffff !important; background-color: #ffffff !important; }
-  u + .body .footer-box { background: #f8fafc !important; background-color: #f8fafc !important; }
-  u + .body .detail-card { background: #f8fafc !important; background-color: #f8fafc !important; }
-  u + .body h1, u + .body .text-dark, u + .body .welcome-text, u + .body strong { color: #1e293b !important; }
+  /* Force dark text color on Gmail mobile app */
+  u + .body {
+    background: linear-gradient(#f4f6fb, #f4f6fb) !important;
+  }
+  u + .body .main-table { background: linear-gradient(#ffffff, #ffffff) !important; }
+  u + .body .header-box { background: linear-gradient(#ffffff, #ffffff) !important; }
+  u + .body .body-box { background: linear-gradient(#ffffff, #ffffff) !important; }
+  u + .body .footer-box { background: linear-gradient(#f8fafc, #f8fafc) !important; }
+  u + .body .detail-card { background: linear-gradient(#f8fafc, #f8fafc) !important; }
+  
+  u + .body h1, u + .body .text-dark, u + .body .welcome-text, u + .body strong, u + .body td, u + .body p, u + .body span, u + .body div {
+    color: #1e293b !important;
+  }
   u + .body .text-muted { color: #64748b !important; }
   u + .body .text-light { color: #94a3b8 !important; }
   u + .body .value-text { color: #1e293b !important; }
 
-  /* Gmail OGSC / OGSB Overrides */
-  [data-ogsc] .body-bg { background: #f4f6fb !important; background-color: #f4f6fb !important; }
-  [data-ogsb] .body-bg { background: #f4f6fb !important; background-color: #f4f6fb !important; }
-  [data-ogsc] .main-table { background: #ffffff !important; background-color: #ffffff !important; }
-  [data-ogsb] .main-table { background: #ffffff !important; background-color: #ffffff !important; }
-  [data-ogsc] .header-box { background: #ffffff !important; background-color: #ffffff !important; }
-  [data-ogsb] .header-box { background: #ffffff !important; background-color: #ffffff !important; }
-  [data-ogsc] .body-box { background: #ffffff !important; background-color: #ffffff !important; }
-  [data-ogsb] .body-box { background: #ffffff !important; background-color: #ffffff !important; }
-  [data-ogsc] .footer-box { background: #f8fafc !important; background-color: #f8fafc !important; }
-  [data-ogsb] .footer-box { background: #f8fafc !important; background-color: #f8fafc !important; }
-  [data-ogsc] .detail-card { background: #f8fafc !important; background-color: #f8fafc !important; }
-  [data-ogsb] .detail-card { background: #f8fafc !important; background-color: #f8fafc !important; }
-  [data-ogsc] h1, [data-ogsc] .text-dark, [data-ogsc] .welcome-text, [data-ogsc] strong { color: #1e293b !important; }
+  /* Force dark text color on Gmail web client */
+  [data-ogsc] h1, [data-ogsc] .text-dark, [data-ogsc] .welcome-text, [data-ogsc] strong, [data-ogsc] td, [data-ogsc] p, [data-ogsc] span, [data-ogsc] div {
+    color: #1e293b !important;
+  }
   [data-ogsc] .text-muted { color: #64748b !important; }
   [data-ogsc] .text-light { color: #94a3b8 !important; }
   [data-ogsc] .value-text { color: #1e293b !important; }
