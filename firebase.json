@@ -1,6 +1,24 @@
 {
   "hosting": {
     "public": ".",
-    "ignore": ["firebase.json"]
+    "ignore": [
+      "firebase.json",
+      ".firebaserc",
+      ".firebase",
+      ".git",
+      ".gitignore",
+      ".gemini",
+      ".env",
+      "node_modules",
+      "server.js",
+      "techbook-ai-worker.js",
+      "test.js",
+      "package.json",
+      "package-lock.json",
+      "TODO.md",
+      "FIREBASE_RULES.txt",
+      "sample_students.csv",
+      "**/*.log"
+    ]
   }
 }
