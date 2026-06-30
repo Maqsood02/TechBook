@@ -40,47 +40,6 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '.')));
 
-// ─── Diagnostic Debug Route ───
-app.get('/api/debug', (req, res) => {
-  try {
-    const filesInCwd = fs.readdirSync(process.cwd());
-    const filesInDirname = fs.readdirSync(__dirname);
-    
-    let templatesCwdExists = false;
-    let templatesCwdFiles = [];
-    try {
-      templatesCwdFiles = fs.readdirSync(path.join(process.cwd(), 'email-templates'));
-      templatesCwdExists = true;
-    } catch (e) {}
-
-    let templatesDirnameExists = false;
-    let templatesDirnameFiles = [];
-    try {
-      templatesDirnameFiles = fs.readdirSync(path.join(__dirname, 'email-templates'));
-      templatesDirnameExists = true;
-    } catch (e) {}
-
-    res.json({
-      success: true,
-      cwd: process.cwd(),
-      dirname: __dirname,
-      filesInCwd,
-      filesInDirname,
-      templatesCwd: { exists: templatesCwdExists, files: templatesCwdFiles },
-      templatesDirname: { exists: templatesDirnameExists, files: templatesDirnameFiles },
-      env: {
-        SMTP_EMAIL: process.env.SMTP_EMAIL ? 'Set' : 'Missing',
-        SMTP_PASSWORD: process.env.SMTP_PASSWORD ? 'Set' : 'Missing',
-        FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID ? 'Set' : 'Missing',
-        FIREBASE_API_KEY: process.env.FIREBASE_API_KEY ? 'Set' : 'Missing',
-        APP_URL: process.env.APP_URL ? 'Set' : 'Missing'
-      }
-    });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message, stack: err.stack });
-  }
-});
-
 // ─── Rate Limiting ───
 const otpLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 min
