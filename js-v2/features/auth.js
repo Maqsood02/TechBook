@@ -11,7 +11,7 @@ import {
   sendPasswordResetEmail, 
   confirmPasswordReset 
 } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-import { doc, setDoc, getDoc, addDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+import { doc, setDoc, getDoc, addDoc, collection, query, where, getDocs, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 import { $, val, API_BASE_URL } from '../core/helpers.js';
 
     /* ===============================
@@ -735,6 +735,74 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
       } catch (e) {
         console.error("Password change error:", e);
         msg("change-pass-msg", "Error: " + e.message, "error");
+      }
+    });
+
+    /* ===============================
+       👤 CHANGE USERNAME
+    =============================== */
+    $("btn-change-username")?.addEventListener("click", async () => {
+      const newUsername = val("new-username").trim().toLowerCase();
+      const password = val("change-username-pass");
+
+      if (!window._currentAdminUser) {
+        return msg("change-username-msg", "You must be logged in to change username", "error");
+      }
+
+      if (!newUsername || !password) {
+        return msg("change-username-msg", "Please fill all fields", "error");
+      }
+
+      // Check if username has invalid characters (should be alphanumeric only)
+      if (!/^[a-z0-9_]+$/.test(newUsername)) {
+        return msg("change-username-msg", "Username can only contain lowercase letters, numbers, and underscores", "error");
+      }
+
+      if (newUsername === window._currentAdminUser) {
+        return msg("change-username-msg", "New username must be different from current username", "error");
+      }
+
+      const passHash = CryptoJS.SHA256(password).toString();
+
+      try {
+        const currentAdminRef = doc(db, "admins", window._currentAdminUser);
+        const currentAdminSnap = await getDoc(currentAdminRef);
+
+        if (!currentAdminSnap.exists() || currentAdminSnap.data().passwordHash !== passHash) {
+          return msg("change-username-msg", "Incorrect password", "error");
+        }
+
+        const newAdminRef = doc(db, "admins", newUsername);
+        const newAdminSnap = await getDoc(newAdminRef);
+
+        if (newAdminSnap.exists()) {
+          return msg("change-username-msg", "Username is already taken", "error");
+        }
+
+        // Copy old admin data to new doc path
+        const oldData = currentAdminSnap.data();
+        await setDoc(newAdminRef, {
+          ...oldData,
+          updatedAt: serverTimestamp()
+        });
+
+        // Delete old admin doc
+        await deleteDoc(currentAdminRef);
+
+        msg("change-username-msg", "✓ Username updated successfully! Logging out...", "success");
+        
+        // Log out after 2 seconds to force sign in with new username
+        setTimeout(() => {
+          if (window.adminLogout) {
+            window.adminLogout();
+          } else {
+            window.location.reload();
+          }
+        }, 2000);
+
+      } catch (e) {
+        console.error("Username change error:", e);
+        msg("change-username-msg", "Error: " + e.message, "error");
       }
     });
 
