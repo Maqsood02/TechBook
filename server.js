@@ -54,12 +54,16 @@ const verifyLimiter = rateLimit({
 
 // ─── Email Transporter ───
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 465,
+  secure: true, // SSL
   auth: {
     user: process.env.SMTP_EMAIL,
     pass: process.env.SMTP_PASSWORD
   },
-  tls: { rejectUnauthorized: false }
+  tls: {
+    rejectUnauthorized: false
+  }
 });
 
 // Verify email transporter on startup
