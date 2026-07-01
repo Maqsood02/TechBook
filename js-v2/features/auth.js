@@ -271,6 +271,24 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
         return msg("register-msg", "Password must be at least 6 characters", "error");
       }
 
+      // Verify if USN or Email is already registered
+      msg("register-msg", "⏳ Verifying registration details...", "info");
+      try {
+        const studentDoc = await getDoc(doc(db, "students", usn));
+        if (studentDoc.exists()) {
+          return msg("register-msg", "❌ This USN / Roll Number is already registered.", "error");
+        }
+
+        const emailQuery = query(collection(db, "students"), where("email", "==", personalEmail));
+        const emailSnap = await getDocs(emailQuery);
+        if (!emailSnap.empty) {
+          return msg("register-msg", "❌ This email address is already registered to another account.", "error");
+        }
+      } catch (checkErr) {
+        console.error("Verification error:", checkErr);
+        return msg("register-msg", "❌ Verification failed. Please check your network connection.", "error");
+      }
+
       // ── Send OTP for email verification ──
       msg("register-msg", "⏳ Sending OTP to your email...", "info");
       try {
