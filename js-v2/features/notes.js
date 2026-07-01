@@ -279,12 +279,44 @@ let lastNotesFetchTime = 0;
       return docs.map(d => d.fields?.data?.stringValue || "");
     }
 
+    async function validatePdfBlob(blob, type, id) {
+      if (!blob || !(blob instanceof Blob)) return null;
+      try {
+        const header = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const arr = new Uint8Array(reader.result);
+            let str = '';
+            for (let i = 0; i < Math.min(arr.length, 5); i++) {
+              str += String.fromCharCode(arr[i]);
+            }
+            resolve(str);
+          };
+          reader.onerror = () => resolve('');
+          reader.readAsArrayBuffer(blob.slice(0, 5));
+        });
+        if (header === '%PDF-') return blob;
+        console.warn(`🗑️ Corrupt PDF cache header ("${header}") for ${type}_${id}, deleting cache entry.`);
+        try {
+          await PdfDbCache.init();
+          if (PdfDbCache.db) {
+            const tx = PdfDbCache.db.transaction('pdfs', 'readwrite');
+            tx.objectStore('pdfs').delete(`${type}_${id}`);
+          }
+        } catch (_) {}
+      } catch (e) {
+        console.error("Cache validation error:", e);
+      }
+      return null;
+    }
+
     async function fetchPdfBlob(noteId) {
       try {
         const cached = await PdfDbCache.get('note', noteId);
-        if (cached) {
+        const valid = await validatePdfBlob(cached, 'note', noteId);
+        if (valid) {
           console.log('⚡ Loaded note ' + noteId + ' instantly from cache!');
-          return cached;
+          return valid;
         }
       } catch (ce) { console.warn('Cache read error:', ce); }
 

@@ -3068,17 +3068,20 @@
       var tDisp = document.getElementById('pdf-viewer-title'); if (tDisp) tDisp.textContent = fileName || 'PDF Viewer';
       
       let finalUrl = url;
-      try {
-        const response = await fetch(url);
-        const blob = await response.blob();
-        finalUrl = await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result);
-          reader.onerror = reject;
-          reader.readAsDataURL(blob);
-        });
-      } catch (err) {
-        console.warn("Could not convert blob URL to data URL, falling back to original blob:", err);
+      var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+      if (isFirefox) {
+        try {
+          const response = await fetch(url);
+          const blob = await response.blob();
+          finalUrl = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+        } catch (err) {
+          console.warn("Could not convert blob URL to data URL, falling back to original blob:", err);
+        }
       }
 
       var container = document.getElementById('pdf-viewer-container');
