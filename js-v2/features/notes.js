@@ -373,9 +373,32 @@ let lastNotesFetchTime = 0;
         '<span style="padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;background:' + col.bg + ';border:1px solid ' + col.border + ';color:' + col.text + ';">' + ((n.section || 'all') === 'all' ? 'All Sections' : 'Section ' + n.section) + '</span></div>' +
         '<div style="display:flex;gap:6px;flex-shrink:0;">' +
         '<button onclick="admViewNote(\'' + n.id + '\')" id="view-adm-' + n.id + '" style="padding:7px 12px;background:' + col.bg + ';border:1.5px solid ' + col.border + ';border-radius:9px;color:' + col.text + ';font-weight:700;font-size:12px;cursor:pointer;">👁️ View</button>' +
+        '<button onclick="admEditNoteTitle(\'' + n.id + '\',\'' + n.title.replace(/'/g, "\\'") + '\',' + colorIdx + ')" style="padding:7px 12px;background:' + col.bg + ';border:1.5px solid ' + col.border + ';border-radius:9px;color:' + col.text + ';font-weight:700;font-size:12px;cursor:pointer;">✏️ Edit</button>' +
         '<button onclick="admDeleteNote(\'' + n.id + '\',\'' + n.title.replace(/'/g, "\\'") + '\')" style="padding:7px 12px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:9px;color:#f87171;font-weight:700;font-size:12px;cursor:pointer;">🗑️ Delete</button>' +
         '</div></div>'
       ).join('');
+    };
+
+    window.admEditNoteTitle = async (id, currentTitle, colorIdx) => {
+      const newTitle = prompt("Edit Note Title:", currentTitle);
+      if (newTitle === null) return;
+      const trimmed = newTitle.trim();
+      if (!trimmed) return alert("Title cannot be empty!");
+      try {
+        const noteRef = doc(db, 'techbook_notes', id);
+        await setDoc(noteRef, { title: trimmed }, { merge: true });
+        if (window._admAllNotes) {
+          const idx = window._admAllNotes.findIndex(n => n.id === id);
+          if (idx !== -1) window._admAllNotes[idx].title = trimmed;
+        }
+        alert("✓ Title updated successfully!");
+        const note = window._admAllNotes ? window._admAllNotes.find(n => n.id === id) : null;
+        if (note) {
+          window.admOpenSubject(note.subject || 'General', colorIdx);
+        }
+      } catch (err) {
+        alert("Error updating title: " + err.message);
+      }
     };
 
     function admBackToSubjects() {

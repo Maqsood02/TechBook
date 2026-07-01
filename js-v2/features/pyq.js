@@ -101,9 +101,32 @@ let lastPyqFetchTime = 0;
         '<span style="padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;background:' + col.bg + ';border:1px solid ' + col.border + ';color:' + col.text + ';">' + ((n.section || 'all') === 'all' ? 'All Sections' : 'Section ' + n.section) + '</span></div>' +
         '<div style="display:flex;gap:6px;flex-shrink:0;">' +
         '<button onclick="pyqAdmView(\'' + n.id + '\')" id="pyq-view-adm-' + n.id + '" style="padding:7px 12px;background:' + col.bg + ';border:1.5px solid ' + col.border + ';border-radius:9px;color:' + col.text + ';font-weight:700;font-size:12px;cursor:pointer;">\ud83d\udc41\ufe0f View</button>' +
+        '<button onclick="pyqAdmEditTitle(\'' + n.id + '\',\'' + n.title.replace(/'/g, "\\'") + '\',' + colorIdx + ')" style="padding:7px 12px;background:' + col.bg + ';border:1.5px solid ' + col.border + ';border-radius:9px;color:' + col.text + ';font-weight:700;font-size:12px;cursor:pointer;">✏️ Edit</button>' +
         '<button onclick="pyqAdmDelete(\'' + n.id + '\')" style="padding:7px 12px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:9px;color:#f87171;font-weight:700;font-size:12px;cursor:pointer;">\ud83d\uddd1\ufe0f Delete</button>' +
         '</div></div>'
       ).join('');
+    };
+
+    window.pyqAdmEditTitle = async (id, currentTitle, colorIdx) => {
+      const newTitle = prompt("Edit PYQ Title:", currentTitle);
+      if (newTitle === null) return;
+      const trimmed = newTitle.trim();
+      if (!trimmed) return alert("Title cannot be empty!");
+      try {
+        const docRef = doc(db, 'pyq_papers', id);
+        await setDoc(docRef, { title: trimmed }, { merge: true });
+        if (window._pyqAdmAllPapers) {
+          const idx = window._pyqAdmAllPapers.findIndex(n => n.id === id);
+          if (idx !== -1) window._pyqAdmAllPapers[idx].title = trimmed;
+        }
+        alert("✓ Title updated successfully!");
+        const paper = window._pyqAdmAllPapers ? window._pyqAdmAllPapers.find(n => n.id === id) : null;
+        if (paper) {
+          window.pyqAdmOpenSubject(paper.subject || 'General', colorIdx);
+        }
+      } catch (err) {
+        alert("Error updating title: " + err.message);
+      }
     };
 
     window.pyqAdmBackToSubjects = () => {

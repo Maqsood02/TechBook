@@ -729,9 +729,32 @@ let lastQbankFetchTime = 0;
         '<span style="padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;background:' + col.bg + ';border:1px solid ' + col.border + ';color:' + col.text + ';">' + ((n.section || 'all') === 'all' ? 'All Sections' : 'Section ' + n.section) + '</span></div>' +
         '<div style="display:flex;gap:6px;flex-shrink:0;">' +
         '<button onclick="qbankAdmView(\'' + n.id + '\')" id="qbank-view-adm-' + n.id + '" style="padding:7px 12px;background:' + col.bg + ';border:1.5px solid ' + col.border + ';border-radius:9px;color:' + col.text + ';font-weight:700;font-size:12px;cursor:pointer;">👁️ View</button>' +
+        '<button onclick="qbankAdmEditTitle(\'' + n.id + '\',\'' + n.title.replace(/'/g, "\\'") + '\',' + colorIdx + ')" style="padding:7px 12px;background:' + col.bg + ';border:1.5px solid ' + col.border + ';border-radius:9px;color:' + col.text + ';font-weight:700;font-size:12px;cursor:pointer;">✏️ Edit</button>' +
         '<button onclick="qbankAdmDelete(\'' + n.id + '\')" style="padding:7px 12px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:9px;color:#f87171;font-weight:700;font-size:12px;cursor:pointer;">🗑️ Delete</button>' +
         '</div></div>'
       ).join('');
+    };
+
+    window.qbankAdmEditTitle = async (id, currentTitle, colorIdx) => {
+      const newTitle = prompt("Edit Question Bank Title:", currentTitle);
+      if (newTitle === null) return;
+      const trimmed = newTitle.trim();
+      if (!trimmed) return alert("Title cannot be empty!");
+      try {
+        const docRef = doc(db, 'qbank_papers', id);
+        await setDoc(docRef, { title: trimmed }, { merge: true });
+        if (window._qbankAdmAllPapers) {
+          const idx = window._qbankAdmAllPapers.findIndex(n => n.id === id);
+          if (idx !== -1) window._qbankAdmAllPapers[idx].title = trimmed;
+        }
+        alert("✓ Title updated successfully!");
+        const paper = window._qbankAdmAllPapers ? window._qbankAdmAllPapers.find(n => n.id === id) : null;
+        if (paper) {
+          window.qbankAdmOpenSubject(paper.subject || 'General', colorIdx);
+        }
+      } catch (err) {
+        alert("Error updating title: " + err.message);
+      }
     };
 
     window.qbankAdmBackToSubjects = () => {
