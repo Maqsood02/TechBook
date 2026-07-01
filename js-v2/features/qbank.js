@@ -300,7 +300,7 @@ let lastQbankFetchTime = 0;
         html += `<div style="font-size:12px;font-weight:800;color:${col.text};margin:5px 0 12px;display:flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:0.5px;">✨ Latest Uploads <span style="background:${col.bg};padding:1px 8px;border-radius:10px;font-size:10px;border:1px solid ${col.border};">${latest.length}</span></div>`;
         html += latest.map(renderQBankCard).join('');
         if (earlier.length > 0) {
-          html += `<div style="font-size:12px;font-weight:800;color:var(--text-secondary);margin:24px 0 12px;text-transform:uppercase;letter-spacing:0.5px;opacity:0.6;">Earlier Uploads</div>`;
+          html += `<div style="font-size:12px;font-weight:800;color:var(--text-secondary);margin:24px 0 12px;text-transform:uppercase;letter-spacing:0.5px;opacity:0.6;">Recent Uploads</div>`;
         }
       }
       html += earlier.map(renderQBankCard).join('');
@@ -729,7 +729,16 @@ let lastQbankFetchTime = 0;
       const titleEl = document.getElementById('qbank-adm-detail-title');
       titleEl.innerHTML = '<span style="color:' + col.text + ';">📚 ' + esc(subj) + '</span> <span style="font-size:12px;color:var(--text-secondary);font-weight:400;">(' + papers.length + ' Q-Bank' + (papers.length > 1 ? 's' : '') + ')</span>';
       const detailList = document.getElementById('qbank-adm-detail-list');
-      detailList.innerHTML = papers.map(n =>
+
+      const nowMs = Date.now();
+      const thresholdMs = 3 * 24 * 60 * 60 * 1000;
+      const latest = [], earlier = [];
+      papers.forEach(n => {
+        if (n.uploadedAt && (nowMs - n.uploadedAt.seconds * 1000) < thresholdMs) latest.push(n);
+        else earlier.push(n);
+      });
+
+      const renderQBankCard = (n) =>
         '<div style="display:flex;align-items:center;gap:10px;background:#ecfeff;border:1px solid #a5f3fc;border-radius:12px;padding:12px 14px;margin-bottom:8px;flex-wrap:wrap;border-left:3px solid ' + col.text + ';">' +
         '<div style="flex:1;min-width:0;">' +
         '<div style="font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:5px;">' + esc(n.title) + '</div>' +
@@ -739,8 +748,18 @@ let lastQbankFetchTime = 0;
         '<button onclick="qbankAdmView(\'' + n.id + '\')" id="qbank-view-adm-' + n.id + '" style="padding:7px 12px;background:' + col.bg + ';border:1.5px solid ' + col.border + ';border-radius:9px;color:' + col.text + ';font-weight:700;font-size:12px;cursor:pointer;">👁️ View</button>' +
         '<button onclick="qbankAdmEditTitle(\'' + n.id + '\',\'' + n.title.replace(/'/g, "\\'") + '\',' + colorIdx + ')" style="padding:7px 12px;background:' + col.bg + ';border:1.5px solid ' + col.border + ';border-radius:9px;color:' + col.text + ';font-weight:700;font-size:12px;cursor:pointer;">✏️ Edit</button>' +
         '<button onclick="qbankAdmDelete(\'' + n.id + '\')" style="padding:7px 12px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:9px;color:#f87171;font-weight:700;font-size:12px;cursor:pointer;">🗑️ Delete</button>' +
-        '</div></div>'
-      ).join('');
+        '</div></div>';
+
+      let html = '';
+      if (latest.length > 0) {
+        html += '<div style="font-size:12px;font-weight:800;color:' + col.text + ';margin:5px 0 12px;display:flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:0.5px;">✨ Latest Uploads <span style="background:' + col.bg + ';padding:1px 8px;border-radius:10px;font-size:10px;border:1px solid ' + col.border + ';color:' + col.text + ';">' + latest.length + '</span></div>';
+        html += latest.map(renderQBankCard).join('');
+        if (earlier.length > 0) {
+          html += '<div style="font-size:12px;font-weight:800;color:var(--text-secondary);margin:24px 0 12px;text-transform:uppercase;letter-spacing:0.5px;opacity:0.6;">Recent Uploads</div>';
+        }
+      }
+      html += earlier.map(renderQBankCard).join('');
+      detailList.innerHTML = html || '<p style="text-align:center;padding:20px;color:var(--text-secondary);">No Q-Banks available for this selection.</p>';
     };
 
     window.qbankAdmEditTitle = async (id, currentTitle, colorIdx) => {

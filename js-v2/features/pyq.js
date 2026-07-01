@@ -93,7 +93,16 @@ let lastPyqFetchTime = 0;
       const titleEl = document.getElementById('pyq-adm-detail-title');
       titleEl.innerHTML = '<span style="color:' + col.text + ';">' + col.icon + ' ' + esc(subj) + '</span> <span style="font-size:12px;color:var(--text-secondary);font-weight:400;">(' + papers.length + ' paper' + (papers.length > 1 ? 's' : '') + ')</span>';
       const detailList = document.getElementById('pyq-adm-detail-list');
-      detailList.innerHTML = papers.map(n =>
+
+      const nowMs = Date.now();
+      const thresholdMs = 3 * 24 * 60 * 60 * 1000;
+      const latest = [], earlier = [];
+      papers.forEach(n => {
+        if (n.uploadedAt && (nowMs - n.uploadedAt.seconds * 1000) < thresholdMs) latest.push(n);
+        else earlier.push(n);
+      });
+
+      const renderPyqCard = (n) =>
         '<div style="display:flex;align-items:center;gap:10px;background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:12px 14px;margin-bottom:8px;flex-wrap:wrap;border-left:3px solid ' + col.text + ';">' +
         '<div style="flex:1;min-width:0;">' +
         '<div style="font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:5px;">' + esc(n.title) + '</div>' +
@@ -103,8 +112,18 @@ let lastPyqFetchTime = 0;
         '<button onclick="pyqAdmView(\'' + n.id + '\')" id="pyq-view-adm-' + n.id + '" style="padding:7px 12px;background:' + col.bg + ';border:1.5px solid ' + col.border + ';border-radius:9px;color:' + col.text + ';font-weight:700;font-size:12px;cursor:pointer;">\ud83d\udc41\ufe0f View</button>' +
         '<button onclick="pyqAdmEditTitle(\'' + n.id + '\',\'' + n.title.replace(/'/g, "\\'") + '\',' + colorIdx + ')" style="padding:7px 12px;background:' + col.bg + ';border:1.5px solid ' + col.border + ';border-radius:9px;color:' + col.text + ';font-weight:700;font-size:12px;cursor:pointer;">✏️ Edit</button>' +
         '<button onclick="pyqAdmDelete(\'' + n.id + '\')" style="padding:7px 12px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:9px;color:#f87171;font-weight:700;font-size:12px;cursor:pointer;">\ud83d\uddd1\ufe0f Delete</button>' +
-        '</div></div>'
-      ).join('');
+        '</div></div>';
+
+      let html = '';
+      if (latest.length > 0) {
+        html += '<div style="font-size:12px;font-weight:800;color:' + col.text + ';margin:5px 0 12px;display:flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:0.5px;">✨ Latest Uploads <span style="background:' + col.bg + ';padding:1px 8px;border-radius:10px;font-size:10px;border:1px solid ' + col.border + ';color:' + col.text + ';">' + latest.length + '</span></div>';
+        html += latest.map(renderPyqCard).join('');
+        if (earlier.length > 0) {
+          html += '<div style="font-size:12px;font-weight:800;color:var(--text-secondary);margin:24px 0 12px;text-transform:uppercase;letter-spacing:0.5px;opacity:0.6;">Recent Uploads</div>';
+        }
+      }
+      html += earlier.map(renderPyqCard).join('');
+      detailList.innerHTML = html || '<p style="text-align:center;padding:20px;color:var(--text-secondary);">No PYQ papers available for this selection.</p>';
     };
 
     window.pyqAdmEditTitle = async (id, currentTitle, colorIdx) => {
@@ -465,7 +484,15 @@ let lastPyqFetchTime = 0;
       titleEl.style.color = col.text;
       document.getElementById('pyq-detail-sub').textContent = papers.length + ' paper' + (papers.length > 1 ? 's' : '') + ' available';
 
-      document.getElementById('pyq-detail-list').innerHTML = papers.map(n =>
+      const nowMs = Date.now();
+      const thresholdMs = 3 * 24 * 60 * 60 * 1000;
+      const latest = [], earlier = [];
+      papers.forEach(n => {
+        if (n.uploadedAt && (nowMs - n.uploadedAt.seconds * 1000) < thresholdMs) latest.push(n);
+        else earlier.push(n);
+      });
+
+      const renderPyqCard = (n) =>
         '<div style="background:rgba(255,255,255,0.7);border:1.5px solid ' + col.border + ';border-radius:14px;padding:16px;margin-bottom:12px;position:relative;overflow:hidden;">' +
         '<div style="position:absolute;top:0;left:0;width:4px;height:100%;background:' + col.text + ';border-radius:4px 0 0 4px;opacity:0.8;"></div>' +
         '<div style="padding-left:12px;">' +
@@ -483,8 +510,18 @@ let lastPyqFetchTime = 0;
         '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
         '<button onclick="pyqStudentView(\'' + n.id + '\',\'' + jsEsc(n.fileName || 'pyq.pdf') + '\')" id="pyq-view-btn-' + n.id + '" style="display:inline-flex;align-items:center;gap:6px;padding:9px 18px;background:' + col.bg + ';border:1.5px solid ' + col.border + ';border-radius:10px;color:' + col.text + ';font-weight:700;font-size:13px;cursor:pointer;">\ud83d\udc41\ufe0f View PDF</button>' +
         '<button onclick="pyqStudentDownload(\'' + n.id + '\',\'' + jsEsc(n.fileName || 'pyq.pdf') + '\')" id="pyq-dl-btn-' + n.id + '" style="display:inline-flex;align-items:center;gap:6px;padding:9px 18px;background:linear-gradient(135deg,#f59e0b,#ef4444);border:none;border-radius:10px;color:#ffffff;font-weight:700;font-size:13px;cursor:pointer;">\u2b07\ufe0f Download</button>' +
-        '</div></div></div>'
-      ).join('');
+        '</div></div></div>';
+
+      let html = '';
+      if (latest.length > 0) {
+        html += '<div style="font-size:12px;font-weight:800;color:' + col.text + ';margin:5px 0 12px;display:flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:0.5px;">✨ Latest Uploads <span style="background:' + col.bg + ';padding:1px 8px;border-radius:10px;font-size:10px;border:1px solid ' + col.border + ';color:' + col.text + ';">' + latest.length + '</span></div>';
+        html += latest.map(renderPyqCard).join('');
+        if (earlier.length > 0) {
+          html += '<div style="font-size:12px;font-weight:800;color:var(--text-secondary);margin:24px 0 12px;text-transform:uppercase;letter-spacing:0.5px;opacity:0.6;">Recent Uploads</div>';
+        }
+      }
+      html += earlier.map(renderPyqCard).join('');
+      document.getElementById('pyq-detail-list').innerHTML = html || '<p style="text-align:center;padding:20px;color:var(--text-secondary);">No PYQ papers available for this selection.</p>';
     };
 
     window.pyqBackToSubjects = () => {
