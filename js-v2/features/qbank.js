@@ -661,7 +661,7 @@ let lastQbankFetchTime = 0;
     function qbankAdmApplyFilter() {
       const sem = window._qbankActiveFilterSem;
       const papers = window._qbankAdmAllPapers || [];
-      const filtered = sem === 'all' ? papers : papers.filter(p => p.sem === sem);
+      const filtered = sem === 'all' ? papers : papers.filter(p => String(p.sem) === String(sem));
       qbankAdmRenderSubjectGrid(filtered);
     }
 

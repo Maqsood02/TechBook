@@ -46,7 +46,7 @@ let lastPyqFetchTime = 0;
     function pyqAdmApplyFilter() {
       const sem = window._pyqActiveFilterSem;
       const papers = window._pyqAdmAllPapers || [];
-      const filtered = sem === 'all' ? papers : papers.filter(p => p.sem === sem);
+      const filtered = sem === 'all' ? papers : papers.filter(p => String(p.sem) === String(sem));
       pyqAdmRenderSubjectGrid(filtered);
     }
 

@@ -1588,6 +1588,18 @@ service cloud.firestore {
         if (typeof window.loadAdminsList === 'function') {
           window.loadAdminsList();
         }
+      } else if (sectionId === 'sec-notes') {
+        if (typeof window.admLoadAllNotes === 'function') {
+          window.admLoadAllNotes();
+        }
+      } else if (sectionId === 'sec-qbank') {
+        if (typeof window.qbankAdmLoadAll === 'function') {
+          window.qbankAdmLoadAll();
+        }
+      } else if (sectionId === 'sec-pyq') {
+        if (typeof window.pyqAdmLoadAll === 'function') {
+          window.pyqAdmLoadAll();
+        }
       }
 
       document.querySelectorAll(".admin-section").forEach(sec => {
