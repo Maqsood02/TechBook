@@ -311,14 +311,7 @@ let lastNotesFetchTime = 0;
     }
 
     async function fetchPdfBlob(noteId) {
-      try {
-        const cached = await PdfDbCache.get('note', noteId);
-        const valid = await validatePdfBlob(cached, 'note', noteId);
-        if (valid) {
-          console.log('⚡ Loaded note ' + noteId + ' instantly from cache!');
-          return valid;
-        }
-      } catch (ce) { console.warn('Cache read error:', ce); }
+      // Bypass cache to prevent loading corrupted local entries
 
       let parts = [];
       let noteMeta = allStudentNotes.find(n => n.id === noteId);

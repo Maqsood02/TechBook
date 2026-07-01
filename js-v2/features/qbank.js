@@ -74,14 +74,7 @@ let lastQbankFetchTime = 0;
     }
 
     async function fetchQBankBlob(qbankId) {
-      try {
-        const cached = await PdfDbCache.get('qbank', qbankId);
-        const valid = await validatePdfBlob(cached, 'qbank', qbankId);
-        if (valid) {
-          console.log('⚡ Loaded Q-Bank ' + qbankId + ' instantly from cache!');
-          return valid;
-        }
-      } catch (ce) { console.warn('Cache read error:', ce); }
+      // Bypass cache to prevent loading corrupted local entries
 
       let parts = [];
       let qbankMeta = allStudentQBank.find(n => n.id === qbankId);

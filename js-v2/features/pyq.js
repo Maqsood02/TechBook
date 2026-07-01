@@ -970,14 +970,7 @@ let lastPyqFetchTime = 0;
     }
 
     async function fetchPyqBlob(id) {
-      try {
-        const cached = await PdfDbCache.get('pyq', id);
-        const valid = await validatePdfBlob(cached, 'pyq', id);
-        if (valid) {
-          console.log('⚡ Loaded PYQ ' + id + ' instantly from cache!');
-          return valid;
-        }
-      } catch (ce) { console.warn('Cache read error:', ce); }
+      // Bypass cache to prevent loading corrupted local entries
 
       let parts = [];
       let pyqMeta = (window.allStudentPYQ || []).find(n => n.id === id);
