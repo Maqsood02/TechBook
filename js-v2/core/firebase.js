@@ -16,7 +16,7 @@ import {
   browserLocalPersistence
 } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
 import {
-  getFirestore,
+  initializeFirestore,
   doc,
   setDoc,
   getDoc,
@@ -52,7 +52,9 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getFirestore(app);
+const db = initializeFirestore(app, {
+  experimentalAutoDetectLongPolling: true
+});
 const storage = getStorage(app);
 
 setPersistence(auth, browserLocalPersistence).catch(e => console.warn("Persistence:", e));
