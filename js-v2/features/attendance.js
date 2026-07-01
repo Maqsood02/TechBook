@@ -555,21 +555,41 @@ import { $, val } from '../core/helpers.js';
           const r = data.role || "admin";
           const isSuper = (r === "super_admin");
 
+          const initials = u.slice(0, 2).toUpperCase();
+          const avatarBg = isSuper ? 'linear-gradient(135deg, #8b5cf6, #d946ef)' : 'linear-gradient(135deg, #3b82f6, #06b6d4)';
+          const itemBg = isSuper ? 'linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(243,232,255,0.15) 100%)' : 'linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(224,242,254,0.15) 100%)';
+          const borderColor = isSuper ? 'rgba(139, 92, 246, 0.15)' : 'rgba(59, 130, 246, 0.15)';
+          const leftBarColor = isSuper ? '#8b5cf6' : '#3b82f6';
+
           html += `
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:8px;">
-              <div style="display:flex;align-items:center;gap:8px;">
-                <span style="font-weight:700;color:#0f172a;">${u}</span>
-                <span style="font-size:10px;padding:3px 8px;background:${isSuper ? '#ede9fe' : '#e0f2fe'};color:${isSuper ? '#7c3aed' : '#0369a1'};border-radius:20px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">
-                  ${isSuper ? 'Super Admin' : 'Admin'}
-                </span>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:${itemBg};border:1.5px solid ${borderColor};border-left:4px solid ${leftBarColor};border-radius:14px;margin-bottom:10px;box-shadow: 0 4px 12px rgba(0,0,0,0.015);transition:all 0.25s ease-in-out;"
+              onmouseover="this.style.boxShadow='0 6px 16px rgba(0,0,0,0.04)';this.style.transform='translateY(-1.5px)'"
+              onmouseout="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.015)';this.style.transform=''">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:36px;height:36px;border-radius:50%;background:${avatarBg};color:#ffffff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;letter-spacing:0.5px;box-shadow:0 3px 8px rgba(0,0,0,0.08);text-transform:uppercase;">
+                  ${initials}
+                </div>
+                <div style="display:flex;flex-direction:column;gap:3px;">
+                  <span style="font-weight:800;color:#1e293b;font-size:14.5px;">${u}</span>
+                  <div style="display:flex;align-items:center;">
+                    <span style="font-size:9px;padding:2px 8px;background:${isSuper ? 'rgba(139,92,246,0.08)' : 'rgba(59,130,246,0.08)'};color:${isSuper ? '#8b5cf6' : '#2563eb'};border:1px solid ${isSuper ? 'rgba(139,92,246,0.15)' : 'rgba(59,130,246,0.15)'};border-radius:20px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;">
+                      ${isSuper ? '✨ Super Admin' : '👤 Restricted Admin'}
+                    </span>
+                  </div>
+                </div>
               </div>
               ${u !== 'admin' && u !== window._currentAdminUser ? `
                 <button onclick="window.deleteAdminAccount('${u}')" 
-                  style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:16px;padding:4px;transition:transform 0.2s;"
-                  onmouseover="this.style.transform='scale(1.1)'"
-                  onmouseout="this.style.transform='scale(1)'"
+                  style="background:none;border:none;color:#ef4444;cursor:pointer;padding:8px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all 0.2s;background:rgba(239,68,68,0.05);"
+                  onmouseover="this.style.background='rgba(239,68,68,0.12)';this.style.transform='scale(1.08)'"
+                  onmouseout="this.style.background='rgba(239,68,68,0.05)';this.style.transform='scale(1)'"
                   title="Delete Admin">
-                  🗑️
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                  </svg>
                 </button>
               ` : ''}
             </div>
