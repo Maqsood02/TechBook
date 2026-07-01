@@ -262,6 +262,23 @@ let lastNotesFetchTime = 0;
 
     // ─── RECONSTRUCT PDF FROM CHUNKS ───
 
+    async function fetchChunksRest(collectionName, docId) {
+      const projectId = "attendance-system-54b30";
+      const apiKey = "AIzaSyC-aoJvlXHec3XQojpD1eKPvOQtYwCL0gI";
+      const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${collectionName}/${docId}/chunks?key=${apiKey}&pageSize=300`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`REST fetch failed with status ${res.status}`);
+      const data = await res.json();
+      const docs = data.documents || [];
+      if (docs.length === 0) throw new Error("No chunks found");
+      docs.sort((a, b) => {
+        const idxA = parseInt(a.fields?.idx?.integerValue || a.fields?.idx?.stringValue || "0", 10);
+        const idxB = parseInt(b.fields?.idx?.integerValue || b.fields?.idx?.stringValue || "0", 10);
+        return idxA - idxB;
+      });
+      return docs.map(d => d.fields?.data?.stringValue || "");
+    }
+
     async function fetchPdfBlob(noteId) {
       try {
         const cached = await PdfDbCache.get('note', noteId);
@@ -283,12 +300,17 @@ let lastNotesFetchTime = 0;
         } catch (_) {}
       }
 
-      // Query all chunks at once - much faster and uses a single roundtrip!
-      const chunksSnap = await getDocs(
-        query(collection(db, 'techbook_notes', noteId, 'chunks'), orderBy('idx', 'asc'))
-      );
-      if (chunksSnap.empty) throw new Error('No chunks found for this note');
-      chunksSnap.forEach(d => parts.push(d.data().data));
+      try {
+        console.log(`🚀 Attempting fast REST fetch for note chunks: ${noteId}`);
+        parts = await fetchChunksRest('techbook_notes', noteId);
+      } catch (restErr) {
+        console.warn(`REST chunk fetch failed, falling back to Firestore SDK:`, restErr);
+        const chunksSnap = await getDocs(
+          query(collection(db, 'techbook_notes', noteId, 'chunks'), orderBy('idx', 'asc'))
+        );
+        if (chunksSnap.empty) throw new Error('No chunks found for this note');
+        chunksSnap.forEach(d => parts.push(d.data().data));
+      }
 
       const blob = base64ToBlob(parts.join(''), 'application/pdf');
 
