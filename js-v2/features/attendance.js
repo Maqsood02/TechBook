@@ -512,14 +512,21 @@ import { $, val } from '../core/helpers.js';
         }
       });
 
-      // Special case for 'Manage Admins' section visibility
+      // Special case for restricted section visibility
       if (role !== 'super_admin') {
-        const manageSection = document.getElementById('sec-admins');
-        if (manageSection) manageSection.classList.remove('active');
+        document.querySelectorAll('.admin-section').forEach(sec => {
+          if (!['sec-notes-upload', 'sec-qbank-upload', 'sec-pyq-upload'].includes(sec.id)) {
+            sec.classList.remove('active');
+            sec.style.display = 'none';
+          }
+        });
+
         // If they were somehow in a restricted section, go back to grid
         const activeSection = document.querySelector('.admin-section.active');
-        if (activeSection && !['sec-notes-upload', 'sec-qbank-upload', 'sec-pyq-upload'].includes(activeSection.id)) {
-          document.getElementById('admin-back-btn')?.click();
+        if (!activeSection || !['sec-notes-upload', 'sec-qbank-upload', 'sec-pyq-upload'].includes(activeSection.id)) {
+          if (typeof window.switchAdminSection === 'function') {
+            window.switchAdminSection(null);
+          }
         }
       }
     }
