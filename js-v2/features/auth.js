@@ -293,20 +293,31 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
       // Build OTP prompt inside register form
       const otpContainer = document.createElement('div');
       otpContainer.id = 'reg-otp-container';
-      otpContainer.style.cssText = 'background:rgba(99,102,241,0.06);border:1.5px solid rgba(99,102,241,0.25);border-radius:14px;padding:16px;margin-top:12px;';
+      otpContainer.style.cssText = 'background:#eff2fe;border:1.5px solid #c7d2fe;border-radius:16px;padding:18px;margin-top:16px;box-shadow:0 4px 12px rgba(99,102,241,0.08);';
       otpContainer.innerHTML = `
-        <label style="display:block;color:#e5e7eb;font-size:13px;font-weight:600;margin-bottom:8px;">Enter OTP sent to ${personalEmail}</label>
-        <input id="reg-otp-field" type="text" maxlength="6" placeholder="6-digit OTP"
-          style="width:100%;padding:12px;background:rgba(255,255,255,0.04);border:1.5px solid rgba(99,102,241,0.3);border-radius:10px;color:#ffffff;font-size:18px;font-weight:700;letter-spacing:8px;text-align:center;box-sizing:border-box;outline:none;" />
+        <label style="display:block;color:#1f2937;font-size:13.5px;font-weight:600;margin-bottom:8px;font-family:'Poppins',sans-serif;text-align:left;">
+          Enter 6-Digit OTP sent to <span style="color:#3d5af1;">${personalEmail}</span>
+        </label>
+        <input id="reg-otp-field" type="text" maxlength="6" placeholder="••••••" autocomplete="one-time-code"
+          style="width:100%;padding:14px;background:#ffffff;border:1.5px solid #c7d2fe;border-radius:12px;color:#111827;font-size:24px;font-weight:700;letter-spacing:12px;text-align:center;box-sizing:border-box;outline:none;transition:border-color 0.2s, box-shadow 0.2s;" />
+        
         <div style="display:flex;gap:8px;margin-top:12px;">
           <button id="reg-otp-verify-btn"
-            style="flex:1;padding:11px;background:linear-gradient(135deg,#3d5af1,#6366f1);color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:14px;">
+            style="flex:2;padding:12px;background:linear-gradient(135deg,#3d5af1,#6366f1);color:#fff;border:none;border-radius:12px;font-weight:700;cursor:pointer;font-size:14px;transition:opacity 0.2s;">
             ✓ Verify & Register
           </button>
           <button id="reg-otp-cancel-btn"
-            style="padding:11px 16px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#f87171;border-radius:10px;cursor:pointer;font-size:12px;">
+            style="flex:1;padding:12px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:#ef4444;border-radius:12px;cursor:pointer;font-weight:700;font-size:13px;transition:background 0.2s;">
             Cancel
           </button>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding:0 2px;">
+          <button id="reg-otp-resend-btn"
+            style="background:none;border:none;color:#3d5af1;font-size:12.5px;cursor:pointer;padding:0;font-weight:600;font-family:'Poppins',sans-serif;">
+            Resend OTP
+          </button>
+          <span id="reg-otp-resend-timer" style="color:#6b7280;font-size:12px;font-family:'Poppins',sans-serif;display:none;"></span>
         </div>
       `;
 
@@ -315,6 +326,75 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
       if (existingOtp) existingOtp.remove();
       const registerBtn = $("btn-register");
       if (registerBtn) registerBtn.after(otpContainer);
+
+      // Add input focus effects
+      const otpField = document.getElementById('reg-otp-field');
+      if (otpField) {
+        otpField.addEventListener('focus', () => {
+          otpField.style.borderColor = '#3d5af1';
+          otpField.style.boxShadow = '0 0 0 3px rgba(61,90,241,0.15)';
+        });
+        otpField.addEventListener('blur', () => {
+          otpField.style.borderColor = '#c7d2fe';
+          otpField.style.boxShadow = 'none';
+        });
+      }
+
+      // Timer & resend logic
+      let resendTimer = null;
+      function startResendCountdown(seconds) {
+        const resendBtn = document.getElementById('reg-otp-resend-btn');
+        const timerEl = document.getElementById('reg-otp-resend-timer');
+        if (resendBtn) resendBtn.style.display = 'none';
+        if (timerEl) { timerEl.style.display = 'inline'; timerEl.textContent = `Resend in ${seconds}s`; }
+
+        if (resendTimer) clearInterval(resendTimer);
+        let remaining = seconds;
+        resendTimer = setInterval(() => {
+          remaining--;
+          if (timerEl) timerEl.textContent = `Resend in ${remaining}s`;
+          if (remaining <= 0) {
+            clearInterval(resendTimer);
+            if (resendBtn) resendBtn.style.display = 'inline';
+            if (timerEl) timerEl.style.display = 'none';
+          }
+        }, 1000);
+      }
+
+      startResendCountdown(30);
+
+      // Resend button listener
+      document.getElementById('reg-otp-resend-btn')?.addEventListener('click', async () => {
+        const resendBtn = document.getElementById('reg-otp-resend-btn');
+        if (resendBtn) resendBtn.disabled = true;
+        msg("register-msg", "⏳ Resending OTP...", "info");
+
+        try {
+          const otpRes = await fetch(`${API_BASE_URL}/api/send-otp`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ usn, email: personalEmail, name })
+          });
+          const otpData = await otpRes.json();
+          if (otpData.success) {
+            msg("register-msg", `✓ OTP resent to <strong>${personalEmail}</strong>. Check spam if not in inbox.`, "success");
+            startResendCountdown(30);
+          } else {
+            msg("register-msg", '❌ ' + (otpData.error || 'Failed to send OTP'), "error");
+            if (resendBtn) resendBtn.disabled = false;
+          }
+        } catch (fetchErr) {
+          msg("register-msg", '❌ Cannot reach server to resend OTP.', "error");
+          if (resendBtn) resendBtn.disabled = false;
+        }
+      });
+
+      // Cancel button listener
+      document.getElementById('reg-otp-cancel-btn')?.addEventListener('click', () => {
+        if (resendTimer) clearInterval(resendTimer);
+        otpContainer.remove();
+        msg("register-msg", "Registration verification cancelled.", "info");
+      });
 
       // Verify OTP & complete registration
       document.getElementById('reg-otp-verify-btn')?.addEventListener('click', async () => {

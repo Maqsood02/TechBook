@@ -27,6 +27,9 @@ const FIREBASE_API_KEY = process.env.FIREBASE_API_KEY;
 // ─── Firestore OTP Helpers (for Serverless statelessness) ───
 function firestoreSaveOTP(usn, data) {
   return new Promise((resolve, reject) => {
+    if (!FIREBASE_PROJECT_ID || !FIREBASE_API_KEY) {
+      return resolve({ status: 500, error: 'Firebase project ID or API key environment variables are missing.' });
+    }
     const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/settings/otp_${usn}?key=${FIREBASE_API_KEY}`;
     const urlObj = new URL(url);
     const body = JSON.stringify({
@@ -53,10 +56,12 @@ function firestoreSaveOTP(usn, data) {
       let responseData = '';
       res.on('data', chunk => responseData += chunk);
       res.on('end', () => {
-        resolve({ status: res.statusCode });
+        resolve({ status: res.statusCode, data: responseData });
       });
     });
-    req.on('error', reject);
+    req.on('error', (err) => {
+      resolve({ status: 500, error: err.message });
+    });
     req.write(body);
     req.end();
   });
@@ -64,6 +69,9 @@ function firestoreSaveOTP(usn, data) {
 
 function firestoreGetOTP(usn) {
   return new Promise((resolve, reject) => {
+    if (!FIREBASE_PROJECT_ID || !FIREBASE_API_KEY) {
+      return resolve({ status: 500, error: 'Firebase project ID or API key environment variables are missing.' });
+    }
     const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/settings/otp_${usn}?key=${FIREBASE_API_KEY}`;
     const urlObj = new URL(url);
     const options = {
@@ -77,22 +85,29 @@ function firestoreGetOTP(usn) {
       res.on('end', () => {
         if (res.statusCode === 200) {
           try {
-            resolve(parseDoc(JSON.parse(data)));
+            resolve({ status: 200, record: parseDoc(JSON.parse(data)) });
           } catch (e) {
-            resolve(null);
+            resolve({ status: 500, error: 'Failed to parse Firestore document.' });
           }
+        } else if (res.statusCode === 404) {
+          resolve({ status: 404, record: null });
         } else {
-          resolve(null);
+          resolve({ status: res.statusCode, error: `Firestore API returned status ${res.statusCode}`, raw: data });
         }
       });
     });
-    req.on('error', reject);
+    req.on('error', (err) => {
+      resolve({ status: 500, error: err.message });
+    });
     req.end();
   });
 }
 
 function firestoreDeleteOTP(usn) {
   return new Promise((resolve, reject) => {
+    if (!FIREBASE_PROJECT_ID || !FIREBASE_API_KEY) {
+      return resolve({ status: 500, error: 'Firebase project ID or API key environment variables are missing.' });
+    }
     const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/settings/otp_${usn}?key=${FIREBASE_API_KEY}`;
     const urlObj = new URL(url);
     const options = {
@@ -101,10 +116,19 @@ function firestoreDeleteOTP(usn) {
       method: 'DELETE'
     };
     const req = https.request(options, (res) => {
-      res.on('data', () => {});
-      res.on('end', () => resolve(true));
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        if (res.statusCode === 200 || res.statusCode === 204) {
+          resolve({ status: res.statusCode, success: true });
+        } else {
+          resolve({ status: res.statusCode, success: false, error: `Delete failed with status ${res.statusCode}` });
+        }
+      });
     });
-    req.on('error', reject);
+    req.on('error', (err) => {
+      resolve({ status: 500, success: false, error: err.message });
+    });
     req.end();
   });
 }
@@ -282,7 +306,7 @@ app.post('/api/send-otp', otpLimiter, async (req, res) => {
     const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes from now
 
     // Store OTP in Firestore (Serverless stateless fix)
-    await firestoreSaveOTP(usnUpper, {
+    const saveRes = await firestoreSaveOTP(usnUpper, {
       otp,
       email: emailLower,
       name: name || usnUpper,
@@ -290,14 +314,23 @@ app.post('/api/send-otp', otpLimiter, async (req, res) => {
       attempts: 0
     });
 
+    if (saveRes.status !== 200 && saveRes.status !== 201) {
+      console.error(`❌ Firestore Save OTP Failed:`, saveRes);
+      return res.status(500).json({ 
+        success: false, 
+        error: `Database error: Failed to save OTP. ${saveRes.error || 'Check server configuration.'}`
+      });
+    }
+
     console.log(`📨 OTP for ${usnUpper}: ${otp} (expires in 5 min)`);
 
     // Send OTP email
     const studentName = name || usnUpper;
+    const clientOrigin = req.headers.origin || req.get('origin') || APP_URL;
     const html = loadTemplate('otp.html', {
       STUDENT_NAME: studentName,
       OTP_CODE: otp,
-      APP_URL
+      APP_URL: clientOrigin
     });
 
     await sendEmail({
@@ -311,7 +344,6 @@ app.post('/api/send-otp', otpLimiter, async (req, res) => {
 
   } catch (err) {
     console.error('Send OTP error:', err.message);
-    // Still store OTP even if email fails (allow retry)
     res.status(500).json({ success: false, error: 'Failed to send OTP email. Check SMTP credentials.' });
   }
 });
@@ -331,7 +363,18 @@ app.post('/api/verify-otp', verifyLimiter, async (req, res) => {
   const usnUpper = usn.trim().toUpperCase();
   const otpStr = otp.toString().trim();
 
-  const record = await firestoreGetOTP(usnUpper);
+  const getRes = await firestoreGetOTP(usnUpper);
+
+  if (getRes.status !== 200 && getRes.status !== 404) {
+    console.error(`❌ Firestore Get OTP Failed for ${usnUpper}:`, getRes);
+    return res.status(500).json({
+      success: false,
+      error: `Database connection error: ${getRes.error || 'Please try again.'}`,
+      code: 'DB_ERROR'
+    });
+  }
+
+  const record = getRes.record;
 
   if (!record) {
     return res.status(404).json({
@@ -435,6 +478,7 @@ app.post('/api/notify-upload', async (req, res) => {
     for (const student of targetStudents) {
       if (!student.email) continue;
       try {
+        const clientOrigin = req.headers.origin || req.get('origin') || APP_URL;
         const html = loadTemplate('content-upload.html', {
           STUDENT_NAME: student.name || student.usn,
           CONTENT_TYPE: contentType,
@@ -445,7 +489,7 @@ app.post('/api/notify-upload', async (req, res) => {
           YEAR: String(year),
           SEM: String(sem),
           UPLOAD_DATE: uploadDate,
-          APP_URL
+          APP_URL: clientOrigin
         });
         await sendEmail({
           to: student.email,
@@ -505,6 +549,7 @@ app.post('/api/notify-quiz', async (req, res) => {
     for (const student of students) {
       if (!student.email) continue;
       try {
+        const clientOrigin = req.headers.origin || req.get('origin') || APP_URL;
         const html = loadTemplate('quiz-published.html', {
           STUDENT_NAME: student.name || student.usn,
           QUIZ_NAME: quizName,
@@ -513,7 +558,7 @@ app.post('/api/notify-quiz', async (req, res) => {
           DURATION: timeLbl,
           DIFFICULTY: difficulty || 'Medium',
           INSTRUCTIONS: instructions || '',
-          APP_URL
+          APP_URL: clientOrigin
         });
         await sendEmail({
           to: student.email,
@@ -555,6 +600,7 @@ app.post('/api/notify-quiz-result', async (req, res) => {
     const pct = percentage || Math.round((marksObtained / totalMarks) * 100);
     const passed = pct >= 40;
 
+    const clientOrigin = req.headers.origin || req.get('origin') || APP_URL;
     const html = loadTemplate('quiz-result.html', {
       STUDENT_NAME: studentName || usn,
       QUIZ_NAME: quizName,
@@ -570,7 +616,7 @@ app.post('/api/notify-quiz-result', async (req, res) => {
       SCORE_BORDER: passed ? '#10b981' : '#ef4444',
       SCORE_COLOR: passed ? '#059669' : '#dc2626',
       STATUS_BG: passed ? '#d1fae5' : '#fee2e2',
-      APP_URL
+      APP_URL: clientOrigin
     });
 
     await sendEmail({
@@ -589,7 +635,7 @@ app.post('/api/notify-quiz-result', async (req, res) => {
 });
 
 // ─── Serve index.html for all unmatched routes ───
-app.get('*', (req, res) => {
+app.get('/*splat', (req, res) => {
   res.sendFile(path.join(process.cwd(), 'index.html'));
 });
 
