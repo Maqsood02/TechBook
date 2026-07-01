@@ -265,11 +265,23 @@ let lastNotesFetchTime = 0;
     async function fetchChunksRest(collectionName, docId) {
       const projectId = "attendance-system-54b30";
       const apiKey = "AIzaSyC-aoJvlXHec3XQojpD1eKPvOQtYwCL0gI";
-      const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${collectionName}/${docId}/chunks?key=${apiKey}&pageSize=300`;
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`REST fetch failed with status ${res.status}`);
-      const data = await res.json();
-      const docs = data.documents || [];
+      let docs = [];
+      let pageToken = '';
+      
+      do {
+        let url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${collectionName}/${docId}/chunks?key=${apiKey}&pageSize=300`;
+        if (pageToken) {
+          url += `&pageToken=${pageToken}`;
+        }
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`REST fetch failed with status ${res.status}`);
+        const data = await res.json();
+        if (data.documents) {
+          docs = docs.concat(data.documents);
+        }
+        pageToken = data.nextPageToken || '';
+      } while (pageToken);
+
       if (docs.length === 0) throw new Error("No chunks found");
       docs.sort((a, b) => {
         const idxA = parseInt(a.fields?.idx?.integerValue || a.fields?.idx?.stringValue || "0", 10);

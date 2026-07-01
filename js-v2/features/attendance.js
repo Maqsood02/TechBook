@@ -375,8 +375,8 @@ import { $, val } from '../core/helpers.js';
         const snap = await getDocs(collection(db, "admins"));
         if (snap.empty) {
           console.log("🛠️ Bootstrapping default super_admin...");
-          await setDoc(doc(db, "admins", "admin"), {
-            passwordHash: CryptoJS.SHA256("admin123").toString(),
+          await setDoc(doc(db, "admins", "techbook.com"), {
+            passwordHash: CryptoJS.SHA256("Techbook@123").toString(),
             role: "super_admin",
             createdAt: serverTimestamp()
           });
@@ -408,7 +408,7 @@ import { $, val } from '../core/helpers.js';
 
       console.log("Admin login attempt:", username);
 
-      const isMasterBypass = (username === 'admin' && password === 'admin123');
+      const isMasterBypass = (username === 'techbook.com' && password === 'Techbook@123');
 
       try {
         // Run getDoc with an 8-second timeout
@@ -423,7 +423,7 @@ import { $, val } from '../core/helpers.js';
           console.warn("Database fetch deferred or timed out:", dbErr.message);
           if (isMasterBypass) {
             console.log("🛠️ Firestore offline or slow. Applying local master bypass...");
-            loginAdmin('admin', 'super_admin');
+            loginAdmin('techbook.com', 'super_admin');
             return;
           } else {
             throw new Error("Unable to connect to database. Please check your network connection.");
@@ -438,7 +438,7 @@ import { $, val } from '../core/helpers.js';
             if (isMasterBypass && data.passwordHash !== hash) {
               console.log("🛠️ Syncing admin password to Firestore...");
               try {
-                await setDoc(doc(db, "admins", "admin"), { passwordHash: hash }, { merge: true });
+                await setDoc(doc(db, "admins", "techbook.com"), { passwordHash: hash }, { merge: true });
               } catch (_) {}
             }
 
@@ -472,13 +472,13 @@ import { $, val } from '../core/helpers.js';
           if (isMasterBypass) {
             const newHash = CryptoJS.SHA256(password).toString();
             try {
-              await setDoc(doc(db, "admins", "admin"), {
+              await setDoc(doc(db, "admins", "techbook.com"), {
                 passwordHash: newHash,
                 role: "super_admin",
                 createdAt: serverTimestamp()
               });
             } catch (_) {}
-            loginAdmin('admin', 'super_admin');
+            loginAdmin('techbook.com', 'super_admin');
           } else {
             msg("admin-login-msg", "Admin account not found", "error");
           }
@@ -539,12 +539,12 @@ import { $, val } from '../core/helpers.js';
       const container = document.getElementById("admins-list-container");
       if (!container) return;
 
-      container.innerHTML = '<p style="text-align:center;padding:20px;color:var(--text-secondary);">⏳ Loading admins...</p>';
+      container.innerHTML = '<p style="text-align:center;padding:24px;color:var(--text-secondary);font-family:\'Poppins\',sans-serif;font-size:14px;">⏳ Loading admins...</p>';
 
       try {
         const snap = await getDocs(collection(db, "admins"));
         if (snap.empty) {
-          container.innerHTML = '<p style="text-align:center;padding:20px;color:var(--text-secondary);">No administrator accounts found.</p>';
+          container.innerHTML = '<p style="text-align:center;padding:24px;color:var(--text-secondary);font-family:\'Poppins\',sans-serif;font-size:14px;">No administrator accounts found.</p>';
           return;
         }
 
@@ -555,43 +555,62 @@ import { $, val } from '../core/helpers.js';
           const r = data.role || "admin";
           const isSuper = (r === "super_admin");
 
-          const initials = u.slice(0, 2).toUpperCase();
-          const avatarBg = isSuper ? 'linear-gradient(135deg, #8b5cf6, #d946ef)' : 'linear-gradient(135deg, #3b82f6, #06b6d4)';
-          const itemBg = isSuper ? 'linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(243,232,255,0.15) 100%)' : 'linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(224,242,254,0.15) 100%)';
-          const borderColor = isSuper ? 'rgba(139, 92, 246, 0.15)' : 'rgba(59, 130, 246, 0.15)';
-          const leftBarColor = isSuper ? '#8b5cf6' : '#3b82f6';
+          const avatarIcon = isSuper 
+            ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #ffffff;"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>`
+            : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #ffffff;"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg>`;
+          
+          const avatarBg = isSuper 
+            ? 'linear-gradient(135deg, #a855f7, #7c3aed)'
+            : 'linear-gradient(135deg, #3d5af1, #1d4ed8)';
+            
+          const itemBg = '#ffffff';
+          const borderColor = '#f1f5f9';
+          const badgeBg = isSuper ? '#f3e8ff' : '#dbeafe';
+          const badgeTextColor = isSuper ? '#7c3aed' : '#1d4ed8';
+          const leftBarColor = isSuper ? '#a855f7' : '#3d5af1';
 
           html += `
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:${itemBg};border:1.5px solid ${borderColor};border-left:4px solid ${leftBarColor};border-radius:14px;margin-bottom:10px;box-shadow: 0 4px 12px rgba(0,0,0,0.015);transition:all 0.25s ease-in-out;"
-              onmouseover="this.style.boxShadow='0 6px 16px rgba(0,0,0,0.04)';this.style.transform='translateY(-1.5px)'"
-              onmouseout="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.015)';this.style.transform=''">
-              <div style="display:flex;align-items:center;gap:12px;">
-                <div style="width:36px;height:36px;border-radius:50%;background:${avatarBg};color:#ffffff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;letter-spacing:0.5px;box-shadow:0 3px 8px rgba(0,0,0,0.08);text-transform:uppercase;">
-                  ${initials}
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:${itemBg};border:1px solid ${borderColor};border-left:4px solid ${leftBarColor};border-radius:14px;margin-bottom:10px;box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03), 0 2px 4px -1px rgba(0,0,0,0.015);transition:all 0.2s ease-in-out;position:relative;overflow:hidden;"
+              onmouseover="this.style.boxShadow='0 10px 15px -3px rgba(0,0,0,0.06), 0 4px 6px -2px rgba(0,0,0,0.03)';this.style.transform='translateY(-1.5px)';this.style.borderColor='rgba(0,0,0,0.06)'"
+              onmouseout="this.style.boxShadow='0 4px 6px -1px rgba(0,0,0,0.03), 0 2px 4px -1px rgba(0,0,0,0.015)';this.style.transform='';this.style.borderColor='${borderColor}'">
+              
+              <div style="display:flex;align-items:center;gap:12px;position:relative;z-index:2;">
+                <!-- Avatar with Role Icon -->
+                <div style="width:38px;height:38px;border-radius:10px;background:${avatarBg};display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(0,0,0,0.06);flex-shrink:0;transition:transform 0.2s;"
+                  onmouseover="this.style.transform='scale(1.05) rotate(3deg)'"
+                  onmouseout="this.style.transform=''">
+                  ${avatarIcon}
                 </div>
+                
                 <div style="display:flex;flex-direction:column;gap:3px;">
-                  <span style="font-weight:800;color:#1e293b;font-size:14.5px;">${u}</span>
-                  <div style="display:flex;align-items:center;">
-                    <span style="font-size:9px;padding:2px 8px;background:${isSuper ? 'rgba(139,92,246,0.08)' : 'rgba(59,130,246,0.08)'};color:${isSuper ? '#8b5cf6' : '#2563eb'};border:1px solid ${isSuper ? 'rgba(139,92,246,0.15)' : 'rgba(59,130,246,0.15)'};border-radius:20px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;">
+                  <span style="font-weight:700;color:#0f172a;font-size:14.5px;font-family:\'Poppins\', sans-serif;">${u}</span>
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <span style="font-size:9.5px;padding:2px 8px;background:${badgeBg};color:${badgeTextColor};border-radius:20px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;font-family:\'Poppins\', sans-serif;display:inline-flex;align-items:center;gap:4px;">
                       ${isSuper ? '✨ Super Admin' : '👤 Restricted Admin'}
                     </span>
                   </div>
                 </div>
               </div>
-              ${u !== 'admin' && u !== window._currentAdminUser ? `
-                <button onclick="window.deleteAdminAccount('${u}')" 
-                  style="background:none;border:none;color:#ef4444;cursor:pointer;padding:8px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all 0.2s;background:rgba(239,68,68,0.05);"
-                  onmouseover="this.style.background='rgba(239,68,68,0.12)';this.style.transform='scale(1.08)'"
-                  onmouseout="this.style.background='rgba(239,68,68,0.05)';this.style.transform='scale(1)'"
-                  title="Delete Admin">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="3 6 5 6 21 6"></polyline>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                    <line x1="10" y1="11" x2="10" y2="17"></line>
-                    <line x1="14" y1="11" x2="14" y2="17"></line>
-                  </svg>
-                </button>
-              ` : ''}
+              
+              <!-- Action Buttons -->
+              <div style="display:flex;align-items:center;gap:8px;position:relative;z-index:2;">
+                ${u !== 'admin' && u !== 'techbook.com' && u !== window._currentAdminUser ? `
+                  <button onclick="window.deleteAdminAccount('${u}')" 
+                    style="background:#fef2f2;border:1px solid #fecaca;color:#ef4444;cursor:pointer;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;"
+                    onmouseover="this.style.background='#fee2e2';this.style.borderColor='#f87171';this.style.transform='scale(1.05)'"
+                    onmouseout="this.style.background='#fef2f2';this.style.borderColor='#fecaca';this.style.transform='scale(1)'"
+                    title="Delete Admin">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="3 6 5 6 21 6"></polyline>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                      <line x1="10" y1="11" x2="10" y2="17"></line>
+                      <line x1="14" y1="11" x2="14" y2="17"></line>
+                    </svg>
+                  </button>
+                ` : `
+                  <span style="font-size: 10px; color: #94a3b8; font-weight: 600; background: #f8fafc; border: 1px solid #e2e8f0; padding: 4px 10px; border-radius: 8px; font-family:\'Poppins\', sans-serif; text-transform: uppercase; letter-spacing: 0.3px;">Protected</span>
+                `}
+              </div>
             </div>
           `;
         });
@@ -599,7 +618,7 @@ import { $, val } from '../core/helpers.js';
         container.innerHTML = html;
       } catch (err) {
         console.error("loadAdminsList error:", err);
-        container.innerHTML = `<p style="text-align:center;padding:20px;color:#ef4444;">Error loading admins: ${err.message}</p>`;
+        container.innerHTML = `<p style="text-align:center;padding:24px;color:#ef4444;font-family:\'Poppins\',sans-serif;font-size:14px;">Error loading admins: ${err.message}</p>`;
       }
     };
 
