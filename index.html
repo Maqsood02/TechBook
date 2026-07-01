@@ -181,12 +181,28 @@
 
                   <div class="form-group">
                     <label>Password</label>
-                    <input id="reg-pass" type="password" placeholder="Create a strong password" />
+                    <div style="position: relative; width: 100%;">
+                      <input id="reg-pass" type="password" placeholder="Create a strong password" style="padding-right: 48px; box-sizing: border-box;" />
+                      <button type="button" class="password-toggle-btn" data-target="reg-pass" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 4px; z-index: 10; display: flex; align-items: center; justify-content: center; outline: none;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                          <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                      </button>
+                    </div>
                   </div>
 
                   <div class="form-group">
                     <label>Confirm Password</label>
-                    <input id="reg-pass2" type="password" placeholder="Re-enter password" />
+                    <div style="position: relative; width: 100%;">
+                      <input id="reg-pass2" type="password" placeholder="Re-enter password" style="padding-right: 48px; box-sizing: border-box;" />
+                      <button type="button" class="password-toggle-btn" data-target="reg-pass2" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 4px; z-index: 10; display: flex; align-items: center; justify-content: center; outline: none;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                          <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                      </button>
+                    </div>
                   </div>
 
                   <div class="form-group">
@@ -220,7 +236,7 @@
                     <label>Password</label>
                     <div style="position: relative; width: 100%;">
                       <input id="login-pass" type="password" placeholder="Enter your password" style="width: 100%; padding-right: 48px; box-sizing: border-box;" />
-                      <button type="button" id="toggle-login-pass" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 4px; z-index: 10; display: flex; align-items: center; justify-content: center; outline: none;">
+                      <button type="button" id="toggle-login-pass" class="password-toggle-btn" data-target="login-pass" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 4px; z-index: 10; display: flex; align-items: center; justify-content: center; outline: none;">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                           <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                           <circle cx="12" cy="12" r="3"></circle>
@@ -265,12 +281,28 @@
 
                   <div class="form-group">
                     <label>New Password</label>
-                    <input id="forgot-new-pass" type="password" placeholder="Enter new password (min 6 chars)" />
+                    <div style="position: relative; width: 100%;">
+                      <input id="forgot-new-pass" type="password" placeholder="Enter new password (min 6 chars)" style="padding-right: 48px; box-sizing: border-box;" />
+                      <button type="button" class="password-toggle-btn" data-target="forgot-new-pass" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 4px; z-index: 10; display: flex; align-items: center; justify-content: center; outline: none;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                          <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                      </button>
+                    </div>
                   </div>
 
                   <div class="form-group">
                     <label>Confirm Password</label>
-                    <input id="forgot-confirm-pass" type="password" placeholder="Confirm new password" />
+                    <div style="position: relative; width: 100%;">
+                      <input id="forgot-confirm-pass" type="password" placeholder="Confirm new password" style="padding-right: 48px; box-sizing: border-box;" />
+                      <button type="button" class="password-toggle-btn" data-target="forgot-confirm-pass" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 4px; z-index: 10; display: flex; align-items: center; justify-content: center; outline: none;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                          <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                      </button>
+                    </div>
                   </div>
 
                   <button class="btn btn-primary" id="btn-reset-pass">
@@ -871,8 +903,15 @@
 
                 <div class="form-group">
                   <label>Password</label>
-                  <input id="admin-pass" type="password" placeholder="Enter admin password"
-                    autocomplete="new-password" />
+                  <div style="position: relative; width: 100%;">
+                    <input id="admin-pass" type="password" placeholder="Enter admin password" autocomplete="new-password" style="padding-right: 48px; box-sizing: border-box;" />
+                    <button type="button" class="password-toggle-btn" data-target="admin-pass" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 4px; z-index: 10; display: flex; align-items: center; justify-content: center; outline: none;">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                      </svg>
+                    </button>
+                  </div>
                 </div>
 
                 <button class="btn btn-primary" id="btn-admin-login">
@@ -1227,9 +1266,6 @@
                               style="padding:11px 12px;text-align:left;font-size:11px;font-weight:700;color:rgba(165,180,252,0.9);text-transform:uppercase;letter-spacing:0.8px;border-bottom:2px solid rgba(99,102,241,0.4);white-space:nowrap;">
                               USN</th>
                             <th
-                              style="padding:11px 12px;text-align:center;font-size:11px;font-weight:700;color:rgba(165,180,252,0.9);text-transform:uppercase;letter-spacing:0.8px;border-bottom:2px solid rgba(99,102,241,0.4);white-space:nowrap;">
-                              Sec</th>
-                            <th
                               style="padding:11px 12px;text-align:center;font-size:11px;font-weight:700;color:#34d399;text-transform:uppercase;letter-spacing:0.8px;border-bottom:2px solid rgba(99,102,241,0.4);white-space:nowrap;">
                               Sem</th>
                             <th
@@ -1279,15 +1315,39 @@
                     <div id="change-pass-msg"></div>
                     <div class="form-group">
                       <label>Current Password</label>
-                      <input id="current-pass" type="password" />
+                      <div style="position: relative; width: 100%;">
+                        <input id="current-pass" type="password" style="padding-right: 48px; box-sizing: border-box;" />
+                        <button type="button" class="password-toggle-btn" data-target="current-pass" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 4px; z-index: 10; display: flex; align-items: center; justify-content: center; outline: none;">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                          </svg>
+                        </button>
+                      </div>
                     </div>
                     <div class="form-group">
                       <label>New Password</label>
-                      <input id="new-pass" type="password" />
+                      <div style="position: relative; width: 100%;">
+                        <input id="new-pass" type="password" style="padding-right: 48px; box-sizing: border-box;" />
+                        <button type="button" class="password-toggle-btn" data-target="new-pass" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 4px; z-index: 10; display: flex; align-items: center; justify-content: center; outline: none;">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                          </svg>
+                        </button>
+                      </div>
                     </div>
                     <div class="form-group">
                       <label>Confirm New Password</label>
-                      <input id="confirm-pass" type="password" />
+                      <div style="position: relative; width: 100%;">
+                        <input id="confirm-pass" type="password" style="padding-right: 48px; box-sizing: border-box;" />
+                        <button type="button" class="password-toggle-btn" data-target="confirm-pass" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 4px; z-index: 10; display: flex; align-items: center; justify-content: center; outline: none;">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                          </svg>
+                        </button>
+                      </div>
                     </div>
                     <button class="btn btn-primary" id="btn-change-pass">Update Password</button>
                   </div>
@@ -1301,7 +1361,15 @@
                     </div>
                     <div class="form-group">
                       <label>Current Password (for confirmation)</label>
-                      <input id="change-username-pass" type="password" />
+                      <div style="position: relative; width: 100%;">
+                        <input id="change-username-pass" type="password" style="padding-right: 48px; box-sizing: border-box;" />
+                        <button type="button" class="password-toggle-btn" data-target="change-username-pass" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 4px; z-index: 10; display: flex; align-items: center; justify-content: center; outline: none;">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                          </svg>
+                        </button>
+                      </div>
                     </div>
                     <button class="btn btn-primary" id="btn-change-username">Update Username</button>
                   </div>
@@ -1343,7 +1411,15 @@
                     </div>
                     <div class="form-group">
                       <label>Password</label>
-                      <input id="new-admin-pass" type="password" placeholder="Min 6 characters" />
+                      <div style="position: relative; width: 100%;">
+                        <input id="new-admin-pass" type="password" placeholder="Min 6 characters" style="padding-right: 48px; box-sizing: border-box;" />
+                        <button type="button" class="password-toggle-btn" data-target="new-admin-pass" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 4px; z-index: 10; display: flex; align-items: center; justify-content: center; outline: none;">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                          </svg>
+                        </button>
+                      </div>
                     </div>
                     <div class="form-group">
                       <label>Role</label>
@@ -1574,8 +1650,18 @@
                         </select>
                       </div>
                     </div>
-                    <div class="form-group" style="margin-top:12px;"><label>Password</label><input id="areg-pass"
-                        type="password" placeholder="Set initial password" /></div>
+                    <div class="form-group" style="margin-top:12px;">
+                      <label>Password</label>
+                      <div style="position: relative; width: 100%;">
+                        <input id="areg-pass" type="password" placeholder="Set initial password" style="padding-right: 48px; box-sizing: border-box;" />
+                        <button type="button" class="password-toggle-btn" data-target="areg-pass" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 4px; z-index: 10; display: flex; align-items: center; justify-content: center; outline: none;">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
                     <button class="btn btn-primary" id="btn-admin-register" style="margin-top:8px;">Create Student
                       Account</button>
                   </div>
@@ -1771,10 +1857,18 @@
                       copy it<br>
                       <span style="color:#d97706;">⚡ Groq is 10x faster — recommended!</span>
                     </div>
-                    <div style="display:flex;gap:8px;align-items:center;">
-                      <input id="ai-api-key" type="password"
-                        placeholder="Paste Groq key (gsk_…) or OpenRouter key (sk-or-…)"
-                        style="flex:1;padding:10px 14px;background:#ffffff;border:1px solid rgba(99,102,241,0.4);border-radius:10px;color:#1a1a2e;font-size:13px;" />
+                    <div style="display:flex;gap:8px;align-items:center;width:100%;">
+                      <div style="position: relative; flex: 1;">
+                        <input id="ai-api-key" type="password"
+                          placeholder="Paste Groq key (gsk_…) or OpenRouter key (sk-or-…)"
+                          style="width: 100%; padding: 10px 48px 10px 14px; background: #ffffff; border: 1px solid rgba(99,102,241,0.4); border-radius: 10px; color: #1a1a2e; font-size: 13px; box-sizing: border-box;" />
+                        <button type="button" class="password-toggle-btn" data-target="ai-api-key" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 4px; z-index: 10; display: flex; align-items: center; justify-content: center; outline: none;">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                          </svg>
+                        </button>
+                      </div>
                       <button onclick="saveAIKey()"
                         style="padding:10px 16px;background:linear-gradient(135deg,#6366f1,#4f46e5);border:none;border-radius:10px;color:#ffffff;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap;">💾
                         Save</button>
