@@ -9,7 +9,7 @@ window.API_BASE_URL = API_BASE_URL;
 // PDF Viewer Modal controller
 window._currentPdfBlobUrl = null;
 var _isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-window._openPdfViewer = function (url, fileName) {
+window._openPdfViewer = async function (url, fileName) {
   window._currentPdfBlobUrl = url;
   if (_isMobile) {
     var a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener';
@@ -19,13 +19,27 @@ window._openPdfViewer = function (url, fileName) {
   }
   var tDisp = document.getElementById('pdf-viewer-title'); if (tDisp) tDisp.textContent = fileName || 'PDF Viewer';
   
+  let finalUrl = url;
+  try {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    finalUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch (err) {
+    console.warn("Could not convert blob URL to data URL, falling back to original blob:", err);
+  }
+
   var container = document.getElementById('pdf-viewer-container');
   if (container) {
-    container.innerHTML = '<object id="pdf-viewer-frame" data="' + url + '" type="application/pdf" style="width:100%;height:100%;border:none;background:#525659;">' +
-      '<iframe src="' + url + '" style="width:100%;height:100%;border:none;background:#525659;"></iframe>' +
+    container.innerHTML = '<object id="pdf-viewer-frame" data="' + finalUrl + '" type="application/pdf" style="width:100%;height:100%;border:none;background:#525659;">' +
+      '<iframe src="' + finalUrl + '" style="width:100%;height:100%;border:none;background:#525659;"></iframe>' +
       '</object>';
   } else {
-    var fFrame = document.getElementById('pdf-viewer-frame'); if (fFrame) fFrame.src = url;
+    var fFrame = document.getElementById('pdf-viewer-frame'); if (fFrame) fFrame.src = finalUrl;
   }
 
   var mModal = document.getElementById('pdf-viewer-modal'); if (mModal) mModal.style.display = 'flex';
@@ -48,6 +62,10 @@ window._pdfViewerDownload = function () {
   var tDisp = document.getElementById('pdf-viewer-title');
   a.download = (tDisp ? tDisp.textContent : '') || 'download.pdf';
   a.click();
+};
+window._pdfViewerOpenNewTab = function () {
+  if (!window._currentPdfBlobUrl) return;
+  window.open(window._currentPdfBlobUrl, '_blank');
 };
 document.addEventListener('keydown', function (e) { if (e.key === 'Escape') window._closePdfViewer && window._closePdfViewer(); });
 
