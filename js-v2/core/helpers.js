@@ -18,13 +18,27 @@ window._openPdfViewer = function (url, fileName) {
     return;
   }
   var tDisp = document.getElementById('pdf-viewer-title'); if (tDisp) tDisp.textContent = fileName || 'PDF Viewer';
-  var fFrame = document.getElementById('pdf-viewer-frame'); if (fFrame) fFrame.src = url;
+  
+  var container = document.getElementById('pdf-viewer-container');
+  if (container) {
+    container.innerHTML = '<object id="pdf-viewer-frame" data="' + url + '" type="application/pdf" style="width:100%;height:100%;border:none;background:#525659;">' +
+      '<iframe src="' + url + '" style="width:100%;height:100%;border:none;background:#525659;"></iframe>' +
+      '</object>';
+  } else {
+    var fFrame = document.getElementById('pdf-viewer-frame'); if (fFrame) fFrame.src = url;
+  }
+
   var mModal = document.getElementById('pdf-viewer-modal'); if (mModal) mModal.style.display = 'flex';
   document.body.style.overflow = 'hidden';
 };
 window._closePdfViewer = function () {
   var mModal = document.getElementById('pdf-viewer-modal'); if (mModal) mModal.style.display = 'none';
-  var fFrame = document.getElementById('pdf-viewer-frame'); if (fFrame) fFrame.src = '';
+  var container = document.getElementById('pdf-viewer-container');
+  if (container) {
+    container.innerHTML = '';
+  } else {
+    var fFrame = document.getElementById('pdf-viewer-frame'); if (fFrame) fFrame.src = '';
+  }
   document.body.style.overflow = '';
   if (window._currentPdfBlobUrl) { URL.revokeObjectURL(window._currentPdfBlobUrl); window._currentPdfBlobUrl = null; }
 };

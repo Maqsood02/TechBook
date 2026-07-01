@@ -158,9 +158,14 @@ let lastPyqFetchTime = 0;
       const orig = btn ? btn.innerHTML : '';
       if (btn) { btn.innerHTML = '\u23f3\u2026'; btn.disabled = true; }
       try {
+        let title = 'PYQ Paper';
+        if (window._pyqAdmAllPapers) {
+          const p = window._pyqAdmAllPapers.find(n => n.id === id);
+          if (p && p.title) title = p.title;
+        }
         const blob = await fetchPyqBlob(id);
         const url = URL.createObjectURL(blob);
-        window._openPdfViewer(url, 'PYQ – ' + id);
+        window._openPdfViewer(url, title);
       } catch (e) { alert('Error: ' + e.message); }
       finally { if (btn) { btn.innerHTML = orig; btn.disabled = false; } }
     };

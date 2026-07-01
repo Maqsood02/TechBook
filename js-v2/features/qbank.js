@@ -794,9 +794,14 @@ let lastQbankFetchTime = 0;
       const orig = btn ? btn.innerHTML : '';
       if (btn) { btn.innerHTML = '⏳…'; btn.disabled = true; }
       try {
+        let title = 'Question Bank';
+        if (window._qbankAdmAllPapers) {
+          const p = window._qbankAdmAllPapers.find(n => n.id === id);
+          if (p && p.title) title = p.title;
+        }
         const blob = await fetchQBankBlob(id);
         const url = URL.createObjectURL(blob);
-        window._openPdfViewer(url, 'Question Bank – ' + id);
+        window._openPdfViewer(url, title);
       } catch (e) { alert('Error: ' + e.message); }
       finally { if (btn) { btn.innerHTML = orig; btn.disabled = false; } }
     };

@@ -474,9 +474,14 @@ let lastNotesFetchTime = 0;
       const btn = document.getElementById('view-adm-' + id);
       if (btn) { btn.textContent = '⏳…'; btn.disabled = true; }
       try {
+        let title = 'Note';
+        if (window._admAllNotes) {
+          const p = window._admAllNotes.find(n => n.id === id);
+          if (p && p.title) title = p.title;
+        }
         const blob = await fetchPdfBlob(id);
         const url = URL.createObjectURL(blob);
-        window._openPdfViewer(url, 'Note – ' + id);
+        window._openPdfViewer(url, title);
       } catch (e) { alert('Error loading PDF: ' + e.message); }
       finally { if (btn) { btn.textContent = '👁️ View'; btn.disabled = false; } }
     };

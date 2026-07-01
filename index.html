@@ -2480,7 +2480,7 @@
                     Section.</p>
 
                   <div id="pyq-upload-zone" onclick="document.getElementById('pyq-file-input').click()"
-                    ondragover="pyqDragOver(event)" ondragleave="pyqDragLeave(event)" ondrop="pyqDropFile(event)" style="border:2px dashed #fde68a;border-radius:14px;padding:28px;text-align:center;
+                    ondragover="pyqDragOver(event)" ondragleave="pyqDragLeave(event)" ondrop="pyqDrop(event)" style="border:2px dashed #fde68a;border-radius:14px;padding:28px;text-align:center;
                         cursor:pointer;transition:all 0.3s;margin-bottom:16px;background:#ffffff;">
                     <div id="pyq-uz-icon" style="font-size:44px;margin-bottom:10px;">📜</div>
                     <div id="pyq-uz-text" style="font-size:14px;color:var(--text-secondary);">Click to select Files or Drag &amp; Drop Folder</div>
@@ -2611,7 +2611,7 @@
                   </div>
                   <div id="pyq-upload-msg" style="font-size:13px;font-weight:600;margin-bottom:10px;min-height:18px;">
                   </div>
-                  <button class="btn btn-primary" id="pyq-btn-upload" onclick="pyqUpload()"
+                  <button class="btn btn-primary" id="pyq-upload-btn" onclick="pyqUpload()"
                     style="background:linear-gradient(135deg,#f59e0b,#ef4444);">🚀 Upload PYQ Paper</button>
                 </div>
 
@@ -3066,13 +3066,27 @@
         return;
       }
       var tDisp = document.getElementById('pdf-viewer-title'); if (tDisp) tDisp.textContent = fileName || 'PDF Viewer';
-      var fFrame = document.getElementById('pdf-viewer-frame'); if (fFrame) fFrame.src = url;
+      
+      var container = document.getElementById('pdf-viewer-container');
+      if (container) {
+        container.innerHTML = '<object id="pdf-viewer-frame" data="' + url + '" type="application/pdf" style="width:100%;height:100%;border:none;background:#525659;">' +
+          '<iframe src="' + url + '" style="width:100%;height:100%;border:none;background:#525659;"></iframe>' +
+          '</object>';
+      } else {
+        var fFrame = document.getElementById('pdf-viewer-frame'); if (fFrame) fFrame.src = url;
+      }
+
       var mModal = document.getElementById('pdf-viewer-modal'); if (mModal) mModal.style.display = 'flex';
       document.body.style.overflow = 'hidden';
     };
     window._closePdfViewer = function () {
       var mModal = document.getElementById('pdf-viewer-modal'); if (mModal) mModal.style.display = 'none';
-      var fFrame = document.getElementById('pdf-viewer-frame'); if (fFrame) fFrame.src = '';
+      var container = document.getElementById('pdf-viewer-container');
+      if (container) {
+        container.innerHTML = '';
+      } else {
+        var fFrame = document.getElementById('pdf-viewer-frame'); if (fFrame) fFrame.src = '';
+      }
       document.body.style.overflow = '';
       if (window._currentPdfBlobUrl) { URL.revokeObjectURL(window._currentPdfBlobUrl); window._currentPdfBlobUrl = null; }
     };
@@ -3100,7 +3114,9 @@
         style="padding:7px 16px;background:#e74c3c;border:none;border-radius:8px;color:#fff;font-weight:700;cursor:pointer;white-space:nowrap;">&#10005;
         Close</button>
     </div>
-    <iframe id="pdf-viewer-frame" src="" style="flex:1;width:100%;border:none;background:#525659;"></iframe>
+    <div id="pdf-viewer-container" style="flex:1;width:100%;display:flex;flex-direction:column;background:#525659;">
+      <iframe id="pdf-viewer-frame" src="" style="flex:1;width:100%;border:none;background:#525659;"></iframe>
+    </div>
   </div>
 
   <script type="module" src="js-v2/app.js?v=20260701"></script>
