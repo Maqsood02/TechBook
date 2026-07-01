@@ -73,16 +73,24 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
                       margin-bottom: 8px;
                       font-weight: 600;
                     ">New Password</label>
-                    <input id="reset-new-pass" type="password" placeholder="Enter new password (min 6 chars)" style="
-                      width: 100%;
-                      padding: 12px;
-                      background: #f7f8fc;
-                      border: 2px solid #6366f1;
-                      border-radius: 10px;
-                      color: #ffffff;
-                      font-family: 'Poppins', sans-serif;
-                      box-sizing: border-box;
-                    "/>
+                    <div style="position: relative; width: 100%;">
+                      <input id="reset-new-pass" type="password" placeholder="Enter new password (min 6 chars)" style="
+                        width: 100%;
+                        padding: 12px 48px 12px 12px;
+                        background: #f7f8fc;
+                        border: 2px solid #6366f1;
+                        border-radius: 10px;
+                        color: #111827;
+                        font-family: 'Poppins', sans-serif;
+                        box-sizing: border-box;
+                      "/>
+                      <button type="button" class="password-toggle-btn" data-target="reset-new-pass" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 4px; z-index: 10; display: flex; align-items: center; justify-content: center; outline: none;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                          <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                   
                   <div style="margin-bottom: 20px;">
@@ -92,16 +100,24 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
                       margin-bottom: 8px;
                       font-weight: 600;
                     ">Confirm Password</label>
-                    <input id="reset-confirm-pass" type="password" placeholder="Confirm new password" style="
-                      width: 100%;
-                      padding: 12px;
-                      background: #f7f8fc;
-                      border: 2px solid #6366f1;
-                      border-radius: 10px;
-                      color: #ffffff;
-                      font-family: 'Poppins', sans-serif;
-                      box-sizing: border-box;
-                    "/>
+                    <div style="position: relative; width: 100%;">
+                      <input id="reset-confirm-pass" type="password" placeholder="Confirm new password" style="
+                        width: 100%;
+                        padding: 12px 48px 12px 12px;
+                        background: #f7f8fc;
+                        border: 2px solid #6366f1;
+                        border-radius: 10px;
+                        color: #111827;
+                        font-family: 'Poppins', sans-serif;
+                        box-sizing: border-box;
+                      "/>
+                      <button type="button" class="password-toggle-btn" data-target="reset-confirm-pass" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 4px; z-index: 10; display: flex; align-items: center; justify-content: center; outline: none;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                          <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                   
                   <button id="btn-reset-final" style="
