@@ -102,7 +102,7 @@ export const PdfDbCache = {
     if (this.db) return true;
     return new Promise((resolve) => {
       try {
-        const request = indexedDB.open('techbook_pdf_cache', 1);
+        const request = indexedDB.open('techbook_pdf_cache_v2', 1);
         request.onupgradeneeded = (e) => {
           const db = e.target.result;
           if (!db.objectStoreNames.contains('pdfs')) {
