@@ -900,26 +900,12 @@ let lastPyqFetchTime = 0;
         } catch (_) {}
       }
 
-      if (pyqMeta && typeof pyqMeta.totalChunks === 'number' && pyqMeta.totalChunks > 0) {
-        const total = pyqMeta.totalChunks;
-        const promises = [];
-        for (let j = 0; j < total; j++) {
-          const chunkId = String(j).padStart(5, '0');
-          promises.push(getDoc(doc(db, 'pyq_papers', id, 'chunks', chunkId)));
-        }
-        const snaps = await Promise.all(promises);
-        snaps.forEach(d => {
-          if (d.exists()) parts.push(d.data().data);
-        });
-      }
-
-      if (parts.length === 0) {
-        const chunksSnap = await getDocs(
-          query(collection(db, 'pyq_papers', id, 'chunks'), orderBy('idx', 'asc'))
-        );
-        if (chunksSnap.empty) throw new Error('No file data found for this paper');
-        chunksSnap.forEach(d => parts.push(d.data().data));
-      }
+      // Query all chunks at once - much faster and uses a single roundtrip!
+      const chunksSnap = await getDocs(
+        query(collection(db, 'pyq_papers', id, 'chunks'), orderBy('idx', 'asc'))
+      );
+      if (chunksSnap.empty) throw new Error('No file data found for this paper');
+      chunksSnap.forEach(d => parts.push(d.data().data));
 
       const blob = base64ToBlob(parts.join(''), 'application/pdf');
 
