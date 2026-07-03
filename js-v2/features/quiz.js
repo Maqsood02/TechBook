@@ -86,6 +86,16 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
         await signOut(auth);
         window._currentStudentUSN = null;
         window._currentStudentEmail = null;
+        try {
+          localStorage.removeItem('techbook_student_logged_in');
+          localStorage.removeItem('techbook_student_usn');
+          localStorage.removeItem('techbook_student_data');
+        } catch (storageErr) {
+          console.warn('Could not clear local student session:', storageErr);
+        }
+        if (typeof window.updateNavbarLoginBtn === 'function') {
+          window.updateNavbarLoginBtn();
+        }
         if (window._featureUnsubscribe) {
           window._featureUnsubscribe();
           window._featureUnsubscribe = null;
