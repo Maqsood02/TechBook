@@ -120,6 +120,10 @@ import { $, val } from '../core/helpers.js';
         localStorage.setItem('techbook_student_logged_in', 'true');
         localStorage.setItem('techbook_student_usn', usn);
         localStorage.setItem('techbook_student_data', JSON.stringify(data));
+        // Clear admin keys to prevent dual session conflict
+        localStorage.removeItem('techbook_admin_logged_in');
+        localStorage.removeItem('techbook_admin_user');
+        localStorage.removeItem('techbook_admin_role');
 
         if (typeof updateAppHistory === 'function') updateAppHistory(null, true);
 
@@ -292,6 +296,10 @@ import { $, val } from '../core/helpers.js';
         localStorage.setItem('techbook_admin_logged_in', 'true');
         localStorage.setItem('techbook_admin_user', username);
         localStorage.setItem('techbook_admin_role', role);
+        // Clear student keys to prevent dual session conflict
+        localStorage.removeItem('techbook_student_logged_in');
+        localStorage.removeItem('techbook_student_usn');
+        localStorage.removeItem('techbook_student_data');
       } catch (e) {
         console.warn("Could not save admin session to localStorage:", e);
       }

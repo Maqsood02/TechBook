@@ -1490,7 +1490,7 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
       const loginBtn = document.getElementById('navbar-login-btn');
       if (!loginBtn) return;
 
-      const isStudentLoggedIn = !!auth.currentUser && !auth.currentUser.isAnonymous;
+      const isStudentLoggedIn = localStorage.getItem('techbook_student_logged_in') === 'true';
       const isAdminLoggedIn = localStorage.getItem('techbook_admin_logged_in') === 'true';
 
       if (isStudentLoggedIn || isAdminLoggedIn) {
