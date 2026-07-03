@@ -16,6 +16,10 @@ import { $, val } from '../core/helpers.js';
         }
         const data = studentDoc.data();
 
+        // Save session locally
+        localStorage.setItem('techbook_student_logged_in', 'true');
+        localStorage.setItem('techbook_student_usn', usn);
+
         // Hide admin/about tabs
 
 
@@ -147,6 +151,11 @@ import { $, val } from '../core/helpers.js';
 
       } catch (e) {
         console.error("loadStudentDashboard error:", e);
+        // Fallback for offline / ad blocker: if they are logged in locally, unhide student area
+        if (localStorage.getItem('techbook_student_logged_in') === 'true') {
+          $("student-auth")?.classList.add("hidden");
+          $("student-area")?.classList.remove("hidden");
+        }
         msg("login-msg", "Error loading dashboard: " + e.message, "error");
       }
     }

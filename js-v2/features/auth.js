@@ -1517,3 +1517,68 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
     }
     window.updateNavbarLoginBtn = updateNavbarLoginBtn;
     setTimeout(updateNavbarLoginBtn, 100);
+
+    /* ==========================================
+       🔑 INSTANT LOCAL SESSION RESTORER
+    ========================================== */
+    function restoreLocalSession() {
+      // 1. Check Admin Session
+      const isAdmLoggedIn = localStorage.getItem('techbook_admin_logged_in') === 'true';
+      if (isAdmLoggedIn) {
+        const username = localStorage.getItem('techbook_admin_user');
+        const role = localStorage.getItem('techbook_admin_role');
+        if (username && role) {
+          console.log("Restoring local Admin session:", username);
+          if (typeof window.loginAdmin === 'function') {
+            window.loginAdmin(username, role);
+          } else {
+            setTimeout(() => {
+              if (typeof window.loginAdmin === 'function') window.loginAdmin(username, role);
+            }, 100);
+          }
+          if (typeof window.selectRole === 'function') {
+            window.selectRole('admin');
+          } else {
+            setTimeout(() => {
+              if (typeof window.selectRole === 'function') window.selectRole('admin');
+            }, 100);
+          }
+          if (typeof window.updateNavbarLoginBtn === 'function') {
+            window.updateNavbarLoginBtn();
+          }
+          return;
+        }
+      }
+
+      // 2. Check Student Session
+      const isStudLoggedIn = localStorage.getItem('techbook_student_logged_in') === 'true';
+      if (isStudLoggedIn) {
+        const usn = localStorage.getItem('techbook_student_usn');
+        if (usn) {
+          console.log("Restoring local Student session:", usn);
+          if (typeof window.loadStudentDashboard === 'function') {
+            window.loadStudentDashboard(usn);
+          } else {
+            setTimeout(() => {
+              if (typeof window.loadStudentDashboard === 'function') window.loadStudentDashboard(usn);
+            }, 100);
+          }
+          if (typeof window.selectRole === 'function') {
+            window.selectRole('student');
+          } else {
+            setTimeout(() => {
+              if (typeof window.selectRole === 'function') window.selectRole('student');
+            }, 100);
+          }
+          if (typeof window.updateNavbarLoginBtn === 'function') {
+            window.updateNavbarLoginBtn();
+          }
+        }
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', restoreLocalSession);
+    } else {
+      restoreLocalSession();
+    }
