@@ -233,26 +233,26 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
        🔄 TOGGLE FORMS
     =============================== */
     $("show-register")?.addEventListener("click", () => {
-      $("login-form").classList.add("hidden");
-      $("register-form").classList.remove("hidden");
-      $("forgot-pass-form").classList.add("hidden");
+      $("login-form")?.classList.add("hidden");
+      $("register-form")?.classList.remove("hidden");
+      $("forgot-pass-form")?.classList.add("hidden");
     });
 
     $("show-login")?.addEventListener("click", () => {
-      $("register-form").classList.add("hidden");
-      $("login-form").classList.remove("hidden");
-      $("forgot-pass-form").classList.add("hidden");
+      $("register-form")?.classList.add("hidden");
+      $("login-form")?.classList.remove("hidden");
+      $("forgot-pass-form")?.classList.add("hidden");
     });
 
     $("show-forgot-pass")?.addEventListener("click", () => {
-      $("login-form").classList.add("hidden");
-      $("register-form").classList.add("hidden");
-      $("forgot-pass-form").classList.remove("hidden");
+      $("login-form")?.classList.add("hidden");
+      $("register-form")?.classList.add("hidden");
+      $("forgot-pass-form")?.classList.remove("hidden");
     });
 
     $("back-to-login")?.addEventListener("click", () => {
-      $("forgot-pass-form").classList.add("hidden");
-      $("login-form").classList.remove("hidden");
+      $("forgot-pass-form")?.classList.add("hidden");
+      $("login-form")?.classList.remove("hidden");
       loginAttempts = 0; // Reset attempts when going back
     });
 
@@ -760,10 +760,15 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
         if (typeof window.hideVerifyModal === 'function') window.hideVerifyModal();
 
         // Show login form
-        $("student-area").classList.add("hidden");
-        $("student-auth").classList.remove("hidden");
-        $("login-form").classList.remove("hidden");
-        $("register-form").classList.add("hidden");
+        $("student-area")?.classList.add("hidden");
+        $("student-auth")?.classList.remove("hidden");
+        $("login-form")?.classList.remove("hidden");
+        $("register-form")?.classList.add("hidden");
+
+        // Reset the unified login view to standard login panel
+        if (typeof switchUnifiedPanel === 'function') {
+          switchUnifiedPanel('login');
+        }
       }
     });
 
