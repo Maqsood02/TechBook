@@ -358,6 +358,10 @@ let lastQbankFetchTime = 0;
       if (vBtn && action === 'download') vBtn.disabled = true;
       if (dBtn && action === 'view') dBtn.disabled = true;
       try {
+        if (typeof window.trackUserActivity === 'function') {
+          const actText = action === 'view' ? `Viewing QBank: ${fileName}` : `Downloading QBank: ${fileName}`;
+          window.trackUserActivity(actText, true);
+        }
         const blob = await fetchQBankBlob(id);
         const url = URL.createObjectURL(blob);
         if (action === 'view') {
@@ -835,6 +839,9 @@ let lastQbankFetchTime = 0;
         if (window._qbankAdmAllPapers) {
           const p = window._qbankAdmAllPapers.find(n => n.id === id);
           if (p && p.title) title = p.title;
+        }
+        if (typeof window.trackUserActivity === 'function') {
+          window.trackUserActivity(`Admin viewing QBank: ${title}`, true);
         }
         const blob = await fetchQBankBlob(id);
         const url = URL.createObjectURL(blob);

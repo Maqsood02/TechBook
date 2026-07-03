@@ -1,9 +1,9 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Tech Book — It makes you learn easy</title>
+  <title>Tech Book ΓÇö It makes you learn easy</title>
   <!-- Libraries -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -18,7 +18,7 @@
 <body>
   <!-- Screenshot shield (shown on screenshot attempt) -->
   <div id="quiz-screenshot-shield" style="display:none;">
-    <div style="font-size:64px;">🚫</div>
+    <div style="font-size:64px;">≡ƒÜ½</div>
     <div>Screenshots are not allowed during the quiz!</div>
     <div style="font-size:14px;color:#6b7280;font-weight:400;margin-top:8px;">Your attempt has been flagged.</div>
   </div>
@@ -27,359 +27,59 @@
 
       <!-- Landing Page (includes header) -->
       <div id="landing-page" class="panel landing-panel">
-        
-        <!-- Modern Sticky Navigation Bar -->
-        <nav class="landing-navbar">
-          <div class="navbar-container">
-            <div class="navbar-brand" onclick="if (window.switchLandingTab) window.switchLandingTab('home')">
-              <img src="img/logo_cropped.png" alt="Tech Book Logo" class="nav-logo" />
-              <span class="nav-brand-text">TechBook</span>
-            </div>
-            <button class="mobile-menu-toggle" id="mobile-toggle" aria-label="Toggle Navigation">
-              <span></span>
-              <span></span>
-              <span></span>
-            </button>
-            <ul class="navbar-menu" id="navbar-menu">
-              <li><a id="nav-link-home" href="#home" class="navbar-link active-nav-link" onclick="if (window.switchLandingTab) window.switchLandingTab('home'); return false;">Home</a></li>
-              <li><a id="nav-link-features" href="#features-section" class="navbar-link" onclick="if (window.switchLandingTab) window.switchLandingTab('features-section'); return false;">Features</a></li>
-              <li><a id="nav-link-about" href="#about-section" class="navbar-link" onclick="if (window.switchLandingTab) window.switchLandingTab('about-section'); return false;">About</a></li>
-              <li><a href="#developer" class="navbar-link" onclick="openFounderModal(); return false;">Developer</a></li>
-              <li><button class="navbar-btn" id="navbar-login-btn" onclick="if (window.switchLandingTab) window.switchLandingTab('login-section'); return false;">Login</button></li>
-            </ul>
+        <div class="app-header">
+          <div class="logo">
+            <img src="img/logo_cropped.png" alt="Tech Book Logo" />
           </div>
-        </nav>
+          <h1 class="landing-title"
+            style="background:linear-gradient(135deg,#3d5af1 0%,#6366f1 60%,#a855f7 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
+            Welcome to Tech Book</h1>
+          <p class="subtitle"
+            style="color:#6b7280;font-style:italic;letter-spacing:1px;font-size:17px;font-weight:500;">It makes you
+            learn easy</p>
+        </div>
 
-        <!-- Hero Section -->
-        <header id="home" class="hero-section">
-          <div class="hero-container">
-            <div class="hero-content">
-              <h1 class="hero-title">
-                Welcome to <span class="highlight">TechBook</span>
-              </h1>
-              <p class="hero-subtitle">It makes you learn easy</p>
-              <p class="hero-desc">
-                An all-in-one educational platform designed to streamline college attendance, quizzes, subject-wise notes, and question banks. Log in now to access your personalized portal.
-              </p>
-              <div class="hero-ctas">
-                <button onclick="if (window.switchLandingTab) window.switchLandingTab('login-section')" class="btn btn-hero btn-primary">Get Started</button>
-                <button onclick="if (window.switchLandingTab) window.switchLandingTab('features-section')" class="btn btn-hero btn-secondary">Explore Features</button>
-              </div>
+        <!-- Promo Section on Landing Page -->
+        <div id="landing-promos-container" style="margin-top: 20px; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto; min-height: 100px; display: flex; align-items: center; justify-content: center;">
+          <div class="loading-spinner" style="border: 4px solid rgba(0,0,0,0.1); width: 36px; height: 36px; border-radius: 50%; border-left-color: #3d5af1; animation: spin 1s linear infinite;"></div>
+          <style>
+            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+          </style>
+        </div>
+
+        <p class="subtext">Choose your role to get started</p>
+        <div class="role-buttons-container">
+          <button class="role-button student-button" data-role="student">
+            <div class="button-icon-wrapper"><span class="role-button-icon">≡ƒæ¿ΓÇì≡ƒÄô</span></div>
+            <div class="button-content"><span
+                style="font-size:18px;font-weight:800;color:#111827;display:block;text-align:center;margin-bottom:5px;">Student</span><span
+                style="font-size:12px;color:#6b7280;display:block;text-align:center;line-height:1.4;">Mark attendance
+                &amp; track records</span></div>
+          </button>
+          <button class="role-button admin-button" data-role="admin">
+            <div class="button-icon-wrapper"><span class="role-button-icon">≡ƒæ¿ΓÇì≡ƒÆ╝</span></div>
+            <div class="button-content"><span
+                style="font-size:18px;font-weight:800;color:#111827;display:block;text-align:center;margin-bottom:5px;">Admin</span><span
+                style="font-size:12px;color:#6b7280;display:block;text-align:center;line-height:1.4;">Manage sessions
+                &amp; reports</span></div>
+          </button>
+          <button class="role-button about-button" data-role="about">
+            <div class="button-icon-wrapper"><span class="role-button-icon">Γä╣∩╕Å</span></div>
+            <div class="button-content"><span
+                style="font-size:18px;font-weight:800;color:#111827;display:block;text-align:center;margin-bottom:5px;">About</span><span
+                style="font-size:12px;color:#6b7280;display:block;text-align:center;line-height:1.4;">Learn more
+                information</span></div>
+          </button>
+          <button class="role-button founder-button" id="founder-btn" data-role="" onclick="openFounderModal()">
+            <div class="button-icon-wrapper"
+              style="background:linear-gradient(145deg,rgba(255,200,80,0.2),rgba(255,120,50,0.1));border:1.5px solid rgba(255,200,80,0.5);box-shadow:0 0 24px rgba(255,200,80,0.2);">
+              <span class="role-button-icon">≡ƒÆ╗</span>
             </div>
-            <div class="hero-illustration">
-              <div class="laptop-mockup">
-                <div class="laptop-screen">
-                  <div class="laptop-screen-content">
-                    <!-- Announcements container inside the screen! -->
-                    <div id="landing-promos-container" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; flex-direction: column;">
-                      <div class="loading-spinner" style="border: 4px solid rgba(0,0,0,0.1); width: 32px; height: 32px; border-radius: 50%; border-left-color: #3d5af1; animation: spin 1s linear infinite;"></div>
-                    </div>
-                    
-                    <!-- CSS Fallback when no announcements exist or it's loading -->
-                    <div class="laptop-screen-placeholder">
-                      <div class="placeholder-icon">📢</div>
-                      <h4>TechBook Portal</h4>
-                      <p>Stay tuned for daily announcements, event schedules, and syllabus updates.</p>
-                    </div>
-                  </div>
-                </div>
-                <div class="laptop-hinge"></div>
-                <div class="laptop-base">
-                  <div class="laptop-base-trackpad"></div>
-                  <div class="laptop-keyboard-glow"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        <!-- Features Section -->
-        <section id="features-section" class="features-section hidden">
-          <h2 class="section-title">What TechBook Offers</h2>
-          <p class="section-subtitle">A simple, smart college management platform built for students and admins alike.</p>
-          
-          <div class="features-grid">
-            <div class="feature-card">
-              <div class="feature-icon">📋</div>
-              <h3>Smart Attendance</h3>
-              <p>Mark attendance in seconds using secure, time-bound verification codes generated by admins.</p>
-            </div>
-            <div class="feature-card">
-              <div class="feature-icon">📚</div>
-              <h3>Lecture Notes</h3>
-              <p>Access subject-wise academic files, slides, and study notes updated directly by your course instructors.</p>
-            </div>
-            <div class="feature-card">
-              <div class="feature-icon">🧠</div>
-              <h3>Interactive Quizzes</h3>
-              <p>Test your knowledge with real-time, timed assessments and track your score history on the dashboard.</p>
-            </div>
-            <div class="feature-card">
-              <div class="feature-icon">📁</div>
-              <h3>Question Banks</h3>
-              <p>Download previous year question papers (PYQs) and syllabus guides for exam preparation.</p>
-            </div>
-          </div>
-        </section>
-
-        <!-- Unified Login Section -->
-        <section id="login-section" class="login-section hidden">
-          <div class="unified-login-card">
-            
-            <!-- Left Side: Welcome & Illustration -->
-            <div class="login-promo-side">
-              <img src="img/student_boy_illustration.jpg?v=5" alt="Welcome Back" class="login-welcome-banner" />
-            </div>
-            
-            <!-- Right Side: Login Form -->
-            <div class="login-form-side">
-              
-              <!-- Compact Role Switcher (Student vs Admin/Super Admin) -->
-              <div class="role-switcher-container">
-                <button class="role-pill active" id="role-pill-student" onclick="selectLoginRole('student')">Student</button>
-                <button class="role-pill" id="role-pill-admin" onclick="selectLoginRole('admin')">Admin / Super Admin</button>
-              </div>
-
-              <!-- Panel 1: Login Form -->
-              <div id="unified-login-form-panel" class="login-form-panel">
-                <div id="unified-login-msg"></div>
-
-                <div class="form-group" style="margin-bottom: 20px;">
-                  <div class="input-icon-wrapper">
-                    <input id="unified-username" type="text" placeholder="Email or Username" autocomplete="off" />
-                    <!-- User Outline SVG Icon -->
-                    <svg class="input-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                      <circle cx="12" cy="7" r="4"></circle>
-                    </svg>
-                  </div>
-                </div>
-
-                <div class="form-group" style="margin-bottom: 12px;">
-                  <div class="input-icon-wrapper">
-                    <input id="unified-password" type="password" placeholder="Password" style="padding-right: 44px;" />
-                    <!-- Lock Outline SVG Icon -->
-                    <svg class="input-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                    </svg>
-                    <button type="button" class="password-toggle-btn" data-target="unified-password" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; outline: none; z-index: 10;">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                        <circle cx="12" cy="12" r="3"></circle>
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-
-                <div style="display:flex; justify-content:flex-end; align-items:center; margin-bottom: 24px;">
-                  <a href="#" id="unified-forgot-link" class="login-toggle-link" style="font-size:13px; color:#3d5af1; font-weight:600; text-decoration:none;">Forgot Password?</a>
-                </div>
-
-                <button class="btn btn-primary btn-block" id="btn-unified-login" style="padding: 14px; font-size: 15px; font-weight:700; border-radius: 12px; margin-bottom: 20px; width: 100%;">
-                  Login
-                </button>
-
-                <div id="unified-create-container" style="text-align: center; font-size: 13.5px; color: #4b5563;">
-                  Don't have an account? <a href="#" id="unified-create-link" class="login-toggle-link" style="color:#3d5af1; font-weight:700; text-decoration:none; margin-left: 4px;">Create New Account</a>
-                </div>
-              </div>
-
-              <!-- Panel 2: Register Form -->
-              <div id="unified-register-form-panel" class="login-form-panel hidden">
-                <h3 style="font-size: 22px; font-weight:800; color:#111827; margin-bottom: 12px; letter-spacing: -0.4px;">Create Account</h3>
-                <div id="register-msg"></div>
-
-                <div style="max-height: 280px; overflow-y: auto; padding-right: 6px; margin-bottom: 20px;">
-                  <div class="form-group" style="margin-bottom: 16px;">
-                    <label style="display:block; font-weight:600; font-size:12.5px; color:#4b5563; margin-bottom:6px;">Full Name</label>
-                    <input id="reg-name" type="text" placeholder="Enter your full name" autocomplete="off" style="width:100%; padding:10px 12px; border:1.5px solid #e5e7eb; border-radius:10px;" />
-                  </div>
-
-                  <div class="form-group" style="margin-bottom: 16px;">
-                    <label style="display:block; font-weight:600; font-size:12.5px; color:#4b5563; margin-bottom:6px;">USN / Roll Number</label>
-                    <input id="reg-usn" type="text" placeholder="Enter your USN" autocomplete="off" style="width:100%; padding:10px 12px; border:1.5px solid #e5e7eb; border-radius:10px;" />
-                  </div>
-
-                  <div class="form-group" style="margin-bottom: 16px;">
-                    <label style="display:block; font-weight:600; font-size:12.5px; color:#4b5563; margin-bottom:6px;">Course</label>
-                    <select id="reg-course" required style="width:100%; padding:10px 12px; border:1.5px solid #e5e7eb; border-radius:10px; background:#fff;">
-                      <option value="" disabled selected>Select Your Course</option>
-                      <option value="B.Tech">B.Tech</option>
-                      <option value="M.Tech">M.Tech</option>
-                      <option value="MBA">MBA</option>
-                      <option value="MCA">MCA</option>
-                    </select>
-                  </div>
-
-                  <div class="form-group" style="margin-bottom: 16px;">
-                    <label style="display:block; font-weight:600; font-size:12.5px; color:#4b5563; margin-bottom:6px;">Department</label>
-                    <select id="reg-dept" required style="width:100%; padding:10px 12px; border:1.5px solid #e5e7eb; border-radius:10px; background:#fff;">
-                      <option value="" disabled selected>Select Your Department</option>
-                      <option value="CSE">CSE - Computer Science</option>
-                      <option value="AIML">AIML - Artificial Intelligence & Machine Learning</option>
-                      <option value="DS">DS - Data Science</option>
-                      <option value="CYB">CYB - Cyber Security</option>
-                      <option value="ECE">ECE - Electronics</option>
-                      <option value="ME">ME - Mechanical</option>
-                      <option value="CE">CE - Civil</option>
-                      <option value="EEE">EEE - Electrical</option>
-                    </select>
-                  </div>
-
-                  <div class="form-group" style="margin-bottom: 16px;">
-                    <label style="display:block; font-weight:600; font-size:12.5px; color:#4b5563; margin-bottom:6px;">Year</label>
-                    <select id="reg-year" required style="width:100%; padding:10px 12px; border:1.5px solid #e5e7eb; border-radius:10px; background:#fff;">
-                      <option value="" disabled selected>Select Your Year</option>
-                      <option value="1">1st Year</option>
-                      <option value="2">2nd Year</option>
-                      <option value="3">3rd Year</option>
-                      <option value="4">4th Year</option>
-                    </select>
-                  </div>
-
-                  <div class="form-group" style="margin-bottom: 16px;">
-                    <label style="display:block; font-weight:600; font-size:12.5px; color:#4b5563; margin-bottom:6px;">Semester</label>
-                    <select id="reg-sem" required style="width:100%; padding:10px 12px; border:1.5px solid #e5e7eb; border-radius:10px; background:#fff;">
-                      <option value="" disabled selected>Select Your Semester</option>
-                      <option value="1">Semester 1</option>
-                      <option value="2">Semester 2</option>
-                      <option value="3">Semester 3</option>
-                      <option value="4">Semester 4</option>
-                      <option value="5">Semester 5</option>
-                      <option value="6">Semester 6</option>
-                      <option value="7">Semester 7</option>
-                      <option value="8">Semester 8</option>
-                    </select>
-                  </div>
-
-                  <div class="form-group" style="margin-bottom: 16px;">
-                    <label style="display:block; font-weight:600; font-size:12.5px; color:#4b5563; margin-bottom:6px;">Password</label>
-                    <div style="position: relative; width: 100%;">
-                      <input id="reg-pass" type="password" placeholder="Create a strong password" style="width:100%; padding:10px 44px 10px 12px; border:1.5px solid #e5e7eb; border-radius:10px; box-sizing:border-box;" />
-                      <button type="button" class="password-toggle-btn" data-target="reg-pass" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; outline: none; z-index:10;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                          <circle cx="12" cy="12" r="3"></circle>
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-
-                  <div class="form-group" style="margin-bottom: 16px;">
-                    <label style="display:block; font-weight:600; font-size:12.5px; color:#4b5563; margin-bottom:6px;">Confirm Password</label>
-                    <div style="position: relative; width: 100%;">
-                      <input id="reg-pass2" type="password" placeholder="Re-enter password" style="width:100%; padding:10px 44px 10px 12px; border:1.5px solid #e5e7eb; border-radius:10px; box-sizing:border-box;" />
-                      <button type="button" class="password-toggle-btn" data-target="reg-pass2" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; outline: none; z-index:10;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                          <circle cx="12" cy="12" r="3"></circle>
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-
-                  <div class="form-group" style="margin-bottom: 16px;">
-                    <label style="display:block; font-weight:600; font-size:12.5px; color:#4b5563; margin-bottom:6px;">Personal Email Address <span style="color:#ef4444;">*</span></label>
-                    <input id="reg-email" type="email" placeholder="e.g. yourname@gmail.com" autocomplete="email" style="width:100%; padding:10px 12px; border:1.5px solid #e5e7eb; border-radius:10px;" />
-                  </div>
-                </div>
-
-                <button class="btn btn-primary btn-block" id="btn-register" style="padding: 14px; font-size: 15px; font-weight:700; border-radius: 12px; margin-bottom: 16px; width: 100%;">
-                  🚀 Create Account
-                </button>
-
-                <div style="text-align: center; font-size: 13.5px; color: #4b5563;">
-                  Already have an account? <a href="#" class="unified-back-to-login" style="color:#3d5af1; font-weight:700; text-decoration:none; margin-left: 4px;">Login here</a>
-                </div>
-              </div>
-
-              <!-- Panel 3: Forgot Password Form -->
-              <div id="unified-forgot-form-panel" class="login-form-panel hidden">
-                <h3 style="font-size: 22px; font-weight:800; color:#111827; margin-bottom: 8px; letter-spacing: -0.4px;">Reset Password</h3>
-                <p style="color:#6b7280; font-size:13.5px; margin-bottom:20px; line-height:1.5;">Verify your identity and set a new password</p>
-                <div id="forgot-msg"></div>
-
-                <div class="form-group" style="margin-bottom: 16px;">
-                  <label style="display:block; font-weight:600; font-size:12.5px; color:#4b5563; margin-bottom:6px;">USN / Roll Number</label>
-                  <input id="forgot-usn" type="text" placeholder="Enter your USN" autocomplete="off" style="width:100%; padding:10px 12px; border:1.5px solid #e5e7eb; border-radius:10px;" />
-                </div>
-
-                <div class="form-group" style="margin-bottom: 16px;">
-                  <label style="display:block; font-weight:600; font-size:12.5px; color:#4b5563; margin-bottom:6px;">Full Name (for verification)</label>
-                  <input id="forgot-name" type="text" placeholder="Enter your full name" autocomplete="off" style="width:100%; padding:10px 12px; border:1.5px solid #e5e7eb; border-radius:10px;" />
-                </div>
-
-                <div class="form-group" style="margin-bottom: 16px;">
-                  <label style="display:block; font-weight:600; font-size:12.5px; color:#4b5563; margin-bottom:6px;">New Password</label>
-                  <div style="position: relative; width: 100%;">
-                    <input id="forgot-new-pass" type="password" placeholder="Enter new password (min 6 chars)" style="width:100%; padding:10px 44px 10px 12px; border:1.5px solid #e5e7eb; border-radius:10px; box-sizing:border-box;" />
-                    <button type="button" class="password-toggle-btn" data-target="forgot-new-pass" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; outline: none; z-index:10;">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                        <circle cx="12" cy="12" r="3"></circle>
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-
-                <div class="form-group" style="margin-bottom: 24px;">
-                  <label style="display:block; font-weight:600; font-size:12.5px; color:#4b5563; margin-bottom:6px;">Confirm Password</label>
-                  <div style="position: relative; width: 100%;">
-                    <input id="forgot-confirm-pass" type="password" placeholder="Confirm new password" style="width:100%; padding:10px 44px 10px 12px; border:1.5px solid #e5e7eb; border-radius:10px; box-sizing:border-box;" />
-                    <button type="button" class="password-toggle-btn" data-target="forgot-confirm-pass" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; outline: none; z-index:10;">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                        <circle cx="12" cy="12" r="3"></circle>
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-
-                <button class="btn btn-primary btn-block" id="btn-reset-pass" style="padding: 14px; font-size: 15px; font-weight:700; border-radius: 12px; margin-bottom: 20px; width: 100%;">
-                  🔑 Reset Password
-                </button>
-
-                <div style="text-align: center; font-size: 13.5px; color: #4b5563;">
-                  <a href="#" class="unified-back-to-login" style="color:#3d5af1; font-weight:700; text-decoration:none;">← Back to Login</a>
-                </div>
-              </div>
-
-            </div>
-
-          </div>
-        </section>
-
-        <!-- About Section -->
-        <section id="about-section" class="about-section-container hidden">
-          <div class="about-card">
-            <h2>About TechBook</h2>
-            <p>
-              TechBook is a premium collegiate utility platform developed to simplify daily academic administration. With TechBook, students can easily track and record lecture attendance, access digital notes, study packages, and syllabus updates, and challenge themselves with interactive, self-paced quizzes. Course instructors and administrators benefit from automated session controls, report exports, and immediate database syncing.
-            </p>
-            <p>
-              Built using modern, robust web standards including Firebase Auth and Firestore, TechBook ensures that your academic records are kept safe, secure, and always accessible when you need them.
-            </p>
-          </div>
-        </section>
-
-        <!-- Footer -->
-        <footer class="landing-footer">
-          <div class="footer-container">
-            <div class="footer-left">
-              <div class="footer-brand">📚 <span>TechBook</span></div>
-              <p class="footer-copyright">© 2026 TechBook Platform. All rights reserved.</p>
-            </div>
-            <div class="footer-center">
-              <a href="mailto:techbook.ac.in@gmail.com" class="footer-contact-link">📧 techbook.ac.in@gmail.com</a>
-              <a href="tel:+918792404950" class="footer-contact-link">📞 +91 87924 04950</a>
-            </div>
-            <div class="footer-right">
-              <button onclick="openFounderModal()" class="footer-dev-btn">💻 Meet the Developer</button>
-            </div>
-          </div>
-        </footer>
-
+            <div class="button-content"><span
+                style="font-size:18px;font-weight:800;color:#111827;display:block;text-align:center;margin-bottom:5px;">Website Developer</span><span
+                style="font-size:12px;color:#6b7280;display:block;text-align:center;line-height:1.4;">Meet the website developer</span></div>
+          </button>
+        </div>
       </div>
 
       <!-- Main Panel (no panel class - standalone) -->
@@ -410,7 +110,211 @@
           <!-- Student View -->
           <div class="view" id="student-view">
             <!-- Auth Forms -->
-            <div id="student-auth"></div>
+            <div id="student-auth">
+              <!-- Register Form -->
+              <div id="register-form" class="hidden">
+                <h2>Create Account</h2>
+                <div id="register-msg"></div>
+
+                <div class="card">
+                  <div class="form-group">
+                    <label>Full Name</label>
+                    <input id="reg-name" type="text" placeholder="Enter your full name" autocomplete="off" />
+                  </div>
+
+                  <div class="form-group">
+                    <label>USN / Roll Number</label>
+                    <input id="reg-usn" type="text" placeholder="Enter your USN" autocomplete="off" />
+                  </div>
+
+                  <div class="form-group">
+                    <label>Course</label>
+                    <select id="reg-course" required>
+                      <option value="" disabled selected>Select Your Course</option>
+                      <option value="B.Tech">B.Tech</option>
+                      <option value="M.Tech">M.Tech</option>
+                      <option value="MBA">MBA</option>
+                      <option value="MCA">MCA</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label>Department</label>
+                    <select id="reg-dept" required>
+                      <option value="" disabled selected>Select Your Department</option>
+                      <option value="CSE">CSE - Computer Science</option>
+                      <option value="AIML">AIML - Artificial Intelligence & Machine Learning</option>
+                      <option value="DS">DS - Data Science</option>
+                      <option value="CYB">CYB - Cyber Security</option>
+                      <option value="ECE">ECE - Electronics</option>
+                      <option value="ME">ME - Mechanical</option>
+                      <option value="CE">CE - Civil</option>
+                      <option value="EEE">EEE - Electrical</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label>Year</label>
+                    <select id="reg-year" required>
+                      <option value="" disabled selected>Select Your Year</option>
+                      <option value="1">1st Year</option>
+                      <option value="2">2nd Year</option>
+                      <option value="3">3rd Year</option>
+                      <option value="4">4th Year</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label>Semester</label>
+                    <select id="reg-sem" required>
+                      <option value="" disabled selected>Select Your Semester</option>
+                      <option value="1">Semester 1</option>
+                      <option value="2">Semester 2</option>
+                      <option value="3">Semester 3</option>
+                      <option value="4">Semester 4</option>
+                      <option value="5">Semester 5</option>
+                      <option value="6">Semester 6</option>
+                      <option value="7">Semester 7</option>
+                      <option value="8">Semester 8</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label>Password</label>
+                    <div style="position: relative; width: 100%;">
+                      <input id="reg-pass" type="password" placeholder="Create a strong password" style="padding-right: 48px; box-sizing: border-box;" />
+                      <button type="button" class="password-toggle-btn" data-target="reg-pass" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 4px; z-index: 10; display: flex; align-items: center; justify-content: center; outline: none;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                          <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label>Confirm Password</label>
+                    <div style="position: relative; width: 100%;">
+                      <input id="reg-pass2" type="password" placeholder="Re-enter password" style="padding-right: 48px; box-sizing: border-box;" />
+                      <button type="button" class="password-toggle-btn" data-target="reg-pass2" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 4px; z-index: 10; display: flex; align-items: center; justify-content: center; outline: none;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                          <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label>Personal Email Address <span style="color:#ef4444;">*</span></label>
+                    <input id="reg-email" type="email" placeholder="e.g. yourname@gmail.com" autocomplete="email" />
+                    <p style="font-size:11px;color:#9ca3af;margin:4px 0 0;">Used for verification and notifications. Must be a real email.</p>
+                  </div>
+
+                  <button class="btn btn-primary" id="btn-register">
+                    ≡ƒÜÇ Create Account
+                  </button>
+                </div>
+
+                <a class="toggle-link" id="show-login">
+                  Already have an account? Login here ΓåÆ
+                </a>
+              </div>
+
+              <!-- Login Form -->
+              <div id="login-form">
+                <h2>Welcome Back</h2>
+                <div id="login-msg"></div>
+
+                <div class="card">
+                  <div class="form-group">
+                    <label>USN / Roll Number</label>
+                    <input id="login-usn" type="text" placeholder="Enter your USN" autocomplete="off" />
+                  </div>
+
+                  <div class="form-group">
+                    <label>Password</label>
+                    <div style="position: relative; width: 100%;">
+                      <input id="login-pass" type="password" placeholder="Enter your password" style="width: 100%; padding-right: 48px; box-sizing: border-box;" />
+                      <button type="button" id="toggle-login-pass" class="password-toggle-btn" data-target="login-pass" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 4px; z-index: 10; display: flex; align-items: center; justify-content: center; outline: none;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                          <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+
+
+                  <button class="btn btn-primary" id="btn-login">
+                    Γ£ª Login to Account
+                  </button>
+                </div>
+
+                <a class="toggle-link" id="show-forgot-pass" style="font-size:13px; margin-top:-8px; color:#3d5af1;">
+                  Forgot Password?
+                </a>
+
+                <a class="toggle-link" id="show-register">
+                  New here? Create an account ΓåÆ
+                </a>
+              </div>
+
+              <!-- Forgot Password Form -->
+              <div id="forgot-pass-form" class="hidden">
+                <h2>Reset Your Password</h2>
+                <p style="color:var(--text-secondary); font-size:14px; margin-bottom:20px;">Verify your identity and set
+                  a new password</p>
+                <div id="forgot-msg"></div>
+
+                <div class="card">
+                  <div class="form-group">
+                    <label>USN / Roll Number</label>
+                    <input id="forgot-usn" type="text" placeholder="Enter your USN" autocomplete="off" />
+                  </div>
+
+                  <div class="form-group">
+                    <label>Full Name (for verification)</label>
+                    <input id="forgot-name" type="text" placeholder="Enter your full name" autocomplete="off" />
+                  </div>
+
+                  <div class="form-group">
+                    <label>New Password</label>
+                    <div style="position: relative; width: 100%;">
+                      <input id="forgot-new-pass" type="password" placeholder="Enter new password (min 6 chars)" style="padding-right: 48px; box-sizing: border-box;" />
+                      <button type="button" class="password-toggle-btn" data-target="forgot-new-pass" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 4px; z-index: 10; display: flex; align-items: center; justify-content: center; outline: none;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                          <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label>Confirm Password</label>
+                    <div style="position: relative; width: 100%;">
+                      <input id="forgot-confirm-pass" type="password" placeholder="Confirm new password" style="padding-right: 48px; box-sizing: border-box;" />
+                      <button type="button" class="password-toggle-btn" data-target="forgot-confirm-pass" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 4px; z-index: 10; display: flex; align-items: center; justify-content: center; outline: none;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                          <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <button class="btn btn-primary" id="btn-reset-pass">
+                    ≡ƒöæ Reset Password
+                  </button>
+                </div>
+
+                <a class="toggle-link" id="back-to-login">
+                  ΓåÉ Back to Login
+                </a>
+              </div>
+            </div>
 
             <!-- Logged In Area -->
             <div id="student-area" class="hidden">
@@ -430,43 +334,43 @@
               <div style="margin:0 0 6px;">
                 <div
                   style="font-size:10px;color:rgba(139,168,204,0.5);text-transform:uppercase;letter-spacing:2px;font-weight:700;margin-bottom:12px;padding-left:2px;">
-                  📌 Quick Access</div>
+                  ≡ƒôî Quick Access</div>
                 <div id="student-nav-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 10px;">
                   <button class="admin-nav-btn hidden" onclick="switchStudentTab('attendance')" id="stab-attendance">
-                    <span class="btn-emoji">📋</span><span class="btn-label">Attendance</span>
+                    <span class="btn-emoji">≡ƒôï</span><span class="btn-label">Attendance</span>
                   </button>
                   <button class="admin-nav-btn hidden" onclick="switchStudentTab('quiz')" id="stab-quiz">
-                    <span class="btn-emoji">🧠</span><span class="btn-label">Quiz</span>
+                    <span class="btn-emoji">≡ƒºá</span><span class="btn-label">Quiz</span>
                   </button>
                   <button class="admin-nav-btn hidden" onclick="switchStudentTab('quiz-history')" id="stab-quiz-history">
-                    <span class="btn-emoji">📊</span><span class="btn-label">Quiz History</span>
+                    <span class="btn-emoji">≡ƒôè</span><span class="btn-label">Quiz History</span>
                   </button>
                   <button class="admin-nav-btn hidden" onclick="switchStudentTab('history')" id="stab-history">
-                    <span class="btn-emoji">🗃️</span><span class="btn-label">Att. History</span>
+                    <span class="btn-emoji">≡ƒùâ∩╕Å</span><span class="btn-label">Att. History</span>
                   </button>
                   <!-- Notes (Live) -->
                   <button class="admin-nav-btn hidden" onclick="switchStudentTab('notes')" id="stab-notes"
                     style="border-color:#c7d0fb;background:linear-gradient(135deg,#ffffff,#fafafe);">
-                    <span class="btn-emoji">📚</span><span class="btn-label">Subject-Wise Notes</span>
+                    <span class="btn-emoji">≡ƒôÜ</span><span class="btn-label">Subject-Wise Notes</span>
                   </button>
                   <!-- Question Bank (Live) -->
                   <button class="admin-nav-btn hidden" onclick="switchStudentTab('qbank')" id="stab-qbank"
                     style="border-color:#a5f3fc;background:linear-gradient(135deg,#ffffff,#ecfeff);">
-                    <span class="btn-emoji">📖</span><span class="btn-label">Question Bank</span>
+                    <span class="btn-emoji">≡ƒôû</span><span class="btn-label">Question Bank</span>
                   </button>
                   <!-- Previous Year Questions (Live) -->
                   <button class="admin-nav-btn hidden" onclick="switchStudentTab('pyq')" id="stab-pyq"
                     style="border-color:#fde68a;background:linear-gradient(135deg,#fffbeb,#fefce8);">
-                    <span class="btn-emoji">🗂️</span><span class="btn-label">Prev Year Questions</span>
+                    <span class="btn-emoji">≡ƒùé∩╕Å</span><span class="btn-label">Prev Year Questions</span>
                   </button>
 
                   <button class="admin-nav-btn hidden" onclick="switchStudentTab('ia-timetable')" id="stab-ia-timetable"
                     style="border-color:#f0abfc;background:linear-gradient(135deg,#fdf4ff,#fae8ff);">
-                    <span class="btn-emoji">📆</span><span class="btn-label">IA Timetable</span>
+                    <span class="btn-emoji">≡ƒôå</span><span class="btn-label">IA Timetable</span>
                   </button>
                 </div>
               </div>
-              <!-- ── iOS 26 GLASS FOOTER ── -->
+              <!-- ΓöÇΓöÇ iOS 26 GLASS FOOTER ΓöÇΓöÇ -->
               <!-- TAB: Attendance -->
               <!-- All tab content sections (hidden by default, shown when nav button clicked) -->
               <div id="student-tab-content" style="display:none;">
@@ -474,11 +378,11 @@
                 <!-- TAB: Attendance -->
                 <div id="stab-content-attendance" style="display:none;">
                   <button onclick="switchStudentTab(null)"
-                    style="margin-bottom:14px;padding:8px 16px;background:#f9fafb;border:1px solid #d1d5db;border-radius:10px;color:#3d5af1;font-weight:700;cursor:pointer;font-size:13px;">←
+                    style="margin-bottom:14px;padding:8px 16px;background:#f9fafb;border:1px solid #d1d5db;border-radius:10px;color:#3d5af1;font-weight:700;cursor:pointer;font-size:13px;">ΓåÉ
                     Back</button>
-                  <h2>📋 Mark Attendance</h2>
+                  <h2>≡ƒôï Mark Attendance</h2>
                   <div class="card" style="background:#ffffff;">
-                    <h3 style="font-size:18px;">🔢 Enter Attendance Code</h3>
+                    <h3 style="font-size:18px;">≡ƒöó Enter Attendance Code</h3>
                     <div id="code-msg"></div>
                     <div class="form-group">
                       <label>6-Digit Code</label>
@@ -488,7 +392,7 @@
                     <button class="btn btn-primary" id="btn-verify-code">Verify Code</button>
                     <div id="code-verified-info"
                       style="display:none;margin-top:15px;padding:12px;background:rgba(16,185,129,0.1);border:1px solid #10b981;border-radius:8px;">
-                      <p style="color:#10b981;margin-bottom:8px;">✓ Code Verified!</p>
+                      <p style="color:#10b981;margin-bottom:8px;">Γ£ô Code Verified!</p>
                       <p style="font-size:13px;"><strong>Session:</strong> <span id="verified-session"></span></p>
                       <p style="font-size:13px;"><strong>Location:</strong> <span id="verified-loc"></span></p>
                       <p style="font-size:13px;"><strong>Valid until:</strong> <span id="verified-exp"></span></p>
@@ -500,7 +404,7 @@
                       <div class="form-group"><label>Remarks (Optional)</label><textarea id="att-remark"
                           placeholder="Add any notes..."></textarea></div>
                       <div id="att-msg"></div>
-                      <button class="btn btn-success" id="btn-mark">✓ Mark Attendance</button>
+                      <button class="btn btn-success" id="btn-mark">Γ£ô Mark Attendance</button>
                     </div>
                   </div>
                 </div>
@@ -509,7 +413,7 @@
                 <div id="stab-content-quiz" style="display:none;">
                   <div id="quiz-list-view">
                     <button onclick="switchStudentTab(null)"
-                      style="margin-bottom:16px;padding:8px 16px;background:#f9fafb;border:1px solid #d1d5db;border-radius:10px;color:#3d5af1;font-weight:700;cursor:pointer;font-size:13px;">←
+                      style="margin-bottom:16px;padding:8px 16px;background:#f9fafb;border:1px solid #d1d5db;border-radius:10px;color:#3d5af1;font-weight:700;cursor:pointer;font-size:13px;">ΓåÉ
                       Back</button>
                     <!-- Quiz section header -->
                     <div
@@ -519,7 +423,7 @@
                       </div>
                       <div style="display:flex;align-items:center;gap:14px;">
                         <div style="font-size:44px;line-height:1;filter:drop-shadow(0 4px 12px rgba(168,85,247,0.4));">
-                          🧠</div>
+                          ≡ƒºá</div>
                         <div>
                           <h2
                             style="margin:0 0 4px;font-size:20px;font-weight:900;background:linear-gradient(135deg,#3d5af1,#a855f7);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;font-family:'Orbitron',sans-serif;">
@@ -530,7 +434,7 @@
                       </div>
                     </div>
                     <div id="quiz-list-container">
-                      <p style="color:var(--text-secondary);text-align:center;padding:20px;">Loading quizzes…</p>
+                      <p style="color:var(--text-secondary);text-align:center;padding:20px;">Loading quizzesΓÇª</p>
                     </div>
                   </div>
                   <div id="quiz-take-view" style="display:none;">
@@ -569,19 +473,19 @@
                     <!-- Navigation -->
                     <div style="display:flex;gap:10px;justify-content:space-between;">
                       <button id="quiz-prev-btn" onclick="quizNav(-1)"
-                        style="padding:12px 20px;background:#f7f8fc;border:1px solid rgba(0,0,0,0.03);border-radius:12px;color:#6b7280;font-weight:700;cursor:pointer;font-size:14px;transition:all 0.2s;">←
+                        style="padding:12px 20px;background:#f7f8fc;border:1px solid rgba(0,0,0,0.03);border-radius:12px;color:#6b7280;font-weight:700;cursor:pointer;font-size:14px;transition:all 0.2s;">ΓåÉ
                         Prev</button>
                       <button id="quiz-next-btn" onclick="quizNav(1)"
                         style="flex:1;padding:12px;background:linear-gradient(135deg,#6366f1,#4f46e5);border:none;border-radius:12px;color:#ffffff;font-weight:700;cursor:pointer;font-size:14px;transition:all 0.2s;">Next
-                        →</button>
+                        ΓåÆ</button>
                       <button id="quiz-submit-btn" onclick="submitQuiz()"
-                        style="display:none;flex:1;padding:12px;background:linear-gradient(135deg,#10b981,#059669);border:none;border-radius:12px;color:#ffffff;font-weight:700;cursor:pointer;font-size:14px;">✓
+                        style="display:none;flex:1;padding:12px;background:linear-gradient(135deg,#10b981,#059669);border:none;border-radius:12px;color:#ffffff;font-weight:700;cursor:pointer;font-size:14px;">Γ£ô
                         Submit Quiz</button>
                     </div>
                   </div>
                   <div id="quiz-result-view" style="display:none;text-align:center;">
                     <div class="card" style="padding:32px 20px;">
-                      <div id="quiz-result-emoji" style="font-size:64px;margin-bottom:12px;">🎉</div>
+                      <div id="quiz-result-emoji" style="font-size:64px;margin-bottom:12px;">≡ƒÄë</div>
                       <h2 id="quiz-result-title" style="margin-bottom:8px;"></h2>
                       <div id="quiz-score-display" style="font-size:48px;font-weight:900;color:#3d5af1;margin:12px 0;">
                       </div>
@@ -595,20 +499,20 @@
                 <!-- TAB: Quiz History -->
                 <div id="stab-content-quiz-history" style="display:none;">
                   <button onclick="switchStudentTab(null)"
-                    style="margin-bottom:14px;padding:8px 16px;background:#f9fafb;border:1px solid #d1d5db;border-radius:10px;color:#3d5af1;font-weight:700;cursor:pointer;font-size:13px;">←
+                    style="margin-bottom:14px;padding:8px 16px;background:#f9fafb;border:1px solid #d1d5db;border-radius:10px;color:#3d5af1;font-weight:700;cursor:pointer;font-size:13px;">ΓåÉ
                     Back</button>
-                  <h2>📊 My Quiz History</h2>
+                  <h2>≡ƒôè My Quiz History</h2>
                   <div id="quiz-history-container">
-                    <p style="color:var(--text-secondary);text-align:center;padding:20px;">Loading quiz history…</p>
+                    <p style="color:var(--text-secondary);text-align:center;padding:20px;">Loading quiz historyΓÇª</p>
                   </div>
                 </div>
 
                 <!-- TAB: Attendance History -->
                 <div id="stab-content-history" style="display:none;">
                   <button onclick="switchStudentTab(null)"
-                    style="margin-bottom:14px;padding:8px 16px;background:#f9fafb;border:1px solid #d1d5db;border-radius:10px;color:#3d5af1;font-weight:700;cursor:pointer;font-size:13px;">←
+                    style="margin-bottom:14px;padding:8px 16px;background:#f9fafb;border:1px solid #d1d5db;border-radius:10px;color:#3d5af1;font-weight:700;cursor:pointer;font-size:13px;">ΓåÉ
                     Back</button>
-                  <h2>📜 My Attendance History</h2>
+                  <h2>≡ƒô£ My Attendance History</h2>
                   <div class="card">
                     <div class="table-container">
                       <table>
@@ -634,12 +538,12 @@
                   <div id="sn-screen-subjects">
                     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
                       <button onclick="switchStudentTab(null)"
-                        style="padding:8px 16px;background:#f9fafb;border:1.5px solid #d1d5db;border-radius:10px;color:#3d5af1;font-weight:700;cursor:pointer;font-size:13px;white-space:nowrap;">←
+                        style="padding:8px 16px;background:#f9fafb;border:1.5px solid #d1d5db;border-radius:10px;color:#3d5af1;font-weight:700;cursor:pointer;font-size:13px;white-space:nowrap;">ΓåÉ
                         Back</button>
                       <div>
                         <h2
                           style="margin:0;font-size:20px;background:linear-gradient(90deg,#3d5af1,#6366f1);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">
-                          📚 Subject-Wise Notes</h2>
+                          ≡ƒôÜ Subject-Wise Notes</h2>
                         <p style="margin:2px 0 0;font-size:12px;color:var(--text-secondary);">Select a subject to view
                           its notes</p>
                       </div>
@@ -647,7 +551,7 @@
                     <!-- Auto-fill notice -->
                     <div id="sn-autofill-banner"
                       style="display:none;background:linear-gradient(135deg,#ffffff,#fafafe);border:1px solid #d1d5db;border-radius:12px;padding:12px 16px;margin-bottom:14px;">
-                      <span style="font-size:13px;color:#3d5af1;font-weight:600;">🎯 Showing notes for — <span
+                      <span style="font-size:13px;color:#3d5af1;font-weight:600;">≡ƒÄ» Showing notes for ΓÇö <span
                           id="sn-autofill-label" style="color:#6366f1;"></span></span>
                     </div>
                     <!-- Filter bar -->
@@ -655,7 +559,7 @@
                       style="background:#f7f8fc;border:1px solid #ffffff;border-radius:14px;padding:14px;margin-bottom:16px;">
                       <div
                         style="font-size:10px;font-weight:700;color:var(--text-secondary);letter-spacing:1px;margin-bottom:10px;">
-                        🔍 FILTER BY CLASS</div>
+                        ≡ƒöì FILTER BY CLASS</div>
                       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;">
                         <div class="form-group" style="margin:0;"><label style="font-size:10px;">Year</label>
                           <select id="sn-year" onchange="studentFilterNotes()" style="font-size:12px;">
@@ -690,17 +594,17 @@
                         </div>
                       </div>
                       <button onclick="studentClearNoteFilters()"
-                        style="padding:6px 14px;background:#f7f8fc;border:1px solid rgba(0,0,0,0.03);border-radius:8px;color:var(--text-secondary);font-weight:600;font-size:11px;cursor:pointer;">✕
+                        style="padding:6px 14px;background:#f7f8fc;border:1px solid rgba(0,0,0,0.03);border-radius:8px;color:var(--text-secondary);font-weight:600;font-size:11px;cursor:pointer;">Γ£ò
                         Clear Filters</button>
                       <button onclick="studentLoadNotes()"
-                        style="padding:6px 14px;background:#f9fafb;border:1px solid #d1d5db;border-radius:8px;color:#3d5af1;font-weight:700;font-size:11px;cursor:pointer;margin-left:6px;">🔄
+                        style="padding:6px 14px;background:#f9fafb;border:1px solid #d1d5db;border-radius:8px;color:#3d5af1;font-weight:700;font-size:11px;cursor:pointer;margin-left:6px;">≡ƒöä
                         Refresh</button>
                     </div>
                     <!-- Subject buttons grid -->
                     <div id="sn-subject-grid">
                       <div style="text-align:center;padding:40px 20px;">
-                        <div style="font-size:42px;margin-bottom:10px;">⏳</div>
-                        <div style="color:var(--text-secondary);font-size:14px;">Loading subjects…</div>
+                        <div style="font-size:42px;margin-bottom:10px;">ΓÅ│</div>
+                        <div style="color:var(--text-secondary);font-size:14px;">Loading subjectsΓÇª</div>
                       </div>
                     </div>
                   </div>
@@ -709,7 +613,7 @@
                   <div id="sn-screen-detail" style="display:none;">
                     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
                       <button onclick="snBackToSubjects()"
-                        style="padding:8px 16px;background:#f9fafb;border:1.5px solid #d1d5db;border-radius:10px;color:#3d5af1;font-weight:700;cursor:pointer;font-size:13px;white-space:nowrap;">←
+                        style="padding:8px 16px;background:#f9fafb;border:1.5px solid #d1d5db;border-radius:10px;color:#3d5af1;font-weight:700;cursor:pointer;font-size:13px;white-space:nowrap;">ΓåÉ
                         Subjects</button>
                       <div>
                         <h2 id="sn-detail-title" style="margin:0;font-size:18px;color:#1a1a2e;font-weight:900;"></h2>
@@ -728,21 +632,21 @@
                   <div id="qbank-screen-subjects">
                     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
                       <button onclick="switchStudentTab(null)"
-                        style="padding:8px 16px;background:#f9fafb;border:1.5px solid #d1d5db;border-radius:10px;color:#0891b2;font-weight:700;cursor:pointer;font-size:13px;white-space:nowrap;">← Back</button>
+                        style="padding:8px 16px;background:#f9fafb;border:1.5px solid #d1d5db;border-radius:10px;color:#0891b2;font-weight:700;cursor:pointer;font-size:13px;white-space:nowrap;">ΓåÉ Back</button>
                       <div>
                         <h2 style="margin:0;font-size:20px;background:linear-gradient(90deg,#0891b2,#06b6d4);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">
-                          📖 Question Bank</h2>
+                          ≡ƒôû Question Bank</h2>
                         <p style="margin:2px 0 0;font-size:12px;color:var(--text-secondary);">Select a subject to view its Question Banks</p>
                       </div>
                     </div>
                     <!-- Auto-fill notice -->
                     <div id="qbank-autofill-banner"
                       style="display:none;background:linear-gradient(135deg,#ffffff,#ecfeff);border:1px solid #a5f3fc;border-radius:12px;padding:12px 16px;margin-bottom:14px;">
-                      <span style="font-size:13px;color:#0891b2;font-weight:600;">🎯 Showing Q-Banks for — <span id="qbank-autofill-label" style="color:#06b6d4;"></span></span>
+                      <span style="font-size:13px;color:#0891b2;font-weight:600;">≡ƒÄ» Showing Q-Banks for ΓÇö <span id="qbank-autofill-label" style="color:#06b6d4;"></span></span>
                     </div>
                     <!-- Filter bar -->
                     <div style="background:#f7f8fc;border:1px solid #ffffff;border-radius:14px;padding:14px;margin-bottom:16px;">
-                      <div style="font-size:10px;font-weight:700;color:var(--text-secondary);letter-spacing:1px;margin-bottom:10px;">🔍 FILTER BY CLASS</div>
+                      <div style="font-size:10px;font-weight:700;color:var(--text-secondary);letter-spacing:1px;margin-bottom:10px;">≡ƒöì FILTER BY CLASS</div>
                       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;">
                         <div class="form-group" style="margin:0;"><label style="font-size:10px;">Year</label>
                           <select id="qbank-filter-year" onchange="studentFilterQBank()" style="font-size:12px;">
@@ -777,15 +681,15 @@
                         </div>
                       </div>
                       <button onclick="studentClearQBankFilters()"
-                        style="padding:6px 14px;background:#f7f8fc;border:1px solid rgba(0,0,0,0.03);border-radius:8px;color:var(--text-secondary);font-weight:600;font-size:11px;cursor:pointer;">✕ Clear Filters</button>
+                        style="padding:6px 14px;background:#f7f8fc;border:1px solid rgba(0,0,0,0.03);border-radius:8px;color:var(--text-secondary);font-weight:600;font-size:11px;cursor:pointer;">Γ£ò Clear Filters</button>
                       <button onclick="studentLoadQBank()"
-                        style="padding:6px 14px;background:#f9fafb;border:1px solid #d1d5db;border-radius:8px;color:#0891b2;font-weight:700;font-size:11px;cursor:pointer;margin-left:6px;">🔄 Refresh</button>
+                        style="padding:6px 14px;background:#f9fafb;border:1px solid #d1d5db;border-radius:8px;color:#0891b2;font-weight:700;font-size:11px;cursor:pointer;margin-left:6px;">≡ƒöä Refresh</button>
                     </div>
                     <!-- Subject buttons grid -->
                     <div id="qbank-subject-grid">
                       <div style="text-align:center;padding:40px 20px;">
-                        <div style="font-size:42px;margin-bottom:10px;">⏳</div>
-                        <div style="color:var(--text-secondary);font-size:14px;">Loading subjects…</div>
+                        <div style="font-size:42px;margin-bottom:10px;">ΓÅ│</div>
+                        <div style="color:var(--text-secondary);font-size:14px;">Loading subjectsΓÇª</div>
                       </div>
                     </div>
                   </div>
@@ -794,7 +698,7 @@
                   <div id="qbank-screen-detail" style="display:none;">
                     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
                       <button onclick="qbankBackToSubjects()"
-                        style="padding:8px 16px;background:#f9fafb;border:1.5px solid #d1d5db;border-radius:10px;color:#0891b2;font-weight:700;cursor:pointer;font-size:13px;white-space:nowrap;">← Subjects</button>
+                        style="padding:8px 16px;background:#f9fafb;border:1.5px solid #d1d5db;border-radius:10px;color:#0891b2;font-weight:700;cursor:pointer;font-size:13px;white-space:nowrap;">ΓåÉ Subjects</button>
                       <div>
                         <h2 id="qbank-detail-title" style="margin:0;font-size:18px;color:#1a1a2e;font-weight:900;"></h2>
                         <p id="qbank-detail-sub" style="margin:2px 0 0;font-size:12px;color:var(--text-secondary);"></p>
@@ -813,12 +717,12 @@
                 <div id="pyq-screen-subjects">
                   <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
                     <button onclick="switchStudentTab(null)"
-                      style="padding:8px 16px;background:#f9fafb;border:1.5px solid #d1d5db;border-radius:10px;color:#3d5af1;font-weight:700;cursor:pointer;font-size:13px;white-space:nowrap;">←
+                      style="padding:8px 16px;background:#f9fafb;border:1.5px solid #d1d5db;border-radius:10px;color:#3d5af1;font-weight:700;cursor:pointer;font-size:13px;white-space:nowrap;">ΓåÉ
                       Back</button>
                     <div>
                       <h2
                         style="margin:0;font-size:20px;background:linear-gradient(90deg,#f59e0b,#ef4444);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">
-                        📜 Previous Year Questions</h2>
+                        ≡ƒô£ Previous Year Questions</h2>
                       <p style="margin:2px 0 0;font-size:12px;color:var(--text-secondary);">Select a subject to view its
                         PYQ papers</p>
                     </div>
@@ -828,7 +732,7 @@
                     style="background:#fffbeb;border:1px solid #fde68a;border-radius:14px;padding:14px;margin-bottom:16px;">
                     <div
                       style="font-size:10px;font-weight:700;color:var(--text-secondary);letter-spacing:1px;margin-bottom:10px;">
-                      🔍 FILTER BY CLASS</div>
+                      ≡ƒöì FILTER BY CLASS</div>
                     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;">
                       <div class="form-group" style="margin:0;"><label style="font-size:10px;">Year</label>
                         <select id="pyq-year" onchange="studentFilterPYQ()" style="font-size:12px;">
@@ -863,17 +767,17 @@
                       </div>
                     </div>
                     <button onclick="studentClearPYQFilters()"
-                      style="padding:6px 14px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;color:#92400e;font-weight:600;font-size:11px;cursor:pointer;">✕
+                      style="padding:6px 14px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;color:#92400e;font-weight:600;font-size:11px;cursor:pointer;">Γ£ò
                       Clear Filters</button>
                     <button onclick="studentLoadPYQ()"
-                      style="padding:6px 14px;background:#fef3c7;border:1px solid #fde68a;border-radius:8px;color:#92400e;font-weight:700;font-size:11px;cursor:pointer;margin-left:6px;">🔄
+                      style="padding:6px 14px;background:#fef3c7;border:1px solid #fde68a;border-radius:8px;color:#92400e;font-weight:700;font-size:11px;cursor:pointer;margin-left:6px;">≡ƒöä
                       Refresh</button>
                   </div>
                   <!-- Subject buttons grid -->
                   <div id="pyq-subject-grid">
                     <div style="text-align:center;padding:40px 20px;">
-                      <div style="font-size:42px;margin-bottom:10px;">⏳</div>
-                      <div style="color:var(--text-secondary);font-size:14px;">Loading subjects…</div>
+                      <div style="font-size:42px;margin-bottom:10px;">ΓÅ│</div>
+                      <div style="color:var(--text-secondary);font-size:14px;">Loading subjectsΓÇª</div>
                     </div>
                   </div>
                 </div>
@@ -882,7 +786,7 @@
                 <div id="pyq-screen-detail" style="display:none;">
                   <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
                     <button onclick="pyqBackToSubjects()"
-                      style="padding:8px 16px;background:#f9fafb;border:1.5px solid #d1d5db;border-radius:10px;color:#3d5af1;font-weight:700;cursor:pointer;font-size:13px;white-space:nowrap;">←
+                      style="padding:8px 16px;background:#f9fafb;border:1.5px solid #d1d5db;border-radius:10px;color:#3d5af1;font-weight:700;cursor:pointer;font-size:13px;white-space:nowrap;">ΓåÉ
                       Subjects</button>
                     <div>
                       <h2 id="pyq-detail-title" style="margin:0;font-size:18px;color:#92400e;font-weight:900;"></h2>
@@ -926,7 +830,7 @@
                 </div>
               </div>
 
-              <!-- ════ COMPACT THEMED FOOTER ════ -->
+              <!-- ΓòÉΓòÉΓòÉΓòÉ COMPACT THEMED FOOTER ΓòÉΓòÉΓòÉΓòÉ -->
               <div id="student-footer" style="margin:14px 0 8px;">
                 <div
                   style="border-radius:16px;overflow:hidden;background:#f7f8fc;border:1px solid #e5e7eb;box-shadow:0 2px 8px rgba(61,90,241,0.07);">
@@ -935,17 +839,17 @@
                     <div style="display:flex;align-items:center;gap:8px;">
                       <div
                         style="width:28px;height:28px;background:linear-gradient(135deg,#3d5af1,#6366f1);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">
-                        📚</div>
+                        ≡ƒôÜ</div>
                       <div>
                         <div style="font-size:12px;font-weight:800;color:#111827;">TechBook</div>
-                        <div style="font-size:9px;color:#6b7280;">© 2025 · All rights reserved</div>
+                        <div style="font-size:9px;color:#6b7280;">┬⌐ 2025 ┬╖ All rights reserved</div>
                       </div>
                     </div>
                     <div style="display:flex;flex-direction:column;gap:3px;">
                       <a href="mailto:techbook.ac.in@gmail.com"
-                        style="display:inline-flex;align-items:center;gap:4px;font-size:10px;color:#3d5af1;font-weight:600;text-decoration:none;"><span>📧</span><span>techbook.ac.in@gmail.com</span></a>
+                        style="display:inline-flex;align-items:center;gap:4px;font-size:10px;color:#3d5af1;font-weight:600;text-decoration:none;"><span>≡ƒôº</span><span>techbook.ac.in@gmail.com</span></a>
                       <a href="tel:+918792404950"
-                        style="display:inline-flex;align-items:center;gap:4px;font-size:10px;color:#3d5af1;font-weight:600;text-decoration:none;"><span>📞</span><span>+91
+                        style="display:inline-flex;align-items:center;gap:4px;font-size:10px;color:#3d5af1;font-weight:600;text-decoration:none;"><span>≡ƒô₧</span><span>+91
                           87924 04950</span></a>
                     </div>
                     <!-- Social Links -->
@@ -974,7 +878,7 @@
                       style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;background:linear-gradient(135deg,#3d5af1,#6366f1);border:none;border-radius:20px;color:#fff;font-weight:700;font-size:11px;cursor:pointer;box-shadow:0 2px 10px rgba(61,90,241,0.35);transition:all 0.2s;font-family:Poppins,sans-serif;white-space:nowrap;"
                       onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 4px 16px rgba(61,90,241,0.5)';"
                       onmouseout="this.style.transform='';this.style.boxShadow='0 2px 10px rgba(61,90,241,0.35)';">
-                      🤖 Contact Us
+                      ≡ƒñû Contact Us
                     </button>
                   </div>
                 </div>
@@ -1011,14 +915,14 @@
                 </div>
 
                 <button class="btn btn-primary" id="btn-admin-login">
-                  🔐 Access Dashboard
+                  ≡ƒöÉ Access Dashboard
                 </button>
               </div>
 
               <div
                 style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:12px;padding:14px;margin-top:16px;">
                 <p style="color:#f87171;font-size:12px;text-align:center;line-height:1.6;">
-                  🔒 <strong>Secure Access</strong><br>
+                  ≡ƒöÆ <strong>Secure Access</strong><br>
                   Change password after first login
                 </p>
               </div>
@@ -1030,87 +934,83 @@
 
               <!-- Back bar (shown when a section is open) -->
               <div class="admin-back-bar" id="admin-back-bar">
-                <button class="admin-back-btn" id="admin-back-btn">← Back</button>
+                <button class="admin-back-btn" id="admin-back-btn">ΓåÉ Back</button>
                 <span class="admin-back-label" id="admin-back-label"></span>
               </div>
 
               <!-- Navigation buttons (hidden when a section is open) -->
               <div class="admin-nav-grid" id="admin-nav-grid">
                 <button class="admin-nav-btn" data-section="sec-stats">
-                  <span class="nav-icon">📊</span>Quick Statistics
+                  <span class="nav-icon">≡ƒôè</span>Quick Statistics
                 </button>
                 <button class="admin-nav-btn" data-section="sec-code">
-                  <span class="nav-icon">🎯</span>Attendance Code
+                  <span class="nav-icon">≡ƒÄ»</span>Attendance Code
                 </button>
                 <button class="admin-nav-btn" data-section="sec-manual">
-                  <span class="nav-icon">📝</span>Manual Attendance
+                  <span class="nav-icon">≡ƒô¥</span>Manual Attendance
                 </button>
                 <button class="admin-nav-btn" data-section="sec-register">
-                  <span class="nav-icon">👤</span>Register Student
+                  <span class="nav-icon">≡ƒæñ</span>Register Student
                 </button>
                 <button class="admin-nav-btn" data-section="sec-session">
-                  <span class="nav-icon">📅</span>Session Management
+                  <span class="nav-icon">≡ƒôà</span>Session Management
                 </button>
                 <button class="admin-nav-btn" data-section="sec-records">
-                  <span class="nav-icon">📋</span>Attendance Records
+                  <span class="nav-icon">≡ƒôï</span>Attendance Records
                 </button>
                 <button class="admin-nav-btn" data-section="sec-export">
-                  <span class="nav-icon">📤</span>Export Tools
+                  <span class="nav-icon">≡ƒôñ</span>Export Tools
                 </button>
                 <button class="admin-nav-btn" data-section="sec-settings">
-                  <span class="nav-icon">⚙️</span>Settings & Admin
+                  <span class="nav-icon">ΓÜÖ∩╕Å</span>Settings & Admin
                 </button>
                 <button class="admin-nav-btn" data-section="sec-manage">
-                  <span class="nav-icon">✏️</span>Manage Students
+                  <span class="nav-icon">Γ£Å∩╕Å</span>Manage Students
                 </button>
                 <button class="admin-nav-btn" data-section="sec-users-list" style="border-color:#10b981;background:linear-gradient(135deg,#f0fdf4,#ffffff);">
-                  <span class="nav-icon">👤</span>User Details
+                  <span class="nav-icon">≡ƒæñ</span>User Details
                 </button>
                 <button class="admin-nav-btn" data-section="sec-quiz-admin">
-                  <span class="nav-icon">🧠</span>Quiz Management
+                  <span class="nav-icon">≡ƒºá</span>Quiz Management
                 </button>
                 <button class="admin-nav-btn" data-section="sec-quiz-reset">
-                  <span class="nav-icon">🔓</span>Reset Quiz Attempt
+                  <span class="nav-icon">≡ƒöô</span>Reset Quiz Attempt
                 </button>
                 <button class="admin-nav-btn" data-section="sec-leaderboard">
-                  <span class="nav-icon">🏆</span>Quiz Leaderboard
+                  <span class="nav-icon">≡ƒÅå</span>Quiz Leaderboard
                 </button>
                 <button class="admin-nav-btn" data-section="sec-notes-upload"
                   style="border-color:#c7d0fb;background:linear-gradient(135deg,#ffffff,#fafafe);">
-                  <span class="nav-icon">📝</span>Upload Notes
+                  <span class="nav-icon">≡ƒô¥</span>Upload Notes
                 </button>
                 <button class="admin-nav-btn" data-section="sec-qbank-upload"
                   style="border-color:#a5f3fc;background:linear-gradient(135deg,#ecfeff,#e0f2fe);">
-                  <span class="nav-icon">📚</span>Upload Q-Bank
+                  <span class="nav-icon">≡ƒôÜ</span>Upload Q-Bank
                 </button>
                 <button class="admin-nav-btn" data-section="sec-pyq-upload"
                   style="border-color:#fde68a;background:linear-gradient(135deg,#fffbeb,#fefce8);">
-                  <span class="nav-icon">📜</span>Upload PYQ Papers
+                  <span class="nav-icon">≡ƒô£</span>Upload PYQ Papers
                 </button>
                 <button class="admin-nav-btn" data-section="sec-ia-timetable"
                   style="border-color:#d8b4fe;background:linear-gradient(135deg,#fdf4ff,#faf5ff);">
-                  <span class="nav-icon">📆</span>Upload IA Timetable
+                  <span class="nav-icon">≡ƒôå</span>Upload IA Timetable
                 </button>
                 <button class="admin-nav-btn super-admin-only" data-section="sec-admins"
                   style="border-color:#fbbf24;background:linear-gradient(135deg,#fffbeb,#fef3c7);">
-                  <span class="nav-icon">👮</span>Manage Admins
+                  <span class="nav-icon">≡ƒæ«</span>Manage Admins
                 </button>
                 <button class="admin-nav-btn super-admin-only" data-section="sec-features"
                   style="border-color:#10b981;background:linear-gradient(135deg,#ecfdf5,#d1fae5);">
-                  <span class="nav-icon">🛡️</span>Manage Features
+                  <span class="nav-icon">≡ƒ¢í∩╕Å</span>Manage Features
                 </button>
                 <button class="admin-nav-btn super-admin-only" data-section="sec-promos"
                   style="border-color:#38bdf8;background:linear-gradient(135deg,#f0f9ff,#e0f2fe);">
-                  <span class="nav-icon">🎬</span>Manage Promos
-                </button>
-                <button class="admin-nav-btn super-admin-only" data-section="sec-live-monitor"
-                  style="border-color:#10b981;background:linear-gradient(135deg,#ecfdf5,#d1fae5);">
-                  <span class="nav-icon">🟢</span>Live Monitor
+                  <span class="nav-icon">≡ƒÄ¼</span>Manage Promos
                 </button>
               </div>
 
               <!-- SECTION 1: Statistics -->
-              <div class="admin-section" id="sec-stats" data-label="📊 Quick Statistics">
+              <div class="admin-section" id="sec-stats" data-label="≡ƒôè Quick Statistics">
                 <div class="section-content">
                   <div class="stats-grid">
                     <div class="stat-card">
@@ -1134,13 +1034,13 @@
                       Auto-refresh: ON
                     </div>
                     <button class="btn btn-secondary" id="btn-refresh"
-                      style="width:auto;padding:8px 16px;margin:0;font-size:13px;">🔄 Refresh Now</button>
+                      style="width:auto;padding:8px 16px;margin:0;font-size:13px;">≡ƒöä Refresh Now</button>
                   </div>
                 </div>
               </div>
 
               <!-- SECTION 2: Code Management -->
-              <div class="admin-section" id="sec-code" data-label="🎯 Attendance Code Management">
+              <div class="admin-section" id="sec-code" data-label="≡ƒÄ» Attendance Code Management">
                 <div class="section-content">
                   <div class="section-content">
                     <div class="card" style="background: #ffffff; border: 2px solid #8b5cf6; margin-bottom: 0;">
@@ -1154,21 +1054,21 @@
                         <div class="form-group" style="margin-bottom:0;">
                           <label>Valid For</label>
                           <select id="code-duration">
-                            <option value="10s">⏱️ 10 seconds</option>
-                            <option value="20s">⏱️ 20 seconds</option>
-                            <option value="30s">⏱️ 30 seconds</option>
-                            <option value="1">⏱️ 1 minute</option>
-                            <option value="2">⏱️ 2 minutes</option>
-                            <option value="5">⏱️ 5 minutes</option>
-                            <option value="10" selected>⏱️ 10 minutes</option>
-                            <option value="15">⏱️ 15 minutes</option>
-                            <option value="30">⏱️ 30 minutes</option>
-                            <option value="60">⏱️ 60 minutes</option>
+                            <option value="10s">ΓÅ▒∩╕Å 10 seconds</option>
+                            <option value="20s">ΓÅ▒∩╕Å 20 seconds</option>
+                            <option value="30s">ΓÅ▒∩╕Å 30 seconds</option>
+                            <option value="1">ΓÅ▒∩╕Å 1 minute</option>
+                            <option value="2">ΓÅ▒∩╕Å 2 minutes</option>
+                            <option value="5">ΓÅ▒∩╕Å 5 minutes</option>
+                            <option value="10" selected>ΓÅ▒∩╕Å 10 minutes</option>
+                            <option value="15">ΓÅ▒∩╕Å 15 minutes</option>
+                            <option value="30">ΓÅ▒∩╕Å 30 minutes</option>
+                            <option value="60">ΓÅ▒∩╕Å 60 minutes</option>
                           </select>
                         </div>
                       </div>
 
-                      <button class="btn btn-success" id="btn-gen-code">🎲 Generate Code</button>
+                      <button class="btn btn-success" id="btn-gen-code">≡ƒÄ▓ Generate Code</button>
 
                       <div id="active-code-box"
                         style="display:none; margin-top:28px; padding:32px; background:linear-gradient(135deg,#3d5af1 0%,#6366f1 60%,#a855f7 100%); border-radius:20px; text-align:center; box-shadow: 0 12px 48px rgba(57,255,180,0.6); border: 2px solid #e5e7eb; position: relative; overflow: hidden;">
@@ -1177,7 +1077,7 @@
                         </div>
                         <p
                           style="font-size:16px; opacity:0.98; font-weight:600; margin-bottom:12px; position: relative; z-index: 1; letter-spacing: 0.5px; color: #ffffff;">
-                          ✨ Active Attendance Code</p>
+                          Γ£¿ Active Attendance Code</p>
                         <div
                           style="background:#e5e7eb; backdrop-filter:blur(15px); border-radius:16px; padding:28px; margin:16px 0; overflow:hidden; border: 2px solid rgba(255,255,255,0.3); box-shadow: inset 0 2px 8px rgba(0,0,0,0.2);">
                           <p id="display-code"
@@ -1191,7 +1091,7 @@
                             style="background:rgba(0,0,0,0.04); padding:16px; border-radius:12px; backdrop-filter: blur(10px); border: 1px solid #e5e7eb; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                             <p
                               style="font-size:12px; opacity:0.95; margin-bottom:6px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: #ffffff;">
-                              📍 Location</p>
+                              ≡ƒôì Location</p>
                             <p id="display-loc"
                               style="font-size:16px; font-weight:700; margin:0; word-break:break-word; color: #ffffff;">
                             </p>
@@ -1200,13 +1100,13 @@
                             style="background:rgba(0,0,0,0.04); padding:16px; border-radius:12px; backdrop-filter: blur(10px); border: 1px solid #e5e7eb; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                             <p
                               style="font-size:12px; opacity:0.95; margin-bottom:6px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: #ffffff;">
-                              ⏱️ Time Left</p>
+                              ΓÅ▒∩╕Å Time Left</p>
                             <p id="display-timer" style="font-size:22px; font-weight:800; margin:0; color: #ffffff;">
                             </p>
                           </div>
                         </div>
                         <button class="btn btn-danger" id="btn-deact-code"
-                          style="margin-top:12px; width:100%; padding:14px 24px; font-weight:700; position: relative; z-index: 1;">🔒
+                          style="margin-top:12px; width:100%; padding:14px 24px; font-weight:700; position: relative; z-index: 1;">≡ƒöÆ
                           Deactivate Code</button>
                       </div>
                     </div>
@@ -1215,12 +1115,12 @@
               </div>
 
               <!-- SECTION 3: Manual Attendance -->
-              <div class="admin-section" id="sec-manual" data-label="📝 Manual Attendance Management">
+              <div class="admin-section" id="sec-manual" data-label="≡ƒô¥ Manual Attendance Management">
                 <div class="section-content">
                   <!-- Upload Student List Card -->
                   <div class="card"
                     style="background: rgba(57, 255, 180, 0.15); border: 2px solid #3d5af1; margin-bottom: 16px;">
-                    <h3>📤 Upload Student List</h3>
+                    <h3>≡ƒôñ Upload Student List</h3>
                     <p style="color:var(--text-secondary);font-size:13px;margin-bottom:16px;">
                       Upload a CSV file with columns: <strong>Name, USN, Year, Section</strong>
                     </p>
@@ -1248,12 +1148,12 @@
                       </div>
                     </div>
 
-                    <button class="btn btn-primary" id="btn-upload-students">📁 Upload & Load Students</button>
+                    <button class="btn btn-primary" id="btn-upload-students">≡ƒôü Upload & Load Students</button>
                   </div>
 
                   <!-- Manual Attendance Card -->
                   <div class="card" style="margin-bottom: 0;">
-                    <h3>✓ Mark Manual Attendance</h3>
+                    <h3>Γ£ô Mark Manual Attendance</h3>
                     <p style="color:var(--text-secondary);font-size:13px;margin-bottom:12px;">
                       Select students to mark attendance. Click "Submit Attendance" to save records.
                     </p>
@@ -1297,13 +1197,13 @@
                     </div>
 
                     <!-- Submit Button -->
-                    <button class="btn btn-success" id="btn-submit-manual-att">✓ Submit Attendance</button>
+                    <button class="btn btn-success" id="btn-submit-manual-att">Γ£ô Submit Attendance</button>
                   </div>
                 </div>
               </div>
 
               <!-- SECTION 5: Session Management -->
-              <div class="admin-section" id="sec-session" data-label="📅 Session Management">
+              <div class="admin-section" id="sec-session" data-label="≡ƒôà Session Management">
                 <div class="section-content">
                   <div class="card" style="margin-bottom: 0;">
                     <div id="session-msg"></div>
@@ -1320,22 +1220,22 @@
               </div>
 
               <!-- SECTION 6: Records & Filters -->
-              <div class="admin-section" id="sec-records" data-label="📋 Attendance Records & Filters">
+              <div class="admin-section" id="sec-records" data-label="≡ƒôï Attendance Records & Filters">
                 <div class="section-content">
                   <div class="card">
-                    <h3>🔍 Filter Records</h3>
+                    <h3>≡ƒöì Filter Records</h3>
                     <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:12px;">
                       <div class="form-group" style="margin:0;">
                         <label>USN</label>
-                        <input id="filter-usn" type="text" placeholder="Search by USN…" />
+                        <input id="filter-usn" type="text" placeholder="Search by USNΓÇª" />
                       </div>
                       <div class="form-group" style="margin:0;">
                         <label>Section</label>
-                        <input id="filter-section" type="text" placeholder="e.g. A, B, C…" />
+                        <input id="filter-section" type="text" placeholder="e.g. A, B, CΓÇª" />
                       </div>
                       <div class="form-group" style="margin:0;">
                         <label>Name</label>
-                        <input id="filter-name" type="text" placeholder="Search by name…" />
+                        <input id="filter-name" type="text" placeholder="Search by nameΓÇª" />
                       </div>
                       <div class="form-group" style="margin:0;">
                         <label>Date</label>
@@ -1344,9 +1244,9 @@
                     </div>
                     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
                       <button class="btn btn-secondary" id="btn-filter"
-                        style="width:auto;padding:10px 20px;margin:0;">🔍 Filter</button>
+                        style="width:auto;padding:10px 20px;margin:0;">≡ƒöì Filter</button>
                       <button class="btn btn-secondary" id="btn-clear-filter"
-                        style="width:auto;padding:10px 20px;margin:0;">✕ Clear</button>
+                        style="width:auto;padding:10px 20px;margin:0;">Γ£ò Clear</button>
                       <span id="records-count" style="font-size:12px;"></span>
                     </div>
                   </div>
@@ -1393,25 +1293,25 @@
               </div>
 
               <!-- SECTION 7: Export Tools -->
-              <div class="admin-section" id="sec-export" data-label="📤 Export Tools">
+              <div class="admin-section" id="sec-export" data-label="≡ƒôñ Export Tools">
                 <div class="section-content">
                   <div class="card" style="margin-bottom: 0;">
                     <h3>Export Attendance Data</h3>
                     <p style="color:var(--text-secondary);font-size:13px;margin-bottom:16px;text-align:center;">Download
                       records in your preferred format</p>
                     <div class="action-buttons">
-                      <button class="btn btn-success" id="btn-export-xlsx">📊 Excel</button>
-                      <button class="btn btn-success" id="btn-export-pdf">📄 PDF</button>
+                      <button class="btn btn-success" id="btn-export-xlsx">≡ƒôè Excel</button>
+                      <button class="btn btn-success" id="btn-export-pdf">≡ƒôä PDF</button>
                     </div>
                   </div>
                 </div>
               </div>
 
               <!-- SECTION 8: Settings -->
-              <div class="admin-section" id="sec-settings" data-label="⚙️ Settings & Administration">
+              <div class="admin-section" id="sec-settings" data-label="ΓÜÖ∩╕Å Settings & Administration">
                 <div class="section-content">
                   <div class="card">
-                    <h3>🔐 Change Admin Password</h3>
+                    <h3>≡ƒöÉ Change Admin Password</h3>
                     <div id="change-pass-msg"></div>
                     <div class="form-group">
                       <label>Current Password</label>
@@ -1453,7 +1353,7 @@
                   </div>
 
                   <div class="card">
-                    <h3>👤 Change Admin Username</h3>
+                    <h3>≡ƒæñ Change Admin Username</h3>
                     <div id="change-username-msg"></div>
                     <div class="form-group">
                       <label>New Username</label>
@@ -1477,21 +1377,21 @@
                   <div class="divider"></div>
 
                   <div class="card">
-                    <h3>🔓 Password Reset Requests</h3>
+                    <h3>≡ƒöô Password Reset Requests</h3>
                     <p style="color:var(--text-secondary);font-size:13px;margin-bottom:16px;">Review and approve student
                       password reset requests</p>
                     <div id="reset-requests-msg"></div>
                     <div id="reset-requests-container" style="max-height:300px;overflow-y:auto;">
                       <!-- Reset requests will be loaded here -->
                     </div>
-                    <button class="btn btn-secondary" id="btn-refresh-requests" style="margin-top:12px;">🔄 Refresh
+                    <button class="btn btn-secondary" id="btn-refresh-requests" style="margin-top:12px;">≡ƒöä Refresh
                       Requests</button>
                   </div>
 
                   <div class="divider"></div>
 
                   <div class="card" style="margin-bottom: 0;">
-                    <h3>⚠️ Reset Attendance</h3>
+                    <h3>ΓÜá∩╕Å Reset Attendance</h3>
                     <p style="color:var(--text-secondary);font-size:13px;margin-bottom:16px;text-align:center;">Clear
                       all attendance records</p>
                     <button class="btn btn-danger" id="btn-reset-att">Reset All Attendance</button>
@@ -1499,75 +1399,12 @@
                 </div>
               </div>
 
-              <!-- SECTION: Live Activity Monitor (Super Admin Only) -->
-              <div class="admin-section" id="sec-live-monitor" data-label="🟢 Live Activity Monitor">
-                <div class="section-content">
-                  <div class="card" style="background:#f8fafc; border:1px solid #e2e8f0; margin-bottom: 20px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:20px;">
-                      <div>
-                        <h3 style="margin:0; font-family:'Poppins',sans-serif; color:#0f172a; font-weight:700; font-size:18px; display:flex; align-items:center; gap:8px; border-bottom: none; background: none; box-shadow: none; padding: 0;">
-                          <span style="display:inline-block; width:10px; height:10px; background:#22c55e; border-radius:50%; animation:pulse 1.5s infinite;"></span>
-                          Live Online Users
-                        </h3>
-                        <p style="margin:4px 0 0; font-size:12px; color:#64748b; font-family:'Poppins',sans-serif;">Real-time active sessions on TechBook</p>
-                      </div>
-                      <div>
-                        <span id="live-users-count-badge" style="background:#dcfce7; color:#16a34a; font-weight:700; padding:4px 12px; border-radius:20px; font-size:12px; font-family:'Poppins',sans-serif; display: inline-block;">0 Online</span>
-                      </div>
-                    </div>
-                    
-                    <div style="border-radius:12px; overflow:hidden; border:1px solid #e2e8f0; background:#ffffff;">
-                      <div style="max-height:350px; overflow-y:auto;">
-                        <table style="width:100%; border-collapse:collapse; text-align:left; font-family:'Poppins',sans-serif; font-size:13px; margin: 0;">
-                          <thead>
-                            <tr style="background:#f8fafc; border-bottom:1px solid #e2e8f0; position:sticky; top:0; z-index:1;">
-                              <th style="padding:12px 16px; font-weight:600; color:#475569; border: none; background:#f8fafc;">User</th>
-                              <th style="padding:12px 16px; font-weight:600; color:#475569; border: none; background:#f8fafc;">Role</th>
-                              <th style="padding:12px 16px; font-weight:600; color:#475569; border: none; background:#f8fafc;">Current View/Activity</th>
-                              <th style="padding:12px 16px; font-weight:600; color:#475569; border: none; background:#f8fafc;">Last Active</th>
-                            </tr>
-                          </thead>
-                          <tbody id="live-users-list">
-                            <tr>
-                              <td colspan="4" style="text-align:center; padding:30px; color:#94a3b8; border: none;">Loading active users...</td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="card" style="margin-bottom: 0; background:#ffffff;">
-                    <h3 style="margin-top:0; margin-bottom:16px; font-family:'Poppins',sans-serif; color:#0f172a; font-weight:700; font-size:16px; display:flex; align-items:center; gap:8px; border-bottom: none; background: none; box-shadow: none; padding: 0;">
-                      📂 Recent Activity Logs
-                    </h3>
-                    <div style="border-radius:12px; overflow:hidden; border:1px solid #e2e8f0;">
-                      <div style="max-height:400px; overflow-y:auto; background:#fafafa; padding:12px;" id="activity-logs-container">
-                        <p style="text-align:center; padding:20px; color:#94a3b8; font-family:'Poppins',sans-serif; margin: 0;">Loading recent activities...</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
               <!-- SECTION: Manage Admins (Super Admin Only) -->
-              <div class="admin-section" id="sec-admins" data-label="👮 Manage Admin Accounts">
+              <div class="admin-section" id="sec-admins" data-label="≡ƒæ« Manage Admin Accounts">
                 <div class="section-content">
                   <div class="card">
-                    <h3 style="display:flex;align-items:center;gap:8px;font-family:'Poppins',sans-serif;font-weight:700;color:#0f172a;margin-bottom:20px;font-size:16.5px;letter-spacing:-0.3px;">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3d5af1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="8.5" cy="7" r="4"></circle>
-                        <line x1="20" y1="8" x2="20" y2="14"></line>
-                        <line x1="23" y1="11" x2="17" y2="11"></line>
-                      </svg>
-                      Create New Admin
-                    </h3>
+                    <h3>Γ₧ò Create New Admin</h3>
                     <div id="admin-manage-msg"></div>
-                    <div class="form-group">
-                      <label>Full Name</label>
-                      <input id="new-admin-name" type="text" placeholder="e.g., John Doe" />
-                    </div>
                     <div class="form-group">
                       <label>Username</label>
                       <input id="new-admin-user" type="text" placeholder="e.g., helper_admin" />
@@ -1595,29 +1432,21 @@
                   </div>
 
                   <div class="card">
-                    <h3 style="display:flex;align-items:center;gap:8px;font-family:'Poppins',sans-serif;font-weight:700;color:#0f172a;margin-bottom:20px;font-size:16.5px;letter-spacing:-0.3px;">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3d5af1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="9" cy="7" r="4"></circle>
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                      </svg>
-                      Existing Admin Accounts
-                    </h3>
+                    <h3>≡ƒôï Existing Admin Accounts</h3>
                     <div id="admins-list-container" style="max-height:400px;overflow-y:auto;">
                       <!-- Administrators will be listed here -->
-                      <p style="text-align:center;padding:24px;color:var(--text-secondary);font-family:'Poppins',sans-serif;font-size:14px;">Loading admins...</p>
+                      <p style="text-align:center;padding:20px;color:var(--text-secondary);">Loading admins...</p>
                     </div>
                   </div>
                 </div>
               </div>
 
               <!-- SECTION: Manage Features (Super Admin Only) -->
-              <div class="admin-section" id="sec-features" data-label="🛡️ Feature Blocking Control">
+              <div class="admin-section" id="sec-features" data-label="≡ƒ¢í∩╕Å Feature Blocking Control">
                 <div class="section-content">
                   <div class="card"
                     style="background: rgba(16, 185, 129, 0.05); border: 2px solid #10b981; margin-bottom: 16px;">
-                    <h3 style="color: #059669;">🛡️ Feature Blocking</h3>
+                    <h3 style="color: #059669;">≡ƒ¢í∩╕Å Feature Blocking</h3>
                     <p style="color:var(--text-secondary);font-size:13px;margin-bottom:20px;">
                       Toggle features ON or OFF for the student dashboard. Changes take effect instantly.
                     </p>
@@ -1626,7 +1455,7 @@
                     <!-- Toggle Switches -->
                     <div class="switch-container">
                       <div class="switch-label">
-                        <span class="switch-icon">📋</span>
+                        <span class="switch-icon">≡ƒôï</span>
                         <span>Attendance System</span>
                       </div>
                       <label class="switch">
@@ -1637,7 +1466,7 @@
 
                     <div class="switch-container">
                       <div class="switch-label">
-                        <span class="switch-icon">🧠</span>
+                        <span class="switch-icon">≡ƒºá</span>
                         <span>Quizzes</span>
                       </div>
                       <label class="switch">
@@ -1648,7 +1477,7 @@
 
                     <div class="switch-container">
                       <div class="switch-label">
-                        <span class="switch-icon">📊</span>
+                        <span class="switch-icon">≡ƒôè</span>
                         <span>Quiz History</span>
                       </div>
                       <label class="switch">
@@ -1659,7 +1488,7 @@
 
                     <div class="switch-container">
                       <div class="switch-label">
-                        <span class="switch-icon">🗃️</span>
+                        <span class="switch-icon">≡ƒùâ∩╕Å</span>
                         <span>Attendance History</span>
                       </div>
                       <label class="switch">
@@ -1670,7 +1499,7 @@
 
                     <div class="switch-container">
                       <div class="switch-label">
-                        <span class="switch-icon">📚</span>
+                        <span class="switch-icon">≡ƒôÜ</span>
                         <span>Subject-Wise Notes</span>
                       </div>
                       <label class="switch">
@@ -1681,7 +1510,7 @@
 
                     <div class="switch-container">
                       <div class="switch-label">
-                        <span class="switch-icon">🗂️</span>
+                        <span class="switch-icon">≡ƒùé∩╕Å</span>
                         <span>Prev Year Questions</span>
                       </div>
                       <label class="switch">
@@ -1692,7 +1521,7 @@
 
                     <div class="switch-container">
                       <div class="switch-label">
-                        <span class="switch-icon">📖</span>
+                        <span class="switch-icon">≡ƒôû</span>
                         <span>Question Bank</span>
                       </div>
                       <label class="switch">
@@ -1703,7 +1532,7 @@
 
                     <div class="switch-container">
                       <div class="switch-label">
-                        <span class="switch-icon">📆</span>
+                        <span class="switch-icon">≡ƒôå</span>
                         <span>IA Timetable</span>
                       </div>
                       <label class="switch">
@@ -1713,17 +1542,17 @@
                     </div>
 
                     <button class="btn btn-success" id="btn-save-features" style="margin-top:10px;">
-                      💾 Save Feature Settings
+                      ≡ƒÆ╛ Save Feature Settings
                     </button>
                   </div>
                 </div>
               </div>
 
               <!-- SECTION: Manage Promos (Admin Only) -->
-              <div class="admin-section" id="sec-promos" data-label="🎬 Manage Promos">
+              <div class="admin-section" id="sec-promos" data-label="≡ƒÄ¼ Manage Promos">
                 <div class="section-content">
                   <div class="card" style="border: 2px solid #38bdf8;">
-                    <h3 style="color: #0284c7;">🎬 Upload New Promo</h3>
+                    <h3 style="color: #0284c7;">≡ƒÄ¼ Upload New Promo</h3>
                     <div id="admin-promo-msg"></div>
                     <div class="form-group">
                       <label>Promo Title</label>
@@ -1736,7 +1565,7 @@
                     <div class="form-group">
                       <label>Media File (Video or Image) - Max 50MB</label>
                       <input type="file" id="promo-file" accept="video/*,image/*">
-                      <div style="font-size: 11px; text-align: center; color: #6b7280; margin: 8px 0; font-weight: bold;">— OR —</div>
+                      <div style="font-size: 11px; text-align: center; color: #6b7280; margin: 8px 0; font-weight: bold;">ΓÇö OR ΓÇö</div>
                       <label>Media URL (Direct Image or Video link)</label>
                       <input type="text" id="promo-url" placeholder="e.g., https://example.com/video.mp4">
                     </div>
@@ -1751,7 +1580,7 @@
                       </div>
                     </div>
                     <button class="btn btn-primary" id="btn-upload-promo" style="background: linear-gradient(135deg, #38bdf8 0%, #3b82f6 100%); border-color: #7dd3fc; box-shadow: 0 4px 20px rgba(56, 189, 248, 0.45);">
-                      📤 Upload Promo
+                      ≡ƒôñ Upload Promo
                     </button>
                   </div>
                   
@@ -1765,10 +1594,10 @@
               </div>
 
               <!-- SECTION: Register Student (Admin) -->
-              <div class="admin-section" id="sec-register" data-label="👤 Register Student">
+              <div class="admin-section" id="sec-register" data-label="≡ƒæñ Register Student">
                 <div class="section-content">
                   <div class="card" style="margin-bottom:0;">
-                    <h3>👤 Register New Student</h3>
+                    <h3>≡ƒæñ Register New Student</h3>
                     <div id="admin-register-msg"></div>
                     <div class="form-group"><label>Full Name</label><input id="areg-name" type="text"
                         placeholder="Student full name" autocomplete="off" /></div>
@@ -1840,18 +1669,18 @@
               </div>
 
               <!-- SECTION: Manage Students -->
-              <div class="admin-section" id="sec-manage" data-label="✏️ Manage Students">
+              <div class="admin-section" id="sec-manage" data-label="Γ£Å∩╕Å Manage Students">
                 <div class="section-content">
 
                   <!-- Filter bar -->
                   <div class="card" style="margin-bottom:14px;">
-                    <h3>🔍 Filter Students</h3>
+                    <h3>≡ƒöì Filter Students</h3>
                     <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;">
 
                       <div class="form-group" style="margin:0;flex:1;min-width:120px;">
                         <label>Department</label>
                         <select id="bulk-filter-dept">
-                          <option value="" selected>— All —</option>
+                          <option value="" selected>ΓÇö All ΓÇö</option>
                           <option value="CSE">CSE</option>
                           <option value="AIML">AIML</option>
                           <option value="DS">DS</option>
@@ -1865,7 +1694,7 @@
                       <div class="form-group" style="margin:0;flex:1;min-width:120px;">
                         <label>Current Semester</label>
                         <select id="bulk-filter-sem">
-                          <option value="" selected>— All —</option>
+                          <option value="" selected>ΓÇö All ΓÇö</option>
                           <option value="1">Sem 1</option>
                           <option value="2">Sem 2</option>
                           <option value="3">Sem 3</option>
@@ -1879,7 +1708,7 @@
                       <div class="form-group" style="margin:0;flex:1;min-width:120px;">
                         <label>Current Year</label>
                         <select id="bulk-filter-year">
-                          <option value="" selected>— All —</option>
+                          <option value="" selected>ΓÇö All ΓÇö</option>
                           <option value="1">Year 1</option>
                           <option value="2">Year 2</option>
                           <option value="3">Year 3</option>
@@ -1887,7 +1716,7 @@
                         </select>
                       </div>
                       <button class="btn btn-secondary" id="btn-preview-bulk"
-                        style="width:100%;padding:12px 16px;margin:0;">🔍 Load Students</button>
+                        style="width:100%;padding:12px 16px;margin:0;">≡ƒöì Load Students</button>
                     </div>
                     <p style="color:var(--text-secondary);font-size:12px;margin-top:10px;margin-bottom:0;">Leave all
                       blank to load ALL students.</p>
@@ -1895,14 +1724,14 @@
 
                   <!-- Update controls -->
                   <div class="card" style="margin-bottom:14px;background:#ffffff;border:2px solid #d1d5db;">
-                    <h3>⚡ Bulk Update <span id="bulk-match-count" style="color:#3d5af1;">0</span> Loaded Students</h3>
+                    <h3>ΓÜí Bulk Update <span id="bulk-match-count" style="color:#3d5af1;">0</span> Loaded Students</h3>
                     <p style="color:var(--text-secondary);font-size:13px;margin-bottom:14px;">Only the fields you pick
                       will change. Others stay the same.</p>
                     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;">
                       <div class="form-group" style="margin:0;">
                         <label>New Semester</label>
                         <select id="bulk-new-sem">
-                          <option value="" selected>— no change —</option>
+                          <option value="" selected>ΓÇö no change ΓÇö</option>
                           <option value="1">Sem 1</option>
                           <option value="2">Sem 2</option>
                           <option value="3">Sem 3</option>
@@ -1916,7 +1745,7 @@
                       <div class="form-group" style="margin:0;">
                         <label>New Year</label>
                         <select id="bulk-new-year">
-                          <option value="" selected>— no change —</option>
+                          <option value="" selected>ΓÇö no change ΓÇö</option>
                           <option value="1">Year 1</option>
                           <option value="2">Year 2</option>
                           <option value="3">Year 3</option>
@@ -1927,7 +1756,7 @@
                       <div class="form-group" style="margin:0;">
                         <label>New Department</label>
                         <select id="bulk-new-dept">
-                          <option value="" selected>— no change —</option>
+                          <option value="" selected>ΓÇö no change ΓÇö</option>
                           <option value="CSE">CSE</option>
                           <option value="AIML">AIML</option>
                           <option value="DS">DS</option>
@@ -1941,7 +1770,7 @@
                       <div class="form-group" style="margin:0;">
                         <label>New Course</label>
                         <select id="bulk-new-course">
-                          <option value="" selected>— no change —</option>
+                          <option value="" selected>ΓÇö no change ΓÇö</option>
                           <option value="B.Tech">B.Tech</option>
                           <option value="M.Tech">M.Tech</option>
                           <option value="MBA">MBA</option>
@@ -1951,7 +1780,7 @@
                     </div>
                     <div id="bulk-update-msg" style="margin-top:12px;font-size:13px;"></div>
                     <button class="btn btn-primary" id="btn-bulk-update" style="margin-top:14px;">
-                      ⚡ Update <span id="bulk-update-count">0</span> Students
+                      ΓÜí Update <span id="bulk-update-count">0</span> Students
                     </button>
                   </div>
 
@@ -1966,10 +1795,10 @@
               </div>
 
               <!-- SECTION: User Details (View, Edit, Delete) -->
-              <div class="admin-section" id="sec-users-list" data-label="👤 Student User Accounts">
+              <div class="admin-section" id="sec-users-list" data-label="≡ƒæñ Student User Accounts">
                 <div class="section-content">
                   <div class="card" style="margin-bottom:14px;">
-                    <h3>🔍 Search & Filter User Accounts</h3>
+                    <h3>≡ƒöì Search & Filter User Accounts</h3>
                     <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;">
                       <div class="form-group" style="margin:0;flex:2;min-width:180px;">
                         <label>Search by Name or USN</label>
@@ -1978,7 +1807,7 @@
                       <div class="form-group" style="margin:0;flex:1;min-width:120px;">
                         <label>Department</label>
                         <select id="user-filter-dept" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;box-sizing:border-box;">
-                          <option value="">— All —</option>
+                          <option value="">ΓÇö All ΓÇö</option>
                           <option value="CSE">CSE</option>
                           <option value="AIML">AIML</option>
                           <option value="DS">DS</option>
@@ -1989,7 +1818,7 @@
                           <option value="EEE">EEE</option>
                         </select>
                       </div>
-                      <button class="btn btn-primary" id="btn-load-users" style="margin:0;padding:11px 20px;">🔍 Load Accounts</button>
+                      <button class="btn btn-primary" id="btn-load-users" style="margin:0;padding:11px 20px;">≡ƒöì Load Accounts</button>
                     </div>
                   </div>
 
@@ -2002,36 +1831,36 @@
 
 
               <!-- Quiz Management Section -->
-              <div class="admin-section" id="sec-quiz-admin" data-label="🧠 Quiz Management">
+              <div class="admin-section" id="sec-quiz-admin" data-label="≡ƒºá Quiz Management">
                 <div class="section-content">
 
                   <!-- AI Key Setup -->
                   <div class="card"
                     style="margin-bottom:14px;background:#f7f8fe;border:1px solid rgba(99,102,241,0.3);">
-                    <h3 style="margin-bottom:8px;">🔑 AI Setup <span
+                    <h3 style="margin-bottom:8px;">≡ƒöæ AI Setup <span
                         style="font-size:11px;font-weight:400;color:var(--text-secondary);">(admin-only, free
                         key)</span></h3>
                     <div style="font-size:12px;color:#4b5563;margin-bottom:10px;">Enter the key here once. It will be
                       saved locally and used by the TechBook Assistant for all student chats.</div>
                     <div
                       style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.3);border-radius:10px;padding:12px;margin-bottom:10px;font-size:12px;color:#065f46;line-height:1.8;">
-                      <strong style="color:#064e3b;">Option A — Groq (fastest, free):</strong><br>
+                      <strong style="color:#064e3b;">Option A ΓÇö Groq (fastest, free):</strong><br>
                       1. Go to <a href="https://console.groq.com/keys" target="_blank"
-                        style="color:#059669;font-weight:700;">console.groq.com/keys</a> → Sign up free<br>
-                      2. Click <strong>Create API Key</strong> → copy it<br>
+                        style="color:#059669;font-weight:700;">console.groq.com/keys</a> ΓåÆ Sign up free<br>
+                      2. Click <strong>Create API Key</strong> ΓåÆ copy it<br>
                       <br>
-                      <strong style="color:#064e3b;">Option B — OpenRouter (many free models):</strong><br>
+                      <strong style="color:#064e3b;">Option B ΓÇö OpenRouter (many free models):</strong><br>
                       1. Go to <a href="https://openrouter.ai/keys" target="_blank"
-                        style="color:#059669;font-weight:700;">openrouter.ai/keys</a> → Sign up free<br>
+                        style="color:#059669;font-weight:700;">openrouter.ai/keys</a> ΓåÆ Sign up free<br>
                       2. Create a key (starts with <code
-                        style="background:#f9fafb;padding:1px 4px;border-radius:3px;color:#374151;">sk-or-</code>) →
+                        style="background:#f9fafb;padding:1px 4px;border-radius:3px;color:#374151;">sk-or-</code>) ΓåÆ
                       copy it<br>
-                      <span style="color:#d97706;">⚡ Groq is 10x faster — recommended!</span>
+                      <span style="color:#d97706;">ΓÜí Groq is 10x faster ΓÇö recommended!</span>
                     </div>
                     <div style="display:flex;gap:8px;align-items:center;width:100%;">
                       <div style="position: relative; flex: 1;">
                         <input id="ai-api-key" type="password"
-                          placeholder="Paste Groq key (gsk_…) or OpenRouter key (sk-or-…)"
+                          placeholder="Paste Groq key (gsk_ΓÇª) or OpenRouter key (sk-or-ΓÇª)"
                           style="width: 100%; padding: 10px 48px 10px 14px; background: #ffffff; border: 1px solid rgba(99,102,241,0.4); border-radius: 10px; color: #1a1a2e; font-size: 13px; box-sizing: border-box;" />
                         <button type="button" class="password-toggle-btn" data-target="ai-api-key" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 4px; z-index: 10; display: flex; align-items: center; justify-content: center; outline: none;">
                           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -2041,7 +1870,7 @@
                         </button>
                       </div>
                       <button onclick="saveAIKey()"
-                        style="padding:10px 16px;background:linear-gradient(135deg,#6366f1,#4f46e5);border:none;border-radius:10px;color:#ffffff;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap;">💾
+                        style="padding:10px 16px;background:linear-gradient(135deg,#6366f1,#4f46e5);border:none;border-radius:10px;color:#ffffff;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap;">≡ƒÆ╛
                         Save</button>
                     </div>
                     <div id="ai-key-status" style="font-size:12px;margin-top:6px;"></div>
@@ -2049,7 +1878,7 @@
                 </div>
 
                 <div class="card" style="margin-bottom:14px;">
-                  <h3>➕ Create New Quiz</h3>
+                  <h3>Γ₧ò Create New Quiz</h3>
                   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
                     <div class="form-group" style="margin:0;"><label>Subject</label><input id="qz-subject" type="text"
                         placeholder="e.g. Mathematics" /></div>
@@ -2124,7 +1953,7 @@
                       id="qz-instructions" placeholder="Any specific focus areas..." style="height:60px;"></textarea>
                   </div>
                   <div id="qz-create-msg" style="font-size:13px;margin-bottom:10px;"></div>
-                  <button class="btn btn-primary" id="btn-generate-quiz">✨ Generate Quiz with AI</button>
+                  <button class="btn btn-primary" id="btn-generate-quiz">Γ£¿ Generate Quiz with AI</button>
                 </div>
                 <div id="qz-preview-box" style="display:none;">
                   <div class="card"
@@ -2134,9 +1963,9 @@
                       <h3 style="margin:0;" id="qz-preview-title">Quiz Preview</h3>
                       <div style="display:flex;gap:8px;">
                         <button class="btn btn-secondary" id="btn-regenerate-quiz"
-                          style="width:auto;padding:8px 14px;margin:0;font-size:13px;">🔄 Regenerate</button>
+                          style="width:auto;padding:8px 14px;margin:0;font-size:13px;">≡ƒöä Regenerate</button>
                         <button class="btn btn-primary" id="btn-publish-quiz"
-                          style="width:auto;padding:8px 14px;margin:0;font-size:13px;">📤 Publish</button>
+                          style="width:auto;padding:8px 14px;margin:0;font-size:13px;">≡ƒôñ Publish</button>
                       </div>
                     </div>
                     <div id="qz-preview-list" style="display:flex;flex-direction:column;gap:10px;"></div>
@@ -2144,9 +1973,9 @@
                 </div>
                 <div class="card">
                   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-                    <h3 style="margin:0;">📋 Published Quizzes</h3>
+                    <h3 style="margin:0;">≡ƒôï Published Quizzes</h3>
                     <button class="btn btn-secondary" id="btn-load-quizzes"
-                      style="width:auto;padding:8px 14px;margin:0;font-size:13px;">🔄 Refresh</button>
+                      style="width:auto;padding:8px 14px;margin:0;font-size:13px;">≡ƒöä Refresh</button>
                   </div>
                   <div id="qz-published-list">
                     <p style="color:var(--text-secondary);font-size:13px;text-align:center;padding:16px;">Click Refresh
@@ -2157,17 +1986,17 @@
             </div>
 
             <!-- SECTION: Reset Quiz Attempt -->
-            <div class="admin-section" id="sec-quiz-reset" data-label="🔓 Reset Quiz Attempt">
+            <div class="admin-section" id="sec-quiz-reset" data-label="≡ƒöô Reset Quiz Attempt">
               <div class="section-content">
                 <div class="card" style="background:rgba(251,191,36,0.05);border:1px solid rgba(251,191,36,0.25);">
-                  <h3 style="margin-bottom:6px;">🔓 Reset Student Quiz Attempt</h3>
+                  <h3 style="margin-bottom:6px;">≡ƒöô Reset Student Quiz Attempt</h3>
                   <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">Search a student by USN to
                     view their quiz attempts and give them another chance to retake.</p>
                   <div style="display:flex;gap:8px;margin-bottom:16px;">
                     <input id="reset-usn" type="text" placeholder="Enter student USN (e.g. U23E01CS003)"
                       style="flex:1;padding:12px 14px;background:#ffffff;border:1px solid rgba(0,0,0,0.04);border-radius:12px;color:#1a1a2e;font-size:14px;" />
                     <button onclick="searchStudentQuizResults()"
-                      style="padding:12px 20px;background:linear-gradient(135deg,#fbbf24,#d97706);border:none;border-radius:12px;color:#1a1a2e;font-weight:700;font-size:14px;cursor:pointer;white-space:nowrap;">🔍
+                      style="padding:12px 20px;background:linear-gradient(135deg,#fbbf24,#d97706);border:none;border-radius:12px;color:#1a1a2e;font-weight:700;font-size:14px;cursor:pointer;white-space:nowrap;">≡ƒöì
                       Search</button>
                   </div>
                   <div id="reset-quiz-results"></div>
@@ -2176,29 +2005,29 @@
             </div>
 
             <!-- SECTION: Quiz Leaderboard -->
-            <div class="admin-section" id="sec-leaderboard" data-label="🏆 Quiz Leaderboard">
+            <div class="admin-section" id="sec-leaderboard" data-label="≡ƒÅå Quiz Leaderboard">
               <div class="section-content">
                 <div class="card" style="background:#f7f8fc;border:1px solid rgba(57,255,180,0.25);">
                   <div
                     style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px;">
-                    <h3 style="margin:0;">🏆 Quiz Leaderboard</h3>
+                    <h3 style="margin:0;">≡ƒÅå Quiz Leaderboard</h3>
                     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;width:100%;">
                       <select id="lb-quiz-filter" onchange="loadLeaderboard()"
                         style="flex:1;min-width:0;padding:9px 12px;background:#ffffff;border:1px solid rgba(0,0,0,0.04);border-radius:10px;color:#1a1a2e;font-size:13px;">
                         <option value="">All Quizzes</option>
                       </select>
                       <button onclick="loadLeaderboard()"
-                        style="padding:9px 14px;background:linear-gradient(135deg,var(--accent-gold),rgba(57,255,180,0.9));border:none;border-radius:10px;color:#1a1a2e;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap;">🔄
+                        style="padding:9px 14px;background:linear-gradient(135deg,var(--accent-gold),rgba(57,255,180,0.9));border:none;border-radius:10px;color:#1a1a2e;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap;">≡ƒöä
                         Refresh</button>
                       <button onclick="exportLeaderboardPDF()"
-                        style="padding:9px 14px;background:linear-gradient(135deg,#6366f1,#4f46e5);border:none;border-radius:10px;color:#1a1a2e;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap;">📄
+                        style="padding:9px 14px;background:linear-gradient(135deg,#6366f1,#4f46e5);border:none;border-radius:10px;color:#1a1a2e;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap;">≡ƒôä
                         Export PDF</button>
                       <button onclick="resetLeaderboard()"
-                        style="padding:9px 14px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);border-radius:10px;color:#f87171;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap;">🗑️
+                        style="padding:9px 14px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);border-radius:10px;color:#f87171;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap;">≡ƒùæ∩╕Å
                         Clear Data</button>
                     </div>
                   </div>
-                  <p style="font-size:12px;color:var(--text-secondary);margin-bottom:14px;">Ranked by % score · Ties
+                  <p style="font-size:12px;color:var(--text-secondary);margin-bottom:14px;">Ranked by % score ┬╖ Ties
                     broken by earliest submission time</p>
                   <div id="leaderboard-container">
                     <p style="color:var(--text-secondary);text-align:center;padding:20px;">Click Refresh to load
@@ -2209,27 +2038,27 @@
             </div>
 
             <!-- SECTION: Notes Upload (Admin) -->
-            <div class="admin-section" id="sec-notes-upload" data-label="📝 Upload Notes">
+            <div class="admin-section" id="sec-notes-upload" data-label="≡ƒô¥ Upload Notes">
               <div class="section-content">
                 <div class="card" style="background:#f5f3ff;border:1.5px solid #c7d2fe;">
-                  <h3 style="margin-bottom:6px;color:#4f46e5;">📤 Upload Subject Notes (PDF)</h3>
+                  <h3 style="margin-bottom:6px;color:#4f46e5;">≡ƒôñ Upload Subject Notes (PDF)</h3>
                   <p style="font-size:13px;color:var(--text-secondary);margin-bottom:18px;">Upload PDF notes for students. They can view and download from their dashboard, filtered by Year, Semester &amp; Section.</p>
 
                   <div id="adm-upload-zone" onclick="document.getElementById('adm-file-input').click()"
                     ondragover="admDragOver(event)" ondragleave="admDragLeave(event)" ondrop="admDropFile(event)" style="border:2px dashed #c7d2fe;border-radius:14px;padding:28px;text-align:center;
                         cursor:pointer;transition:all 0.3s;margin-bottom:16px;background:#ffffff;">
-                    <div id="adm-uz-icon" style="font-size:44px;margin-bottom:10px;">📄</div>
+                    <div id="adm-uz-icon" style="font-size:44px;margin-bottom:10px;">≡ƒôä</div>
                     <div id="adm-uz-text" style="font-size:14px;color:var(--text-secondary);">Click to select Files or Drag &amp; Drop Folder</div>
-                    <div id="adm-uz-sub" style="font-size:12px;color:rgba(79,70,229,0.5);margin-top:5px;">PDF files only · Multiple files &amp; Folders supported ✓</div>
+                    <div id="adm-uz-sub" style="font-size:12px;color:rgba(79,70,229,0.5);margin-top:5px;">PDF files only ┬╖ Multiple files &amp; Folders supported Γ£ô</div>
                   </div>
 
                   <div style="display:flex;gap:10px;margin-bottom:16px;">
                     <button class="btn btn-secondary"
                       onclick="event.stopPropagation(); document.getElementById('adm-file-input').click()"
-                      style="padding:10px 14px;font-size:13px;margin:0;flex:1;border-color:#c7d2fe;color:#4f46e5;background:#f5f3ff;">📄 Select Files</button>
+                      style="padding:10px 14px;font-size:13px;margin:0;flex:1;border-color:#c7d2fe;color:#4f46e5;background:#f5f3ff;">≡ƒôä Select Files</button>
                     <button class="btn btn-secondary"
                       onclick="event.stopPropagation(); document.getElementById('adm-folder-input').click()"
-                      style="padding:10px 14px;font-size:13px;margin:0;flex:1;border-color:#c7d2fe;color:#4f46e5;background:#f5f3ff;">📂 Select Folder</button>
+                      style="padding:10px 14px;font-size:13px;margin:0;flex:1;border-color:#c7d2fe;color:#4f46e5;background:#f5f3ff;">≡ƒôé Select Folder</button>
                   </div>
 
                   <div id="adm-selected-list"
@@ -2253,7 +2082,7 @@
                     </div>
                     <div class="form-group" style="margin:0;">
                       <label>Note Title *</label>
-                      <input id="adm-title" type="text" placeholder="e.g. Unit 1 – Arrays" />
+                      <input id="adm-title" type="text" placeholder="e.g. Unit 1 ΓÇô Arrays" />
                     </div>
                   </div>
 
@@ -2303,7 +2132,7 @@
                             font-size:13px;color:#1a1a2e;user-select:none;min-height:42px;">
                         <span id="adm-sec-label">All Sections (Common)</span>
                         <span
-                          style="position:absolute;right:12px;top:50%;transform:translateY(-50%);opacity:0.5;">▼</span>
+                          style="position:absolute;right:12px;top:50%;transform:translateY(-50%);opacity:0.5;">Γû╝</span>
                       </div>
                       <div id="adm-sec-dropdown" style="display:none;position:fixed;z-index:99999;
                           background:#ffffff;border:1px solid #d1d5db;border-radius:12px;
@@ -2354,7 +2183,7 @@
                   </div>
                   <div id="adm-upload-msg" style="font-size:13px;font-weight:600;margin-bottom:10px;min-height:18px;">
                   </div>
-                  <button class="btn btn-primary" id="adm-btn-upload" onclick="admUploadNote()">🚀 Upload Note</button>
+                  <button class="btn btn-primary" id="adm-btn-upload" onclick="admUploadNote()">≡ƒÜÇ Upload Note</button>
                 </div>
 
                 <div class="card" style="margin-top:14px;border:1px solid #e5e7eb;">
@@ -2362,16 +2191,16 @@
                   <div id="adm-screen-subjects">
                     <div
                       style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
-                      <h3 style="margin:0;">📋 Uploaded Notes</h3>
+                      <h3 style="margin:0;">≡ƒôï Uploaded Notes</h3>
                       <button onclick="admLoadAllNotes()"
-                        style="padding:8px 14px;background:#f9fafb;border:1px solid #d1d5db;border-radius:10px;color:#3d5af1;font-weight:700;font-size:13px;cursor:pointer;">🔄
+                        style="padding:8px 14px;background:#f9fafb;border:1px solid #d1d5db;border-radius:10px;color:#3d5af1;font-weight:700;font-size:13px;cursor:pointer;">≡ƒöä
                         Refresh</button>
                     </div>
 
                     <!-- Semester Filter Buttons -->
                     <div
                       style="margin-bottom:20px;padding:16px;background:#f7f8fc;border-radius:12px;border:1px solid #e5e7eb;">
-                      <div style="font-size:13px;font-weight:600;color:#6b7280;margin-bottom:12px;">📚 Filter by
+                      <div style="font-size:13px;font-weight:600;color:#6b7280;margin-bottom:12px;">≡ƒôÜ Filter by
                         Semester:</div>
                       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(95px,1fr));gap:8px;">
                         <button onclick="filterNotesBySemester('all')" class="sem-filter-btn active-filter"
@@ -2423,7 +2252,7 @@
                   <div id="adm-screen-detail" style="display:none;">
                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
                       <button onclick="admBackToSubjects()"
-                        style="padding:7px 14px;background:#f9fafb;border:1px solid #d1d5db;border-radius:9px;color:#3d5af1;font-weight:700;font-size:12px;cursor:pointer;">←
+                        style="padding:7px 14px;background:#f9fafb;border:1px solid #d1d5db;border-radius:9px;color:#3d5af1;font-weight:700;font-size:12px;cursor:pointer;">ΓåÉ
                         Back</button>
                       <h3 id="adm-detail-title" style="margin:0;font-size:15px;"></h3>
                     </div>
@@ -2434,27 +2263,27 @@
             </div>
 
             <!-- SECTION: Question Bank Upload (Admin) -->
-            <div class="admin-section" id="sec-qbank-upload" data-label="📚 Upload Q-Bank">
+            <div class="admin-section" id="sec-qbank-upload" data-label="≡ƒôÜ Upload Q-Bank">
               <div class="section-content">
                 <div class="card" style="background:#ecfeff;border:1.5px solid #a5f3fc;">
-                  <h3 style="margin-bottom:6px;color:#0891b2;">📤 Upload Question Bank (PDF)</h3>
+                  <h3 style="margin-bottom:6px;color:#0891b2;">≡ƒôñ Upload Question Bank (PDF)</h3>
                   <p style="font-size:13px;color:var(--text-secondary);margin-bottom:18px;">Upload PDF Question Banks for students. They can view and download from their dashboard, filtered by Year, Semester &amp; Section.</p>
 
                   <div id="qbank-upload-zone" onclick="document.getElementById('qbank-file-input').click()"
                     ondragover="qbankDragOver(event)" ondragleave="qbankDragLeave(event)" ondrop="qbankDropFile(event)" style="border:2px dashed #a5f3fc;border-radius:14px;padding:28px;text-align:center;
                         cursor:pointer;transition:all 0.3s;margin-bottom:16px;background:#ffffff;">
-                    <div id="qbank-uz-icon" style="font-size:44px;margin-bottom:10px;">📚</div>
+                    <div id="qbank-uz-icon" style="font-size:44px;margin-bottom:10px;">≡ƒôÜ</div>
                     <div id="qbank-uz-text" style="font-size:14px;color:var(--text-secondary);">Click to select Files or Drag &amp; Drop Folder</div>
-                    <div id="qbank-uz-sub" style="font-size:12px;color:rgba(8,145,178,0.5);margin-top:5px;">PDF files only · Multiple files &amp; Folders supported ✓</div>
+                    <div id="qbank-uz-sub" style="font-size:12px;color:rgba(8,145,178,0.5);margin-top:5px;">PDF files only ┬╖ Multiple files &amp; Folders supported Γ£ô</div>
                   </div>
 
                   <div style="display:flex;gap:10px;margin-bottom:16px;">
                     <button class="btn btn-secondary"
                       onclick="event.stopPropagation(); document.getElementById('qbank-file-input').click()"
-                      style="padding:10px 14px;font-size:13px;margin:0;flex:1;border-color:#a5f3fc;color:#0891b2;">📄 Select Files</button>
+                      style="padding:10px 14px;font-size:13px;margin:0;flex:1;border-color:#a5f3fc;color:#0891b2;">≡ƒôä Select Files</button>
                     <button class="btn btn-secondary"
                       onclick="event.stopPropagation(); document.getElementById('qbank-folder-input').click()"
-                      style="padding:10px 14px;font-size:13px;margin:0;flex:1;border-color:#a5f3fc;color:#0891b2;">📂 Select Folder</button>
+                      style="padding:10px 14px;font-size:13px;margin:0;flex:1;border-color:#a5f3fc;color:#0891b2;">≡ƒôé Select Folder</button>
                   </div>
 
                   <div id="qbank-selected-list"
@@ -2524,7 +2353,7 @@
                             border-radius:12px;padding:11px 14px;cursor:pointer;position:relative;
                             font-size:13px;color:#1a1a2e;user-select:none;min-height:42px;">
                         <span id="qbank-sec-label">All Sections (Common)</span>
-                        <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);opacity:0.5;">▼</span>
+                        <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);opacity:0.5;">Γû╝</span>
                       </div>
                       <div id="qbank-sec-dropdown" style="display:none;position:fixed;z-index:99999;
                           background:#ffffff;border:1px solid #a5f3fc;border-radius:12px;
@@ -2569,21 +2398,21 @@
                     </div>
                   </div>
                   <div id="qbank-upload-msg" style="font-size:13px;font-weight:600;margin-bottom:10px;min-height:18px;"></div>
-                  <button class="btn btn-primary" id="qbank-btn-upload" onclick="admUploadQBank()" style="background:linear-gradient(135deg,#0891b2 0%,#06b6d4 100%);box-shadow:0 4px 20px rgba(8,145,178,0.3);">🚀 Upload Q-Bank</button>
+                  <button class="btn btn-primary" id="qbank-btn-upload" onclick="admUploadQBank()" style="background:linear-gradient(135deg,#0891b2 0%,#06b6d4 100%);box-shadow:0 4px 20px rgba(8,145,178,0.3);">≡ƒÜÇ Upload Q-Bank</button>
                 </div>
 
                 <div class="card" style="margin-top:14px;border:1px solid #e5e7eb;">
                   <!-- Subject grid screen -->
                   <div id="qbank-adm-screen-subjects">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
-                      <h3 style="margin:0;">📋 Uploaded Question Banks</h3>
+                      <h3 style="margin:0;">≡ƒôï Uploaded Question Banks</h3>
                       <button onclick="qbankAdmLoadAll()"
-                        style="padding:8px 14px;background:#f9fafb;border:1px solid #d1d5db;border-radius:10px;color:#0891b2;font-weight:700;font-size:13px;cursor:pointer;">🔄 Refresh</button>
+                        style="padding:8px 14px;background:#f9fafb;border:1px solid #d1d5db;border-radius:10px;color:#0891b2;font-weight:700;font-size:13px;cursor:pointer;">≡ƒöä Refresh</button>
                     </div>
 
                     <!-- Semester Filter Buttons -->
                     <div style="margin-bottom:20px;padding:16px;background:#ecfeff;border-radius:12px;border:1px solid #a5f3fc;">
-                      <div style="font-size:13px;font-weight:600;color:#0891b2;margin-bottom:12px;">📚 Filter by Semester:</div>
+                      <div style="font-size:13px;font-weight:600;color:#0891b2;margin-bottom:12px;">≡ƒôÜ Filter by Semester:</div>
                       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(95px,1fr));gap:8px;">
                         <button onclick="filterQBankBySemester('all')" class="qbank-filter-btn qbank-active-filter" data-sem="all"
                           style="background:linear-gradient(135deg,#0891b2 0%,#06b6d4 100%);color:white;border:none;padding:10px 14px;border-radius:10px;font-weight:600;font-size:12px;cursor:pointer;transition:all 0.3s ease;box-shadow:0 2px 8px rgba(8,145,178,0.2);">
@@ -2632,7 +2461,7 @@
                   <div id="qbank-adm-screen-detail" style="display:none;">
                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
                       <button onclick="qbankAdmBackToSubjects()"
-                        style="padding:7px 14px;background:#f9fafb;border:1px solid #d1d5db;border-radius:9px;color:#0891b2;font-weight:700;font-size:12px;cursor:pointer;">← Back</button>
+                        style="padding:7px 14px;background:#f9fafb;border:1px solid #d1d5db;border-radius:9px;color:#0891b2;font-weight:700;font-size:12px;cursor:pointer;">ΓåÉ Back</button>
                       <h3 id="qbank-adm-detail-title" style="margin:0;font-size:15px;"></h3>
                     </div>
                     <div id="qbank-adm-detail-list"></div>
@@ -2642,10 +2471,10 @@
             </div>
 
             <!-- SECTION: PYQ Upload (Admin) -->
-            <div class="admin-section" id="sec-pyq-upload" data-label="📜 Upload PYQ Papers">
+            <div class="admin-section" id="sec-pyq-upload" data-label="≡ƒô£ Upload PYQ Papers">
               <div class="section-content">
                 <div class="card" style="background:#fffbeb;border:1.5px solid #fde68a;">
-                  <h3 style="margin-bottom:6px;">📤 Upload Previous Year Question Papers (PDF)</h3>
+                  <h3 style="margin-bottom:6px;">≡ƒôñ Upload Previous Year Question Papers (PDF)</h3>
                   <p style="font-size:13px;color:var(--text-secondary);margin-bottom:18px;">Upload PDF question papers
                     for students. They can view and download from their dashboard, filtered by Year, Semester &amp;
                     Section.</p>
@@ -2653,18 +2482,18 @@
                   <div id="pyq-upload-zone" onclick="document.getElementById('pyq-file-input').click()"
                     ondragover="pyqDragOver(event)" ondragleave="pyqDragLeave(event)" ondrop="pyqDrop(event)" style="border:2px dashed #fde68a;border-radius:14px;padding:28px;text-align:center;
                         cursor:pointer;transition:all 0.3s;margin-bottom:16px;background:#ffffff;">
-                    <div id="pyq-uz-icon" style="font-size:44px;margin-bottom:10px;">📜</div>
+                    <div id="pyq-uz-icon" style="font-size:44px;margin-bottom:10px;">≡ƒô£</div>
                     <div id="pyq-uz-text" style="font-size:14px;color:var(--text-secondary);">Click to select Files or Drag &amp; Drop Folder</div>
-                    <div id="pyq-uz-sub" style="font-size:12px;color:rgba(217,119,6,0.5);margin-top:5px;">PDF files only · Multiple files &amp; Folders supported ✓</div>
+                    <div id="pyq-uz-sub" style="font-size:12px;color:rgba(217,119,6,0.5);margin-top:5px;">PDF files only ┬╖ Multiple files &amp; Folders supported Γ£ô</div>
                   </div>
 
                   <div style="display:flex;gap:10px;margin-bottom:16px;">
                     <button class="btn btn-secondary"
                       onclick="event.stopPropagation(); document.getElementById('pyq-file-input').click()"
-                      style="padding:10px 14px;font-size:13px;margin:0;flex:1;border-color:#fde68a;color:#d97706;background:#fffbeb;">📄 Select Files</button>
+                      style="padding:10px 14px;font-size:13px;margin:0;flex:1;border-color:#fde68a;color:#d97706;background:#fffbeb;">≡ƒôä Select Files</button>
                     <button class="btn btn-secondary"
                       onclick="event.stopPropagation(); document.getElementById('pyq-folder-input').click()"
-                      style="padding:10px 14px;font-size:13px;margin:0;flex:1;border-color:#fde68a;color:#d97706;background:#fffbeb;">📂 Select Folder</button>
+                      style="padding:10px 14px;font-size:13px;margin:0;flex:1;border-color:#fde68a;color:#d97706;background:#fffbeb;">≡ƒôé Select Folder</button>
                   </div>
 
                   <div id="pyq-selected-list"
@@ -2735,7 +2564,7 @@
                             font-size:13px;color:#1a1a2e;user-select:none;min-height:42px;">
                         <span id="pyq-sec-label">All Sections (Common)</span>
                         <span
-                          style="position:absolute;right:12px;top:50%;transform:translateY(-50%);opacity:0.5;">▼</span>
+                          style="position:absolute;right:12px;top:50%;transform:translateY(-50%);opacity:0.5;">Γû╝</span>
                       </div>
                       <div id="pyq-sec-dropdown" style="display:none;position:fixed;z-index:99999;
                           background:#ffffff;border:1px solid #d1d5db;border-radius:12px;
@@ -2783,7 +2612,7 @@
                   <div id="pyq-upload-msg" style="font-size:13px;font-weight:600;margin-bottom:10px;min-height:18px;">
                   </div>
                   <button class="btn btn-primary" id="pyq-upload-btn" onclick="pyqUpload()"
-                    style="background:linear-gradient(135deg,#f59e0b,#ef4444);">🚀 Upload PYQ Paper</button>
+                    style="background:linear-gradient(135deg,#f59e0b,#ef4444);">≡ƒÜÇ Upload PYQ Paper</button>
                 </div>
 
                 <div class="card" style="margin-top:14px;border:1px solid #fde68a;">
@@ -2791,15 +2620,15 @@
                   <div id="pyq-adm-screen-subjects">
                     <div
                       style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
-                      <h3 style="margin:0;">📋 Uploaded PYQ Papers</h3>
+                      <h3 style="margin:0;">≡ƒôï Uploaded PYQ Papers</h3>
                       <button onclick="pyqAdmLoadAll()"
-                        style="padding:8px 14px;background:#fef3c7;border:1px solid #fde68a;border-radius:10px;color:#92400e;font-weight:700;font-size:13px;cursor:pointer;">🔄
+                        style="padding:8px 14px;background:#fef3c7;border:1px solid #fde68a;border-radius:10px;color:#92400e;font-weight:700;font-size:13px;cursor:pointer;">≡ƒöä
                         Refresh</button>
                     </div>
 
                     <!-- Semester Filter Buttons -->
                     <div style="margin-bottom:20px;padding:16px;background:#fffbeb;border-radius:12px;border:1px solid #fde68a;">
-                      <div style="font-size:13px;font-weight:600;color:#d97706;margin-bottom:12px;">📚 Filter by Semester:</div>
+                      <div style="font-size:13px;font-weight:600;color:#d97706;margin-bottom:12px;">≡ƒôÜ Filter by Semester:</div>
                       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(95px,1fr));gap:8px;">
                         <button onclick="filterPyqBySemester('all')" class="pyq-filter-btn pyq-active-filter" data-sem="all"
                           style="background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%);color:white;border:none;padding:10px 14px;border-radius:10px;font-weight:600;font-size:12px;cursor:pointer;transition:all 0.3s ease;box-shadow:0 2px 8px rgba(217,119,6,0.2);">
@@ -2849,7 +2678,7 @@
                   <div id="pyq-adm-screen-detail" style="display:none;">
                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
                       <button onclick="pyqAdmBackToSubjects()"
-                        style="padding:7px 14px;background:#f9fafb;border:1px solid #d1d5db;border-radius:9px;color:#92400e;font-weight:700;font-size:12px;cursor:pointer;">←
+                        style="padding:7px 14px;background:#f9fafb;border:1px solid #d1d5db;border-radius:9px;color:#92400e;font-weight:700;font-size:12px;cursor:pointer;">ΓåÉ
                         Back</button>
                       <h3 id="pyq-adm-detail-title" style="margin:0;font-size:15px;"></h3>
                     </div>
@@ -2860,10 +2689,10 @@
             </div>
 
             <!-- ADMIN: IA Timetable Upload -->
-            <div class="admin-section" id="sec-ia-timetable" data-label="📆 IA Timetable">
+            <div class="admin-section" id="sec-ia-timetable" data-label="≡ƒôå IA Timetable">
               <div class="section-content">
                 <div class="card" style="background:#fdf4ff;border:1.5px solid #f0abfc;">
-                  <h3 style="margin-bottom:6px;">📆 Upload IA Timetable</h3>
+                  <h3 style="margin-bottom:6px;">≡ƒôå Upload IA Timetable</h3>
                   <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">Upload section-wise IA
                     timetable images. Students see their section's timetable instantly.</p>
 
@@ -2948,9 +2777,9 @@
                   <div
                     style="border:2px dashed #d8b4fe;border-radius:14px;padding:24px;text-align:center;background:#f9fafb;margin-bottom:14px;cursor:pointer;"
                     onclick="document.getElementById('ia-tt-file').click()">
-                    <div style="font-size:36px;margin-bottom:8px;">🖼️</div>
+                    <div style="font-size:36px;margin-bottom:8px;">≡ƒû╝∩╕Å</div>
                     <div style="font-weight:700;color:#7c3aed;font-size:14px;">Click to select timetable image</div>
-                    <div style="font-size:11px;color:#9ca3af;margin-top:4px;">JPG, PNG — Max 2MB</div>
+                    <div style="font-size:11px;color:#9ca3af;margin-top:4px;">JPG, PNG ΓÇö Max 2MB</div>
                   </div>
                   <input type="file" id="ia-tt-file" accept="image/*" style="display:none;"
                     onchange="document.getElementById('ia-tt-preview-wrap').style.display='block';document.getElementById('ia-tt-preview').src=URL.createObjectURL(this.files[0])" />
@@ -2959,7 +2788,7 @@
                     <img id="ia-tt-preview" style="width:100%;display:block;" alt="Preview" />
                   </div>
                   <button id="ia-tt-btn" onclick="adminUploadIATimetable()"
-                    style="width:100%;padding:12px;background:linear-gradient(135deg,#7c3aed,#a855f7);border:none;border-radius:12px;color:#fff;font-weight:700;font-size:14px;cursor:pointer;font-family:Poppins,sans-serif;">📤
+                    style="width:100%;padding:12px;background:linear-gradient(135deg,#7c3aed,#a855f7);border:none;border-radius:12px;color:#fff;font-weight:700;font-size:14px;cursor:pointer;font-family:Poppins,sans-serif;">≡ƒôñ
                     Upload Timetable</button>
                 </div>
 
@@ -2967,10 +2796,10 @@
                 <div class="card" style="margin-top:14px;">
                   <div
                     style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-                    <h3 style="margin:0;">🖼️ Currently Uploaded</h3>
+                    <h3 style="margin:0;">≡ƒû╝∩╕Å Currently Uploaded</h3>
                     <button onclick="adminLoadIATimetablePreview()"
                       style="display:inline-flex;align-items:center;gap:5px;padding:6px 14px;background:#eff2fe;border:1.5px solid #c7d2fe;border-radius:20px;color:#3d5af1;font-weight:700;font-size:12px;cursor:pointer;font-family:Poppins,sans-serif;transition:all 0.2s;"
-                      onmouseover="this.style.background='#e0e7ff'" onmouseout="this.style.background='#eff2fe'">🔄
+                      onmouseover="this.style.background='#e0e7ff'" onmouseout="this.style.background='#eff2fe'">≡ƒöä
                       Refresh</button>
                   </div>
                   <div id="ia-tt-current-display">
@@ -2979,7 +2808,7 @@
                   </div>
                   <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">
                     <button onclick="adminDeleteIATimetable()"
-                      style="padding:8px 16px;background:#fff;border:1.5px solid #fca5a5;border-radius:10px;color:#ef4444;font-weight:700;font-size:12px;cursor:pointer;font-family:Poppins,sans-serif;">🗑️
+                      style="padding:8px 16px;background:#fff;border:1.5px solid #fca5a5;border-radius:10px;color:#ef4444;font-weight:700;font-size:12px;cursor:pointer;font-family:Poppins,sans-serif;">≡ƒùæ∩╕Å
                       Remove Selected</button>
                   </div>
                 </div>
@@ -2994,31 +2823,31 @@
           <h2>About System</h2>
 
           <div class="card">
-            <h3>🔐 Security Features</h3>
+            <h3>≡ƒöÉ Security Features</h3>
             <p style="color:var(--text-secondary);font-size:14px;line-height:1.8;">
-              • AES-256 data encryption<br>
-              • Device binding per user<br>
-              • Password hashing with PBKDF2<br>
-              • Secure admin authentication<br>
-              • 24-hour session expiry<br>
-              • One-time daily attendance
+              ΓÇó AES-256 data encryption<br>
+              ΓÇó Device binding per user<br>
+              ΓÇó Password hashing with PBKDF2<br>
+              ΓÇó Secure admin authentication<br>
+              ΓÇó 24-hour session expiry<br>
+              ΓÇó One-time daily attendance
             </p>
           </div>
 
           <div class="card">
-            <h3>✨ Key Features</h3>
+            <h3>Γ£¿ Key Features</h3>
             <p style="color:var(--text-secondary);font-size:14px;line-height:1.8;">
-              • Beautiful animated interface<br>
-              • Mobile responsive design<br>
-              • Real-time statistics<br>
-              • Export to Excel & PDF<br>
-              • Admin dashboard<br>
-              • Attendance history tracking
+              ΓÇó Beautiful animated interface<br>
+              ΓÇó Mobile responsive design<br>
+              ΓÇó Real-time statistics<br>
+              ΓÇó Export to Excel & PDF<br>
+              ΓÇó Admin dashboard<br>
+              ΓÇó Attendance history tracking
             </p>
           </div>
 
           <div class="card">
-            <h3>📱 How to Use</h3>
+            <h3>≡ƒô▒ How to Use</h3>
             <p style="color:var(--text-secondary);font-size:14px;line-height:1.8;">
               <strong>For Students:</strong><br>
               1. Register with your details<br>
@@ -3027,7 +2856,7 @@
               4. View your history<br><br>
 
 
-              <strong style="color:#f87171;">⚠️ Security Note:</strong><br>
+              <strong style="color:#f87171;">ΓÜá∩╕Å Security Note:</strong><br>
               Admin sessions expire after 24 hours for security. Always logout when done.
             </p>
           </div>
@@ -3047,11 +2876,11 @@
           <path d="M14 27l7.5 7.5L38 18" />
         </svg>
       </div>
-      <h2>Registration Successful! 🎉</h2>
+      <h2>Registration Successful! ≡ƒÄë</h2>
       <p>Your account has been created successfully.</p>
       <div class="user-details" id="modal-user-details"></div>
       <p style="color:#3d5af1;font-weight:600;margin-top:16px;">
-        ✓ Your device has been bound to this account
+        Γ£ô Your device has been bound to this account
       </p>
       <p style="font-size:14px;margin-top:8px;">
         You can now login to mark your attendance
@@ -3066,7 +2895,7 @@
   <div id="edit-student-modal" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(7,10,19,0.85);align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(10px);">
     <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:20px;max-width:480px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,0.15);overflow:hidden;">
       <div style="background:linear-gradient(90deg,#3d5af1,#6366f1);padding:18px 24px;color:#ffffff;display:flex;justify-content:between;align-items:center;">
-        <h3 style="margin:0;font-size:16px;font-weight:800;color:#ffffff;">✏️ Edit Student Account</h3>
+        <h3 style="margin:0;font-size:16px;font-weight:800;color:#ffffff;">Γ£Å∩╕Å Edit Student Account</h3>
         <button onclick="document.getElementById('edit-student-modal').style.display='none'" style="background:none;border:none;color:#ffffff;font-size:20px;cursor:pointer;line-height:1;">&times;</button>
       </div>
       <div style="padding:24px;max-height:80vh;overflow-y:auto;box-sizing:border-box;">
@@ -3140,8 +2969,8 @@
         <div class="form-group" style="margin-bottom:20px;">
           <label style="font-weight:600;font-size:12px;color:#4b5563;">Email Verification Status</label>
           <select id="edit-student-verified" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;box-sizing:border-box;">
-            <option value="true">Verified ✓</option>
-            <option value="false">Unverified ❌</option>
+            <option value="true">Verified Γ£ô</option>
+            <option value="false">Unverified Γ¥î</option>
           </select>
         </div>
 
@@ -3156,7 +2985,7 @@
 
   <!-- Firebase & Main Script -->
 
-  <!-- Global function bridge – forwards onclick="" calls into module-scoped fns via private aliases -->
+  <!-- Global function bridge ΓÇô forwards onclick="" calls into module-scoped fns via private aliases -->
   <script>
     // openHelpCenter: open modal immediately via DOM (no module dependency),
     // then delegate to full module fn once loaded (for Firebase + voice)
@@ -3214,7 +3043,7 @@
         }
       }
     }
-    // PDF note/PYQ view bridge — module sets window._impl_* so onclick bridge avoids recursion
+    // PDF note/PYQ view bridge ΓÇö module sets window._impl_* so onclick bridge avoids recursion
     function admViewNote(id, title) { var f = window._impl_admViewNote; f && f(id, title); }
     function admDeleteNote(id, title) { var f = window._impl_admDeleteNote; f && f(id, title); }
     function admDeleteGroupNote(ids, title) { var f = window._impl_admDeleteGroupNote; f && f(ids, title); }
@@ -3276,7 +3105,7 @@
 
   <script type="module" src="js-v2/app.js?v=20260701"></script>
 
-  <!-- ══ FOUNDER MODAL ══ -->
+  <!-- ΓòÉΓòÉ FOUNDER MODAL ΓòÉΓòÉ -->
   <div id="founder-modal"
     style="display:none;position:fixed;inset:0;z-index:99998;align-items:center;justify-content:center;padding:20px;background:rgba(30,30,60,0.5);backdrop-filter:blur(10px);"
     onclick="if(event.target===this)closeFounderModal()">
@@ -3286,12 +3115,12 @@
       <div style="height:3px;background:linear-gradient(90deg,#ffc850,#ff7832,#818cf8);"></div>
       <!-- Close btn -->
       <button onclick="closeFounderModal()"
-        style="position:absolute;top:14px;right:16px;background:#ffffff;border:1px solid rgba(0,0,0,0.03);border-radius:50%;width:32px;height:32px;color:#1a1a2e;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+        style="position:absolute;top:14px;right:16px;background:#ffffff;border:1px solid rgba(0,0,0,0.03);border-radius:50%;width:32px;height:32px;color:#1a1a2e;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">Γ£ò</button>
       <!-- Header -->
       <div style="padding:28px 24px 0;text-align:center;">
         <div
           style="font-size:11px;color:rgba(255,200,80,0.8);letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:18px;">
-          🌟 Meet the Website Developer</div>
+          ≡ƒîƒ Meet the Website Developer</div>
         <!-- Photo -->
         <div style="position:relative;display:inline-block;margin-bottom:18px;">
           <div
@@ -3314,7 +3143,7 @@
         </div>
         <!-- Bio -->
         <div style="font-size:13px;color:rgba(26,26,46,0.85);line-height:1.7;text-align:center;padding:0 8px;">
-          Passionate technologist &amp; educator who built <strong style="color:#ff7832;">Tech Book</strong> to make learning accessible, interactive, and fun for every student. 🚀
+          Passionate technologist &amp; educator who built <strong style="color:#ff7832;">Tech Book</strong> to make learning accessible, interactive, and fun for every student. ≡ƒÜÇ
         </div>
         <!-- Tags -->
         <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:18px;">
@@ -3374,7 +3203,7 @@
     </div>
   </div>
 
-  <!-- ══ COMING SOON MODAL ══ -->
+  <!-- ΓòÉΓòÉ COMING SOON MODAL ΓòÉΓòÉ -->
   <div id="coming-soon-modal"
     style="display:none;position:fixed;inset:0;z-index:99999;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,0.55);backdrop-filter:blur(8px);"
     onclick="if(event.target===this)this.style.display='none'">
@@ -3382,10 +3211,10 @@
       style="background:linear-gradient(145deg,#ffffff,#f8f9ff);border:1px solid rgba(168,85,247,0.35);border-radius:26px;max-width:340px;width:100%;overflow:hidden;box-shadow:0 0 60px rgba(168,85,247,0.2),0 40px 80px #e5e7eb;position:relative;text-align:center;">
       <div style="height:3px;background:linear-gradient(90deg,#a855f7,#818cf8,#3d5af1);"></div>
       <button onclick="document.getElementById('coming-soon-modal').style.display='none'"
-        style="position:absolute;top:12px;right:14px;background:#ffffff;border:1px solid rgba(0,0,0,0.03);border-radius:50%;width:30px;height:30px;color:#1a1a2e;font-size:15px;cursor:pointer;">✕</button>
+        style="position:absolute;top:12px;right:14px;background:#ffffff;border:1px solid rgba(0,0,0,0.03);border-radius:50%;width:30px;height:30px;color:#1a1a2e;font-size:15px;cursor:pointer;">Γ£ò</button>
       <div style="padding:32px 28px 30px;">
         <!-- Animated rocket -->
-        <div style="font-size:56px;margin-bottom:16px;animation:rocketBounce 1.5s ease-in-out infinite;">🚀</div>
+        <div style="font-size:56px;margin-bottom:16px;animation:rocketBounce 1.5s ease-in-out infinite;">≡ƒÜÇ</div>
         <div id="cs-title"
           style="font-size:20px;font-weight:900;background:linear-gradient(135deg,#a855f7,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:10px;font-family:'Orbitron',sans-serif;">
         </div>
@@ -3399,19 +3228,19 @@
             style="height:100%;width:35%;background:linear-gradient(90deg,#a855f7,#818cf8);border-radius:20px;animation:progressPulse 2s ease-in-out infinite;">
           </div>
         </div>
-        <div style="font-size:11px;color:rgba(139,168,204,0.5);margin-bottom:22px;">In Development — 35%</div>
+        <div style="font-size:11px;color:rgba(139,168,204,0.5);margin-bottom:22px;">In Development ΓÇö 35%</div>
         <button onclick="document.getElementById('coming-soon-modal').style.display='none'"
           style="padding:12px 32px;background:linear-gradient(135deg,#a855f7,#818cf8);border:none;border-radius:14px;color:#1a1a2e;font-weight:800;font-size:14px;cursor:pointer;box-shadow:0 4px 20px rgba(168,85,247,0.4);">Got
-          it! 👍</button>
+          it! ≡ƒæì</button>
       </div>
     </div>
   </div>
 
-  <!-- ══════════════════════════════════════════
-       HELP CENTER — iOS 26 Glass Design
-  ══════════════════════════════════════════ -->
+  <!-- ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+       HELP CENTER ΓÇö iOS 26 Glass Design
+  ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ -->
   <style>
-    /* ── Glass variables ── */
+    /* ΓöÇΓöÇ Glass variables ΓöÇΓöÇ */
     :root {
       --glass-bg: rgba(255, 255, 255, 0.18);
       --glass-border: rgba(255, 255, 255, 0.35);
@@ -3421,15 +3250,15 @@
     }
 
 
-    /* ════════════════════════════════════════════════
-       TECHBOOK CHATBOT — iOS 26.1 LIQUID GLASS
-       Palette: #3d5af1 · #6366f1 · #a855f7 · white
-       ════════════════════════════════════════════════ */
+    /* ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+       TECHBOOK CHATBOT ΓÇö iOS 26.1 LIQUID GLASS
+       Palette: #3d5af1 ┬╖ #6366f1 ┬╖ #a855f7 ┬╖ white
+       ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ */
 
-    /* ── MODAL OVERLAY ── */
-    /* ══════════════════════════════════════
-       CHATBOT — Website Theme (White/Blue)
-    ══════════════════════════════════════ */
+    /* ΓöÇΓöÇ MODAL OVERLAY ΓöÇΓöÇ */
+    /* ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+       CHATBOT ΓÇö Website Theme (White/Blue)
+    ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ */
     #help-center-modal {
       display: none;
       position: fixed;
@@ -3478,7 +3307,7 @@
       opacity: 1;
     }
 
-    /* ── HEADER ── */
+    /* ΓöÇΓöÇ HEADER ΓöÇΓöÇ */
     #hc-header {
       position: relative;
       z-index: 2;
@@ -3565,7 +3394,7 @@
       transform: rotate(90deg);
     }
 
-    /* ── CHIPS ── */
+    /* ΓöÇΓöÇ CHIPS ΓöÇΓöÇ */
     #hc-chips {
       display: flex;
       gap: 6px;
@@ -3610,7 +3439,7 @@
       transform: translateY(0);
     }
 
-    /* ── MESSAGES ── */
+    /* ΓöÇΓöÇ MESSAGES ΓöÇΓöÇ */
     #hc-messages {
       flex: 1;
       overflow-y: auto;
@@ -3805,7 +3634,7 @@
       }
     }
 
-    /* ── INPUT AREA ── */
+    /* ΓöÇΓöÇ INPUT AREA ΓöÇΓöÇ */
     #hc-input-area {
       padding: 10px 12px 12px;
       background: #ffffff;
@@ -4057,7 +3886,7 @@
     }
   </style>
 
-  <!-- ════ CHATBOT MODAL ════ -->
+  <!-- ΓòÉΓòÉΓòÉΓòÉ CHATBOT MODAL ΓòÉΓòÉΓòÉΓòÉ -->
   <div id="help-center-modal">
     <div id="hc-backdrop" onclick="closeHelpCenter()"></div>
     <div id="hc-card">
@@ -4066,7 +3895,7 @@
 
       <!-- Header -->
       <div id="hc-header">
-        <div id="hc-bot-avatar">🤖</div>
+        <div id="hc-bot-avatar">≡ƒñû</div>
         <div style="flex:1;min-width:0;">
           <div
             style="font-size:16px;font-weight:900;color:#fff;letter-spacing:0.3px;font-family:'Poppins',sans-serif;text-shadow:0 1px 8px rgba(0,0,0,0.3);">
@@ -4075,42 +3904,42 @@
             <div id="hc-online-dot"></div>
             <span
               style="font-size:10.5px;color:rgba(255,255,255,0.6);font-weight:500;font-family:'Poppins',sans-serif;">Online
-              · Always ready to help</span>
+              ┬╖ Always ready to help</span>
           </div>
         </div>
-        <button id="hc-close-btn" onclick="closeHelpCenter()">✕</button>
+        <button id="hc-close-btn" onclick="closeHelpCenter()">Γ£ò</button>
       </div>
 
       <!-- Quick chips -->
       <div id="hc-chips">
-        <div class="hc-chip" onclick="hcQuick('attendance help')">📋 Attendance</div>
-        <div class="hc-chip" onclick="hcQuick('show me notes')">📚 Notes</div>
-        <div class="hc-chip" onclick="hcQuick('quiz and scores')">🧠 Quizzes</div>
-        <div class="hc-chip" onclick="hcQuick('previous year questions')">🗂️ PYQs</div>
-        <div class="hc-chip" onclick="hcQuick('login problem')">🔐 Login</div>
-        <div class="hc-chip" onclick="hcQuick('timetable')">📅 Timetable</div>
-        <div class="hc-chip" onclick="hcQuick('ia timetable')">📆 IA Timetable</div>
-        <div class="hc-chip" onclick="hcQuick('report a bug')">🐛 Bug</div>
-        <div class="hc-chip" onclick="hcQuick('contact support')">📬 Contact</div>
+        <div class="hc-chip" onclick="hcQuick('attendance help')">≡ƒôï Attendance</div>
+        <div class="hc-chip" onclick="hcQuick('show me notes')">≡ƒôÜ Notes</div>
+        <div class="hc-chip" onclick="hcQuick('quiz and scores')">≡ƒºá Quizzes</div>
+        <div class="hc-chip" onclick="hcQuick('previous year questions')">≡ƒùé∩╕Å PYQs</div>
+        <div class="hc-chip" onclick="hcQuick('login problem')">≡ƒöÉ Login</div>
+        <div class="hc-chip" onclick="hcQuick('timetable')">≡ƒôà Timetable</div>
+        <div class="hc-chip" onclick="hcQuick('ia timetable')">≡ƒôå IA Timetable</div>
+        <div class="hc-chip" onclick="hcQuick('report a bug')">≡ƒÉ¢ Bug</div>
+        <div class="hc-chip" onclick="hcQuick('contact support')">≡ƒô¼ Contact</div>
       </div>
 
       <!-- Messages -->
       <div id="hc-messages">
         <div class="hc-date-pill">Today</div>
         <div class="hc-row bot" id="hc-welcome-msg">
-          <div class="hc-av bot-av">🤖</div>
+          <div class="hc-av bot-av">≡ƒñû</div>
           <div class="hc-bub bot-bub">
             <div class="hc-bot-name">TechBook Bot</div>
-            Hey! 👋 I'm your <strong style="color:#c4b5fd;">TechBook AI assistant</strong>.<br><br>
+            Hey! ≡ƒæï I'm your <strong style="color:#c4b5fd;">TechBook AI assistant</strong>.<br><br>
             Ask me about <strong style="color:#93c5fd;">attendance, notes, quizzes, PYQs</strong>, login, timetables and
             more!<br><br>
-            Tap a chip above or just type ✨
+            Tap a chip above or just type Γ£¿
             <div class="hc-ts">Just now</div>
           </div>
         </div>
         <div id="hc-typing">
           <div class="hc-typing-row">
-            <div class="hc-av bot-av">🤖</div>
+            <div class="hc-av bot-av">≡ƒñû</div>
             <div class="hc-dots"><span></span><span></span><span></span></div>
           </div>
         </div>
@@ -4128,7 +3957,7 @@
               <line x1="8" y1="22" x2="16" y2="22" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
             </svg>
           </button>
-          <textarea id="hc-input" placeholder="Ask me anything…" rows="1"
+          <textarea id="hc-input" placeholder="Ask me anythingΓÇª" rows="1"
             onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendHelpMessage();}"></textarea>
           <button id="hc-send-btn" onclick="sendHelpMessage()">
             <svg width="19" height="19" viewBox="0 0 24 24" fill="none">
@@ -4139,21 +3968,21 @@
         </div>
         <div id="hc-voice-panel">
           <div class="vc-bars"><span></span><span></span><span></span><span></span><span></span></div>
-          <span id="hc-voice-status">🎤 Listening…</span>
-          <button id="hc-voice-stop" onclick="stopVoiceMode()">✕ Stop</button>
+          <span id="hc-voice-status">≡ƒÄñ ListeningΓÇª</span>
+          <button id="hc-voice-stop" onclick="stopVoiceMode()">Γ£ò Stop</button>
         </div>
-        <div id="hc-hint">Enter to send · Shift+Enter new line · 🎤 voice input</div>
+        <div id="hc-hint">Enter to send ┬╖ Shift+Enter new line ┬╖ ≡ƒÄñ voice input</div>
       </div>
 
       <!-- Contact bar -->
       <div id="hc-contact-bar">
-        <span class="hc-cpill"><a href="mailto:techbook.ac.in@gmail.com">📧 techbook.ac.in@gmail.com</a></span>
-        <span class="hc-cpill"><a href="tel:+919876543210">📞 +91 87924 04950</a></span>
+        <span class="hc-cpill"><a href="mailto:techbook.ac.in@gmail.com">≡ƒôº techbook.ac.in@gmail.com</a></span>
+        <span class="hc-cpill"><a href="tel:+919876543210">≡ƒô₧ +91 87924 04950</a></span>
       </div>
     </div>
   </div>
 
-  <!-- ════ CHATBOT JS ════ -->
+  <!-- ΓòÉΓòÉΓòÉΓòÉ CHATBOT JS ΓòÉΓòÉΓòÉΓòÉ -->
 
   <!-- ============================================================
        EMAIL VERIFICATION MODAL (shown for unverified users)
@@ -4165,7 +3994,7 @@
       <div style="padding:32px 28px;text-align:center;">
         <!-- Icon -->
         <div style="width:64px;height:64px;background:#eff2fe;border:2px solid #3d5af1;border-radius:50%;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;">
-          <span style="font-size:28px;">🔐</span>
+          <span style="font-size:28px;">≡ƒöÉ</span>
         </div>
         <h2 style="color:#111827;font-size:20px;font-weight:700;margin:0 0 8px;font-family:Poppins,sans-serif;">Verify Your Email</h2>
         <p style="color:#6b7280;font-size:13px;margin:0 0 24px;font-family:Poppins,sans-serif;">One-time setup required for notifications and security.</p>
@@ -4222,7 +4051,7 @@
   </div>
 
   <script>
-    // ─── Email Verification Modal Logic ───
+    // ΓöÇΓöÇΓöÇ Email Verification Modal Logic ΓöÇΓöÇΓöÇ
     window._verifyModalUSN = null;
     window._verifyModalName = null;
     window._verifyResendCooldown = null;
@@ -4293,11 +4122,11 @@
           startResendCooldown(60);
         } else {
           verifyModalSetMsg('&#10006; ' + (data.error || 'Failed to send OTP.'), 'error');
-          if (btn) { btn.disabled = false; btn.textContent = 'Send OTP →'; }
+          if (btn) { btn.disabled = false; btn.textContent = 'Send OTP ΓåÆ'; }
         }
       } catch (err) {
         verifyModalSetMsg('&#10006; Network error. Make sure TechBook server is running.', 'error');
-        if (btn) { btn.disabled = false; btn.textContent = 'Send OTP →'; }
+        if (btn) { btn.disabled = false; btn.textContent = 'Send OTP ΓåÆ'; }
       }
     }
 
@@ -4311,7 +4140,7 @@
       }
 
       const btn = document.getElementById('verify-otp-btn');
-      if (btn) { btn.disabled = true; btn.textContent = '⏳ Verifying...'; }
+      if (btn) { btn.disabled = true; btn.textContent = 'ΓÅ│ Verifying...'; }
       verifyModalClearMsg();
 
       try {
@@ -4323,9 +4152,9 @@
         const data = await res.json();
 
         if (data.success) {
-          verifyModalSetMsg('⏳ Saving your email...', 'info');
+          verifyModalSetMsg('ΓÅ│ Saving your email...', 'info');
 
-          // ── Update Firestore directly from client (already authenticated) ──
+          // ΓöÇΓöÇ Update Firestore directly from client (already authenticated) ΓöÇΓöÇ
           try {
             const { doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js');
             const db = window._techbookDb || (typeof getFirestoreDb === 'function' ? getFirestoreDb() : null);
@@ -4335,7 +4164,7 @@
                 email: data.email,
                 email_verified: true
               });
-              console.log('✅ Firestore updated: email_verified = true for', usn);
+              console.log('Γ£à Firestore updated: email_verified = true for', usn);
             } else {
               // Fallback: try global db reference
               if (window.firebaseDb) {
@@ -4353,19 +4182,19 @@
             } catch (e2) { console.warn('Fallback also failed:', e2.message); }
           }
 
-          verifyModalSetMsg('✅ Email verified successfully! Welcome to TechBook!', 'success');
+          verifyModalSetMsg('Γ£à Email verified successfully! Welcome to TechBook!', 'success');
           setTimeout(() => { 
             hideVerifyModal(); 
             window.location.reload();
           }, 1200);
 
         } else {
-          verifyModalSetMsg('❌ ' + (data.error || 'Incorrect OTP.'), 'error');
-          if (btn) { btn.disabled = false; btn.textContent = 'Verify OTP ✓'; }
+          verifyModalSetMsg('Γ¥î ' + (data.error || 'Incorrect OTP.'), 'error');
+          if (btn) { btn.disabled = false; btn.textContent = 'Verify OTP Γ£ô'; }
         }
       } catch (err) {
-        verifyModalSetMsg('❌ Network error. Make sure TechBook server is running (npm start).', 'error');
-        if (btn) { btn.disabled = false; btn.textContent = 'Verify OTP ✓'; }
+        verifyModalSetMsg('Γ¥î Network error. Make sure TechBook server is running (npm start).', 'error');
+        if (btn) { btn.disabled = false; btn.textContent = 'Verify OTP Γ£ô'; }
       }
     }
 
@@ -4374,7 +4203,7 @@
       document.getElementById('verify-step-1').style.display = 'block';
       document.getElementById('verify-step-2').style.display = 'none';
       const btn = document.getElementById('verify-send-otp-btn');
-      if (btn) { btn.disabled = false; btn.textContent = 'Send OTP →'; }
+      if (btn) { btn.disabled = false; btn.textContent = 'Send OTP ΓåÆ'; }
       verifyModalClearMsg();
     }
 

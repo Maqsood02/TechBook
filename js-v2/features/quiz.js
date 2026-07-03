@@ -17,6 +17,21 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
       const logoutBtn = document.getElementById('btn-logout');
       const tabContent = document.getElementById('student-tab-content');
 
+      if (typeof window.trackUserActivity === 'function') {
+        const tabNameMap = {
+          'attendance': 'Viewing Attendance Page',
+          'quiz': 'Browsing Quizzes List',
+          'quiz-history': 'Viewing Quiz Attempts History',
+          'history': 'Viewing Attendance History',
+          'notes': 'Browsing Study Notes',
+          'qbank': 'Browsing Question Banks',
+          'pyq': 'Browsing Previous Year Question Papers',
+          'ia-timetable': 'Viewing IA Timetable'
+        };
+        const desc = tab ? (tabNameMap[tab] || `Viewing ${tab}`) : 'Viewing Student Dashboard Grid';
+        window.trackUserActivity(desc, false);
+      }
+
       if (!tab) {
         if (!window._studentHistoryNavLock) {
           window.location.hash = '#student';
@@ -65,6 +80,9 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
 
     window._studentLogout = window.studentLogout = async function () {
       try {
+        if (typeof window.trackUserActivity === 'function') {
+          window.trackUserActivity('Logged out from Student Portal', true);
+        }
         await signOut(auth);
         window._currentStudentUSN = null;
         window._currentStudentEmail = null;

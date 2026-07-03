@@ -3,6 +3,7 @@
 // Config & Utilities
 import './core/firebase.js';
 import './core/helpers.js';
+import './core/activity_tracker.js';
 
 // Features & Components
 import './features/auth.js';
@@ -37,6 +38,25 @@ function initNavigation() {
   if (homeBtn) {
     homeBtn.addEventListener('click', showLandingPage);
   }
+
+  // Mobile Menu Toggling
+  const mobileToggle = document.getElementById('mobile-toggle');
+  const navbarMenu = document.getElementById('navbar-menu');
+  if (mobileToggle && navbarMenu) {
+    mobileToggle.addEventListener('click', () => {
+      mobileToggle.classList.toggle('active');
+      navbarMenu.classList.toggle('open');
+    });
+  }
+
+  // Close mobile menu when links or buttons are clicked
+  const navItems = document.querySelectorAll('.navbar-link, .navbar-btn');
+  navItems.forEach(item => {
+    item.addEventListener('click', () => {
+      if (mobileToggle) mobileToggle.classList.remove('active');
+      if (navbarMenu) navbarMenu.classList.remove('open');
+    });
+  });
 }
 
 // Select Role function
@@ -68,6 +88,18 @@ function selectRole(role) {
     else if (role === 'about') label.textContent = 'About TechBook';
   }
 
+  if (typeof window.trackUserActivity === 'function') {
+    let actDesc = 'Viewing Landing Page';
+    if (role === 'student') {
+      actDesc = window._currentStudentUSN ? 'Viewing Student Portal' : 'Viewing Student Login';
+    } else if (role === 'admin') {
+      actDesc = window.adminLoggedIn ? 'Viewing Admin Dashboard' : 'Viewing Admin Login';
+    } else if (role === 'about') {
+      actDesc = 'Viewing About Page';
+    }
+    window.trackUserActivity(actDesc, false);
+  }
+
   // Handle specific transitions
   if (role === 'student') {
     // If student is logged in, show student area; else show login
@@ -77,6 +109,16 @@ function selectRole(role) {
     } else {
       document.getElementById('student-auth').classList.remove('hidden');
       document.getElementById('student-area').classList.add('hidden');
+      
+      // Delay student redirect to allow Firebase Auth loading
+      setTimeout(() => {
+        if (!window._currentStudentUSN && window.location.hash.startsWith('#student')) {
+          showLandingPage();
+          setTimeout(() => {
+            document.getElementById('login-section')?.scrollIntoView({ behavior: 'smooth' });
+          }, 100);
+        }
+      }, 1500);
     }
   } else if (role === 'admin') {
     // If admin is logged in, show admin area; else show login
@@ -86,6 +128,23 @@ function selectRole(role) {
     } else {
       document.getElementById('admin-login-block').classList.remove('hidden');
       document.getElementById('admin-area').classList.add('hidden');
+
+      // Admin verification protection
+      if (localStorage.getItem('techbook_admin_logged_in') !== 'true') {
+        showLandingPage();
+        setTimeout(() => {
+          document.getElementById('login-section')?.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      } else {
+        setTimeout(() => {
+          if (!window.adminLoggedIn && window.location.hash.startsWith('#admin')) {
+            showLandingPage();
+            setTimeout(() => {
+              document.getElementById('login-section')?.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+          }
+        }, 1500);
+      }
     }
   }
 
@@ -131,6 +190,11 @@ function showLandingPage() {
   // Show landing page
   const landing = document.getElementById('landing-page');
   if (landing) landing.classList.remove('hidden');
+
+  // Set default tab to 'home'
+  if (window.switchLandingTab) {
+    window.switchLandingTab('home');
+  }
 
   if (!window._historyNavLock) {
     window.history.pushState({ role: 'landing' }, '', '#');
@@ -255,5 +319,40 @@ if (document.readyState === 'loading') {
 window.selectRole = selectRole;
 window.showLandingPage = showLandingPage;
 window._showLanding = showLandingPage;
+
+function switchLandingTab(tabId) {
+  const sections = ['home', 'features-section', 'login-section', 'about-section'];
+  sections.forEach(s => {
+    const el = document.getElementById(s);
+    if (el) {
+      if (s === tabId) {
+        el.classList.remove('hidden');
+        el.style.display = ''; // fallback
+      } else {
+        el.classList.add('hidden');
+      }
+    }
+  });
+
+  // Update active state in nav bar links
+  const linksMap = {
+    'home': 'nav-link-home',
+    'features-section': 'nav-link-features',
+    'about-section': 'nav-link-about',
+    'login-section': 'navbar-login-btn'
+  };
+
+  Object.keys(linksMap).forEach(key => {
+    const el = document.getElementById(linksMap[key]);
+    if (el) {
+      if (key === tabId) {
+        el.classList.add('active-nav-link');
+      } else {
+        el.classList.remove('active-nav-link');
+      }
+    }
+  });
+}
+window.switchLandingTab = switchLandingTab;
 
 

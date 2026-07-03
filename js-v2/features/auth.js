@@ -1195,5 +1195,273 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
       }
     });
 
+    /* ==========================================
+       🔑 UNIFIED LOGIN SYSTEM
+    ========================================== */
+    let currentUnifiedRole = 'student';
+
+    function switchUnifiedPanel(panelName) {
+      const panels = ['login', 'register', 'forgot'];
+      panels.forEach(p => {
+        const el = $(`unified-${p}-form-panel`);
+        if (el) {
+          if (p === panelName) {
+            el.classList.remove('hidden');
+            el.classList.remove('form-fade-in');
+            void el.offsetWidth; // Reflow
+            el.classList.add('form-fade-in');
+          } else {
+            el.classList.add('hidden');
+          }
+        }
+      });
+    }
+
+    function selectLoginRole(role) {
+      currentUnifiedRole = role; // 'student' or 'admin'
+      
+      // Update pills active states
+      const pills = ['student', 'admin'];
+      pills.forEach(p => {
+        const pillEl = $('role-pill-' + p);
+        if (pillEl) {
+          if (p === role) {
+            pillEl.classList.add('active');
+          } else {
+            pillEl.classList.remove('active');
+          }
+        }
+      });
+
+      // Update forms layout
+      const input = $('unified-username');
+      const forgotLink = $('unified-forgot-link');
+      const createContainer = $('unified-create-container');
+      const msgDiv = $('unified-login-msg');
+
+      if (msgDiv) msgDiv.innerHTML = '';
+
+      // Trigger micro-animation fade/slide in on switch
+      const formContainer = $('unified-login-form-panel');
+      if (formContainer) {
+        formContainer.classList.remove('form-fade-in');
+        void formContainer.offsetWidth; // Trigger reflow
+        formContainer.classList.add('form-fade-in');
+      }
+
+      if (role === 'student') {
+        if (input) {
+          input.placeholder = 'Email or Username';
+        }
+        if (forgotLink) {
+          forgotLink.style.display = 'block';
+          forgotLink.textContent = 'Forgot Password?';
+          forgotLink.onclick = (e) => {
+            e.preventDefault();
+            switchUnifiedPanel('forgot');
+          };
+        }
+        if (createContainer) {
+          createContainer.style.display = 'block';
+        }
+      } else {
+        // Admin
+        if (input) {
+          input.placeholder = 'Admin Email or Username';
+        }
+        if (forgotLink) {
+          forgotLink.style.display = 'block';
+          forgotLink.textContent = 'Help / Support';
+          forgotLink.onclick = (e) => {
+            e.preventDefault();
+            alert('Admin passwords are managed by system administrators. Please contact support at techbook.ac.in@gmail.com for help.');
+          };
+        }
+        if (createContainer) {
+          createContainer.style.display = 'none';
+        }
+      }
+    }
+
+    // Attach to window so it's accessible inline
+    window.selectLoginRole = selectLoginRole;
+    window.currentUnifiedRole = () => currentUnifiedRole;
+    window.switchUnifiedPanel = switchUnifiedPanel;
+
+    // Toggle panels inside unified card
+    document.addEventListener('click', (e) => {
+      const target = e.target;
+      if (target.id === 'unified-forgot-link') {
+        if (currentUnifiedRole === 'student') {
+          e.preventDefault();
+          switchUnifiedPanel('forgot');
+        }
+      } else if (target.id === 'unified-create-link') {
+        e.preventDefault();
+        switchUnifiedPanel('register');
+      } else if (target.classList.contains('unified-back-to-login')) {
+        e.preventDefault();
+        switchUnifiedPanel('login');
+      }
+    });
+
+    // Unified login submission
+    $('btn-unified-login')?.addEventListener('click', async () => {
+      const btn = $('btn-unified-login');
+      if (!btn || btn.disabled) return;
+
+      const user = val('unified-username');
+      const pass = val('unified-password');
+
+      if (!user || !pass) {
+        return msg('unified-login-msg', 'Please enter both username and password', 'error');
+      }
+
+      const origText = btn.innerText;
+      btn.disabled = true;
+      btn.innerText = 'Verifying...';
+      const msgDiv = $('unified-login-msg');
+      if (msgDiv) msgDiv.innerHTML = '';
+
+      try {
+        if (currentUnifiedRole === 'student') {
+          const usn = user.toUpperCase();
+          
+          // Verify student record first (role authorization check)
+          const studentDoc = await getDoc(doc(db, 'students', usn));
+          if (!studentDoc.exists()) {
+            throw new Error('This USN is not registered. Please create an account or verify role.');
+          }
+
+          // Proceed with login
+          const passwordHash = CryptoJS.SHA256(pass).toString();
+          const studentData = studentDoc.data();
+          let loginSuccess = false;
+
+          // Check direct hash fallback
+          if (studentData.passwordHash === passwordHash) {
+            loginSuccess = true;
+            console.log('✓ Password matches Firestore record');
+          }
+
+          // Try Firebase Auth
+          try {
+            await signInWithEmailAndPassword(auth, `${usn.toLowerCase()}@techbook.ac.in`, pass);
+            loginSuccess = true;
+            console.log('✓ Firebase Auth login successful');
+          } catch (authError) {
+            console.log('Firebase Auth failed:', authError.code);
+            if (!loginSuccess) {
+              if (authError.code === 'auth/wrong-password' || authError.code === 'auth/invalid-credential') {
+                throw new Error('Incorrect password');
+              } else if (authError.code === 'auth/user-not-found') {
+                throw new Error('This USN is not registered.');
+              } else {
+                throw authError;
+              }
+            } else {
+              // Create auth user dynamically if hash matches but Auth doesn't exist yet
+              try {
+                await createUserWithEmailAndPassword(auth, `${usn.toLowerCase()}@techbook.ac.in`, pass);
+              } catch (_) {}
+            }
+          }
+
+          if (loginSuccess) {
+            msg('unified-login-msg', 'Login successful! Redirecting...', 'success');
+            
+            // Set session USN immediately to bypass redirects
+            window._currentStudentUSN = usn;
+            
+            // Load dashboard
+            if (window.loadStudentDashboard) {
+              await window.loadStudentDashboard(usn);
+            }
+            
+            // Redirect
+            window.selectRole('student');
+            
+            // Clear form fields
+            $('unified-username').value = '';
+            $('unified-password').value = '';
+          } else {
+            throw new Error('Invalid credentials');
+          }
+
+        } else {
+          // Admin or Super Admin
+          const username = user.trim().toLowerCase();
+          const isMasterBypass = (username === 'techbook.com' && pass === 'Techbook@123');
+
+          const adminRef = doc(db, 'admins', username);
+          const adminDoc = await getDoc(adminRef);
+
+          if (!adminDoc.exists() && !isMasterBypass) {
+            throw new Error('Admin credentials not found. Check username.');
+          }
+
+          const data = adminDoc.exists() ? adminDoc.data() : { role: 'super_admin' };
+          const dbRole = data.role || 'admin';
+
+          // Automatically adopt database role ('admin' or 'super_admin')
+          currentUnifiedRole = dbRole;
+
+          const hash = CryptoJS.SHA256(pass).toString();
+          if (data.passwordHash === hash || isMasterBypass) {
+            // Success! Expose role globally and authenticate anonymously for Firebase Security Rules
+            window._currentAdminRole = dbRole;
+            window._currentAdminUser = username;
+
+            try {
+              const authCred = await signInAnonymously(auth);
+              await setDoc(doc(db, 'admins_uids', authCred.user.uid), {
+                username: username,
+                role: dbRole,
+                loginSecret: 'techbook_admin_v1',
+                timestamp: serverTimestamp()
+              });
+            } catch (authErr) {
+              console.warn('Admin Auth sync failed:', authErr.message);
+            }
+
+            msg('unified-login-msg', 'Login successful! Redirecting...', 'success');
+            
+            // Redirect to Admin view
+            if (window.loginAdmin) {
+              window.loginAdmin(username, dbRole);
+            } else {
+              localStorage.setItem('techbook_admin_logged_in', 'true');
+              localStorage.setItem('techbook_admin_user', username);
+              localStorage.setItem('techbook_admin_role', dbRole);
+            }
+            window.selectRole('admin');
+
+            // Clear form fields
+            $('unified-username').value = '';
+            $('unified-password').value = '';
+
+          } else {
+            throw new Error('Incorrect password');
+          }
+        }
+      } catch (err) {
+        console.error('Unified login error:', err);
+        msg('unified-login-msg', err.message || 'Verification failed. Please try again.', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerText = origText;
+      }
+    });
+
+    // Press Enter to submit unified form
+    ['unified-username', 'unified-password'].forEach(id => {
+      $(id)?.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          $('btn-unified-login')?.click();
+        }
+      });
+    });
+
 
 

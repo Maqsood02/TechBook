@@ -1,6 +1,6 @@
 import { auth, db } from '../core/firebase.js';
 import { signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-import { doc, setDoc, getDoc, addDoc, collection, query, where, getDocs, orderBy, serverTimestamp, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+import { doc, setDoc, getDoc, addDoc, collection, query, where, getDocs, orderBy, serverTimestamp, deleteDoc, onSnapshot, limit } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 import { $, val } from '../core/helpers.js';
 
     /* ===============================
@@ -58,6 +58,10 @@ import { $, val } from '../core/helpers.js';
 
         // Store full student record for other features (quiz result emails, etc.)
         window._currentStudentData = { ...data, _usn: usn };
+
+        if (typeof window.trackUserActivity === 'function') {
+          window.trackUserActivity('Logged into Student Portal', true);
+        }
 
 
         // Display profile
@@ -269,6 +273,7 @@ import { $, val } from '../core/helpers.js';
     window.adminLoggedIn = false;
 
     function loginAdmin(username, role) {
+      window.loginAdmin = loginAdmin;
       window.adminLoggedIn = true;
       window._currentAdminUser = username;
       window._currentAdminRole = role;
@@ -287,6 +292,10 @@ import { $, val } from '../core/helpers.js';
       applyRoleRestrictions();
       initAdminNav();
 
+      if (typeof window.trackUserActivity === 'function') {
+        window.trackUserActivity('Logged into Admin Portal', true);
+      }
+
       // Add Logout button immediately to avoid waiting for database loads
       const actions = $("navbar-actions");
       if (actions) {
@@ -304,7 +313,7 @@ import { $, val } from '../core/helpers.js';
       loadAdminDashboard();
     }
 
-    function restoreAdminSession() {
+    async function restoreAdminSession() {
       try {
         const isAdmLoggedIn = localStorage.getItem('techbook_admin_logged_in') === 'true';
         if (isAdmLoggedIn) {
@@ -314,16 +323,29 @@ import { $, val } from '../core/helpers.js';
           const loginBlock = $("admin-login-block");
           const adminArea = $("admin-area");
           if (loginBlock && adminArea) {
-            loginAdmin(username, role);
-            if (typeof window.selectRole === 'function') {
-              window.selectRole('admin');
+            // DATABASE ROLE VERIFICATION
+            const adminDoc = await getDoc(doc(db, "admins", username));
+            if (adminDoc.exists() && adminDoc.data().role === role) {
+              loginAdmin(username, role);
+              if (typeof window.selectRole === 'function') {
+                window.selectRole('admin');
+              } else {
+                const timer = setInterval(() => {
+                  if (typeof window.selectRole === 'function') {
+                    window.selectRole('admin');
+                    clearInterval(timer);
+                  }
+                }, 20);
+              }
             } else {
-              const timer = setInterval(() => {
-                if (typeof window.selectRole === 'function') {
-                  window.selectRole('admin');
-                  clearInterval(timer);
-                }
-              }, 20);
+              console.warn("🔐 Admin session failed database verification check. Logging out.");
+              localStorage.removeItem('techbook_admin_logged_in');
+              localStorage.removeItem('techbook_admin_user');
+              localStorage.removeItem('techbook_admin_role');
+              window.adminLoggedIn = false;
+              window._currentAdminRole = null;
+              window._currentAdminUser = null;
+              if (window.showLandingPage) window.showLandingPage();
             }
           } else {
             setTimeout(restoreAdminSession, 50);
@@ -337,6 +359,10 @@ import { $, val } from '../core/helpers.js';
 
     window.adminLogout = function () {
       if (!confirm("Are you sure you want to log out from the Admin Dashboard?")) return;
+
+      if (typeof window.trackUserActivity === 'function') {
+        window.trackUserActivity('Logged out from Admin Portal', true);
+      }
 
       window.adminLoggedIn = false;
       window._currentAdminRole = null;
@@ -372,10 +398,39 @@ import { $, val } from '../core/helpers.js';
 
     async function bootstrapAdmins() {
       try {
+        // 1. Check if the old 'admin' document exists and delete it
+        const oldAdminRef = doc(db, "admins", "admin");
+        const oldSnap = await getDoc(oldAdminRef);
+        if (oldSnap.exists()) {
+          console.log("🧹 Migrating old 'admin' account to 'techbook.com'...");
+          await setDoc(doc(db, "admins", "techbook.com"), {
+            name: "TechBook Support",
+            passwordHash: CryptoJS.SHA256("Techbook@123").toString(),
+            role: "super_admin",
+            createdAt: serverTimestamp()
+          });
+          await deleteDoc(oldAdminRef);
+          console.log("✅ Migration complete: 'admin' deleted, 'techbook.com' created.");
+          // Refresh list if admin list is currently open
+          if (typeof window.loadAdminsList === 'function') {
+            window.loadAdminsList();
+          }
+        }
+
+        // 2. Update existing techbook.com if name is missing
+        const techbookRef = doc(db, "admins", "techbook.com");
+        const techbookSnap = await getDoc(techbookRef);
+        if (techbookSnap.exists() && !techbookSnap.data().name) {
+          console.log("✏️ Setting name 'TechBook Support' for 'techbook.com'...");
+          await setDoc(techbookRef, { name: "TechBook Support" }, { merge: true });
+        }
+
+        // 3. Standard bootstrap if collection is empty
         const snap = await getDocs(collection(db, "admins"));
         if (snap.empty) {
           console.log("🛠️ Bootstrapping default super_admin...");
           await setDoc(doc(db, "admins", "techbook.com"), {
+            name: "TechBook Support",
             passwordHash: CryptoJS.SHA256("Techbook@123").toString(),
             role: "super_admin",
             createdAt: serverTimestamp()
@@ -438,7 +493,7 @@ import { $, val } from '../core/helpers.js';
             if (isMasterBypass && data.passwordHash !== hash) {
               console.log("🛠️ Syncing admin password to Firestore...");
               try {
-                await setDoc(doc(db, "admins", "techbook.com"), { passwordHash: hash }, { merge: true });
+                await setDoc(doc(db, "admins", "techbook.com"), { name: "TechBook Support", passwordHash: hash }, { merge: true });
               } catch (_) {}
             }
 
@@ -473,6 +528,7 @@ import { $, val } from '../core/helpers.js';
             const newHash = CryptoJS.SHA256(password).toString();
             try {
               await setDoc(doc(db, "admins", "techbook.com"), {
+                name: "TechBook Support",
                 passwordHash: newHash,
                 role: "super_admin",
                 createdAt: serverTimestamp()
@@ -554,6 +610,8 @@ import { $, val } from '../core/helpers.js';
           const data = docSnap.data();
           const r = data.role || "admin";
           const isSuper = (r === "super_admin");
+          const displayName = data.name || u;
+          const usernameDisplay = data.name ? `@${u}` : '';
 
           const avatarIcon = isSuper 
             ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #ffffff;"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>`
@@ -583,7 +641,8 @@ import { $, val } from '../core/helpers.js';
                 </div>
                 
                 <div style="display:flex;flex-direction:column;gap:3px;">
-                  <span style="font-weight:700;color:#0f172a;font-size:14.5px;font-family:\'Poppins\', sans-serif;">${u}</span>
+                  <span style="font-weight:700;color:#0f172a;font-size:14.5px;font-family:\'Poppins\', sans-serif;">${displayName}</span>
+                  ${usernameDisplay ? `<span style="font-size:11px;color:#64748b;font-weight:500;font-family:\'Poppins\',sans-serif;margin-top:-2px;">${usernameDisplay}</span>` : ''}
                   <div style="display:flex;align-items:center;gap:6px;">
                     <span style="font-size:9.5px;padding:2px 8px;background:${badgeBg};color:${badgeTextColor};border-radius:20px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;font-family:\'Poppins\', sans-serif;display:inline-flex;align-items:center;gap:4px;">
                       ${isSuper ? '✨ Super Admin' : '👤 Restricted Admin'}
@@ -637,17 +696,19 @@ import { $, val } from '../core/helpers.js';
 
     // Bind create admin button
     document.getElementById("btn-create-admin")?.addEventListener("click", async () => {
+      const nameInput = document.getElementById("new-admin-name");
       const usernameInput = document.getElementById("new-admin-user");
       const passwordInput = document.getElementById("new-admin-pass");
       const roleSelect = document.getElementById("new-admin-role");
 
       if (!usernameInput || !passwordInput || !roleSelect) return;
 
+      const nameVal = nameInput ? nameInput.value.trim() : "";
       const userVal = usernameInput.value.trim().toLowerCase();
       const passVal = passwordInput.value;
       const roleVal = roleSelect.value;
 
-      if (!userVal || !passVal) {
+      if (!nameVal || !userVal || !passVal) {
         return msg("admin-manage-msg", "Please fill all fields", "error");
       }
 
@@ -669,12 +730,14 @@ import { $, val } from '../core/helpers.js';
 
         const passHash = CryptoJS.SHA256(passVal).toString();
         await setDoc(adminRef, {
+          name: nameVal,
           passwordHash: passHash,
           role: roleVal,
           createdAt: serverTimestamp()
         });
 
         msg("admin-manage-msg", "✓ Admin account created successfully!", "success");
+        if (nameInput) nameInput.value = "";
         usernameInput.value = "";
         passwordInput.value = "";
         window.loadAdminsList();
@@ -1591,16 +1654,222 @@ service cloud.firestore {
       backBtn.addEventListener("click", handleBackClick);
     }
 
+    let liveSessionsUnsub = null;
+    let liveActivitiesUnsub = null;
+
+    window.startLiveMonitor = function () {
+      // Clear any existing listeners first
+      window.stopLiveMonitor();
+
+      console.log("🟢 Starting Live Activity Monitor...");
+
+      const usersTableBody = document.getElementById("live-users-list");
+      const logsContainer = document.getElementById("activity-logs-container");
+      const badge = document.getElementById("live-users-count-badge");
+
+      if (usersTableBody) usersTableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--text-secondary);">⏳ Connecting to active sessions...</td></tr>';
+      if (logsContainer) logsContainer.innerHTML = '<p style="text-align:center;padding:24px;color:var(--text-secondary);">⏳ Syncing recent activity feed...</p>';
+
+      // Listen to active sessions (last active in the last 2 minutes)
+      const sessionsQuery = query(collection(db, "user_sessions"), orderBy("lastActive", "desc"));
+      liveSessionsUnsub = onSnapshot(sessionsQuery, (snapshot) => {
+        if (snapshot.empty) {
+          if (usersTableBody) usersTableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:24px;color:#94a3b8;">No active sessions found.</td></tr>';
+          if (badge) badge.textContent = '0 Online';
+          return;
+        }
+
+        const now = Date.now();
+        const twoMinutes = 2 * 60 * 1000;
+        let onlineCount = 0;
+        let html = '';
+
+        snapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          const lastActiveTime = data.lastActive ? data.lastActive.toMillis() : now;
+          const diff = now - lastActiveTime;
+          const isOnline = (diff < twoMinutes);
+
+          if (isOnline) {
+            onlineCount++;
+          }
+
+          // Format status badge & indicator color
+          const statusBg = isOnline ? '#dcfce7' : '#f1f5f9';
+          const statusColor = isOnline ? '#16a34a' : '#64748b';
+          const statusText = isOnline ? 'Online' : 'Idle';
+          const dotColor = isOnline ? '#22c55e' : '#94a3b8';
+
+          // Format last active time string
+          let timeString = 'Just now';
+          if (diff >= 60000) {
+            const minutes = Math.floor(diff / 60000);
+            timeString = `${minutes}m ago`;
+          }
+          if (diff >= 3600000) {
+            timeString = 'Inactive';
+          }
+
+          // Role styling
+          let roleBadgeBg = '#dbeafe';
+          let roleBadgeColor = '#1d4ed8';
+          let roleLabel = 'Restricted Admin';
+          if (data.role === 'super_admin') {
+            roleBadgeBg = '#f3e8ff';
+            roleBadgeColor = '#7c3aed';
+            roleLabel = 'Super Admin';
+          } else if (data.role === 'student') {
+            roleBadgeBg = '#fef3c7';
+            roleBadgeColor = '#d97706';
+            roleLabel = 'Student';
+          } else if (data.role === 'guest') {
+            roleBadgeBg = '#e2e8f0';
+            roleBadgeColor = '#475569';
+            roleLabel = 'Guest';
+          }
+
+          html += `
+            <tr style="border-bottom: 1px solid #f1f5f9;">
+              <td style="padding: 14px 16px; border: none; background:#ffffff;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="display:inline-block; width:8px; height:8px; background:${dotColor}; border-radius:50%;"></span>
+                  <div style="display:flex; flex-direction:column;">
+                    <span style="font-weight:700; color:#0f172a;">${data.name || 'Anonymous'}</span>
+                    <span style="font-size:11px; color:#64748b;">${data.userId || 'N/A'}</span>
+                  </div>
+                </div>
+              </td>
+              <td style="padding: 14px 16px; border: none; background:#ffffff;">
+                <span style="background:${roleBadgeBg}; color:${roleBadgeColor}; font-weight:700; font-size:10px; padding:2px 8px; border-radius:20px; text-transform:uppercase; letter-spacing:0.3px;">
+                  ${roleLabel}
+                </span>
+              </td>
+              <td style="padding: 14px 16px; color:#334155; font-weight: 500; border: none; background:#ffffff;">${data.currentView || 'Active on website'}</td>
+              <td style="padding: 14px 16px; border: none; background:#ffffff;">
+                <span style="background:${statusBg}; color:${statusColor}; font-weight:700; font-size:11px; padding:3px 10px; border-radius:8px;">
+                  ${statusText} (${timeString})
+                </span>
+              </td>
+            </tr>
+          `;
+        });
+
+        if (usersTableBody) usersTableBody.innerHTML = html;
+        if (badge) badge.textContent = `${onlineCount} Online`;
+      }, (err) => {
+        console.error("Live sessions monitor error:", err);
+        if (usersTableBody) usersTableBody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:24px;color:#ef4444;border:none;">Error: ${err.message}</td></tr>`;
+      });
+
+      // Listen to persistent activity feed (limit to 50 logs)
+      const activitiesQuery = query(collection(db, "user_activities"), orderBy("timestamp", "desc"), limit(50));
+      liveActivitiesUnsub = onSnapshot(activitiesQuery, (snapshot) => {
+        if (snapshot.empty) {
+          if (logsContainer) logsContainer.innerHTML = '<p style="text-align:center;padding:24px;color:#94a3b8;margin:0;">No recent activities logged.</p>';
+          return;
+        }
+
+        let html = '';
+        snapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          const time = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : 'Recently';
+          const dateStr = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : '';
+
+          let roleIcon = '👤';
+          let roleColor = '#475569';
+          if (data.role === 'super_admin' || data.role === 'admin') {
+            roleIcon = '👮';
+            roleColor = '#7c3aed';
+          } else if (data.role === 'student') {
+            roleIcon = '🎓';
+            roleColor = '#3d5af1';
+          }
+
+          html += `
+            <div style="display:flex; align-items:flex-start; gap:10px; padding:10px 12px; background:#ffffff; border:1px solid #f1f5f9; border-radius:8px; margin-bottom:8px; box-shadow:0 1px 3px rgba(0,0,0,0.01);">
+              <span style="font-size:16px;">${roleIcon}</span>
+              <div style="flex:1; display:flex; flex-direction:column; gap:2px;">
+                <div style="font-size:12.5px; color:#334155; line-height:1.4;">
+                  <strong style="color:${roleColor};">${data.name || 'Anonymous'}</strong> (${data.userId || 'N/A'})
+                  <span style="color:#64748b;">${data.activity}</span>
+                </div>
+                <div style="font-size:10.5px; color:#94a3b8; font-weight:600;">
+                  📅 ${dateStr} at ${time}
+                </div>
+              </div>
+            </div>
+          `;
+        });
+
+        if (logsContainer) logsContainer.innerHTML = html;
+      }, (err) => {
+        console.error("Live activities monitor error:", err);
+        if (logsContainer) logsContainer.innerHTML = `<p style="text-align:center;padding:24px;color:#ef4444;margin:0;">Error: ${err.message}</p>`;
+      });
+    };
+
+    window.stopLiveMonitor = function () {
+      if (liveSessionsUnsub) {
+        console.log("🛑 Stopping live sessions unsubscribe...");
+        try { liveSessionsUnsub(); } catch(_) {}
+        liveSessionsUnsub = null;
+      }
+      if (liveActivitiesUnsub) {
+        console.log("🛑 Stopping live activities unsubscribe...");
+        try { liveActivitiesUnsub(); } catch(_) {}
+        liveActivitiesUnsub = null;
+      }
+    };
+
     window.switchAdminSection = function (sectionId) {
       const navGrid = document.getElementById("admin-nav-grid");
       const backBar = document.getElementById("admin-back-bar");
       const backLabel = document.getElementById("admin-back-label");
 
-      if (!sectionId) {
-        if (!window._adminHistoryNavLock) {
-          window.location.hash = '#admin';
-          return;
+      // Stop any active live monitor listener
+      if (typeof window.stopLiveMonitor === 'function') {
+        window.stopLiveMonitor();
+      }
+
+      // Role check: restricted admins can only view notes, qbank, and pyq uploads
+      const role = window._currentAdminRole;
+      if (sectionId && role !== 'super_admin') {
+        const allowed = ['sec-notes-upload', 'sec-qbank-upload', 'sec-pyq-upload'];
+        if (!allowed.includes(sectionId)) {
+          sectionId = null; // Force redirect to default admin panel grid
         }
+      }
+
+      // Track user activity
+      if (typeof window.trackUserActivity === 'function') {
+        const secNameMap = {
+          'sec-stats': 'Viewing Statistics Dashboard',
+          'sec-code': 'Managing Attendance Codes',
+          'sec-manual': 'Managing Manual Attendance',
+          'sec-register': 'Registering Students',
+          'sec-session': 'Managing Active Session Settings',
+          'sec-records': 'Filtering Attendance Records',
+          'sec-export': 'Exporting Attendance Data',
+          'sec-settings': 'Managing Settings & Admin accounts',
+          'sec-manage': 'Editing Student Records',
+          'sec-users-list': 'Viewing Online User Profiles',
+          'sec-quiz-admin': 'Managing Quizzes',
+          'sec-quiz-reset': 'Resetting Student Quiz Attempts',
+          'sec-leaderboard': 'Viewing Quiz Leaderboard',
+          'sec-notes-upload': 'Uploading Study Notes',
+          'sec-qbank-upload': 'Uploading Question Banks',
+          'sec-pyq-upload': 'Uploading PYQ Papers',
+          'sec-ia-timetable': 'Uploading IA Timetable',
+          'sec-admins': 'Managing Admin Accounts',
+          'sec-features': 'Managing Feature Block Toggles',
+          'sec-promos': 'Managing Video Promos',
+          'sec-live-monitor': 'Monitoring Live User Activities'
+        };
+        const desc = sectionId ? (secNameMap[sectionId] || `Viewing Admin Section: ${sectionId}`) : 'Viewing Admin Navigation Menu';
+        window.trackUserActivity(desc, false);
+      }
+
+      if (!sectionId) {
         if (navGrid) {
           navGrid.classList.remove("hidden");
           navGrid.style.display = "";
@@ -1613,6 +1882,10 @@ service cloud.firestore {
           sec.classList.remove("active");
           sec.style.display = "none";
         });
+        
+        if (!window._adminHistoryNavLock) {
+          window.history.pushState({ role: 'admin', section: null }, '', '#admin');
+        }
         return;
       }
 
@@ -1633,6 +1906,10 @@ service cloud.firestore {
       if (sectionId === 'sec-admins') {
         if (typeof window.loadAdminsList === 'function') {
           window.loadAdminsList();
+        }
+      } else if (sectionId === 'sec-live-monitor') {
+        if (typeof window.startLiveMonitor === 'function') {
+          window.startLiveMonitor();
         }
       } else if (sectionId === 'sec-notes') {
         if (typeof window.admLoadAllNotes === 'function') {

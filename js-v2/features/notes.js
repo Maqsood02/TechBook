@@ -516,6 +516,9 @@ let lastNotesFetchTime = 0;
           const p = window._admAllNotes.find(n => n.id === id);
           if (p && p.title) title = p.title;
         }
+        if (typeof window.trackUserActivity === 'function') {
+          window.trackUserActivity(`Admin viewing Note: ${title}`, true);
+        }
         const blob = await fetchPdfBlob(id);
         const url = URL.createObjectURL(blob);
         window._openPdfViewer(url, title);
@@ -834,6 +837,10 @@ let lastNotesFetchTime = 0;
       if (vBtn && action === 'download') vBtn.disabled = true;
       if (dBtn && action === 'view') dBtn.disabled = true;
       try {
+        if (typeof window.trackUserActivity === 'function') {
+          const actText = action === 'view' ? `Viewing Note: ${fileName}` : `Downloading Note: ${fileName}`;
+          window.trackUserActivity(actText, true);
+        }
         const blob = await fetchPdfBlob(id);
         const url = URL.createObjectURL(blob);
         if (action === 'view') {

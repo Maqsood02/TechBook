@@ -163,6 +163,9 @@ let lastPyqFetchTime = 0;
           const p = window._pyqAdmAllPapers.find(n => n.id === id);
           if (p && p.title) title = p.title;
         }
+        if (typeof window.trackUserActivity === 'function') {
+          window.trackUserActivity(`Admin viewing PYQ: ${title}`, true);
+        }
         const blob = await fetchPyqBlob(id);
         const url = URL.createObjectURL(blob);
         window._openPdfViewer(url, title);
@@ -543,6 +546,10 @@ let lastPyqFetchTime = 0;
       if (vBtn && action === 'download') vBtn.disabled = true;
       if (dBtn && action === 'view') dBtn.disabled = true;
       try {
+        if (typeof window.trackUserActivity === 'function') {
+          const actText = action === 'view' ? `Viewing PYQ: ${fileName}` : `Downloading PYQ: ${fileName}`;
+          window.trackUserActivity(actText, true);
+        }
         const blob = await fetchPyqBlob(id);
         const url = URL.createObjectURL(blob);
         if (action === 'view') {
