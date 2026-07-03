@@ -102,48 +102,41 @@ function selectRole(role) {
 
   // Handle specific transitions
   if (role === 'student') {
-    // If student is logged in, show student area; else show login
-    if (window._currentStudentUSN) {
-      document.getElementById('student-auth').classList.add('hidden');
-      document.getElementById('student-area').classList.remove('hidden');
+    const isStudLoggedIn = localStorage.getItem('techbook_student_logged_in') === 'true';
+    if (isStudLoggedIn) {
+      document.getElementById('student-auth')?.classList.add('hidden');
+      document.getElementById('student-area')?.classList.remove('hidden');
     } else {
-      document.getElementById('student-auth').classList.remove('hidden');
-      document.getElementById('student-area').classList.add('hidden');
+      document.getElementById('student-auth')?.classList.remove('hidden');
+      document.getElementById('student-area')?.classList.add('hidden');
       
-      // Delay student redirect to allow Firebase Auth loading
-      setTimeout(() => {
-        if (!window._currentStudentUSN && window.location.hash.startsWith('#student')) {
-          showLandingPage();
-          setTimeout(() => {
-            document.getElementById('login-section')?.scrollIntoView({ behavior: 'smooth' });
-          }, 100);
-        }
-      }, 1500);
-    }
-  } else if (role === 'admin') {
-    // If admin is logged in, show admin area; else show login
-    if (window.adminLoggedIn) {
-      document.getElementById('admin-login-block').classList.add('hidden');
-      document.getElementById('admin-area').classList.remove('hidden');
-    } else {
-      document.getElementById('admin-login-block').classList.remove('hidden');
-      document.getElementById('admin-area').classList.add('hidden');
-
-      // Admin verification protection
-      if (localStorage.getItem('techbook_admin_logged_in') !== 'true') {
+      if (window.location.hash.startsWith('#student')) {
         showLandingPage();
         setTimeout(() => {
           document.getElementById('login-section')?.scrollIntoView({ behavior: 'smooth' });
-        }, 100);
-      } else {
-        setTimeout(() => {
-          if (!window.adminLoggedIn && window.location.hash.startsWith('#admin')) {
-            showLandingPage();
-            setTimeout(() => {
-              document.getElementById('login-section')?.scrollIntoView({ behavior: 'smooth' });
-            }, 100);
+          if (typeof window.selectLoginRole === 'function') {
+            window.selectLoginRole('student');
           }
-        }, 1500);
+        }, 100);
+      }
+    }
+  } else if (role === 'admin') {
+    const isAdmLoggedIn = localStorage.getItem('techbook_admin_logged_in') === 'true';
+    if (isAdmLoggedIn) {
+      document.getElementById('admin-login-block')?.classList.add('hidden');
+      document.getElementById('admin-area')?.classList.remove('hidden');
+    } else {
+      document.getElementById('admin-login-block')?.classList.remove('hidden');
+      document.getElementById('admin-area')?.classList.add('hidden');
+
+      if (window.location.hash.startsWith('#admin')) {
+        showLandingPage();
+        setTimeout(() => {
+          document.getElementById('login-section')?.scrollIntoView({ behavior: 'smooth' });
+          if (typeof window.selectLoginRole === 'function') {
+            window.selectLoginRole('admin');
+          }
+        }, 100);
       }
     }
   }
