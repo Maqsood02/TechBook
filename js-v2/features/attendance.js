@@ -336,8 +336,33 @@ import { $, val } from '../core/helpers.js';
           const adminArea = $("admin-area");
           if (loginBlock && adminArea) {
             // DATABASE ROLE VERIFICATION
-            const adminDoc = await getDoc(doc(db, "admins", username));
-            if (adminDoc.exists() && adminDoc.data().role === role) {
+            try {
+              const adminDoc = await getDoc(doc(db, "admins", username));
+              if (adminDoc.exists() && adminDoc.data().role === role) {
+                loginAdmin(username, role);
+                if (typeof window.selectRole === 'function') {
+                  window.selectRole('admin');
+                } else {
+                  const timer = setInterval(() => {
+                    if (typeof window.selectRole === 'function') {
+                      window.selectRole('admin');
+                      clearInterval(timer);
+                    }
+                  }, 20);
+                }
+              } else {
+                console.warn("🔐 Admin session failed database verification check. Logging out.");
+                localStorage.removeItem('techbook_admin_logged_in');
+                localStorage.removeItem('techbook_admin_user');
+                localStorage.removeItem('techbook_admin_role');
+                window.adminLoggedIn = false;
+                window._currentAdminRole = null;
+                window._currentAdminUser = null;
+                if (window.showLandingPage) window.showLandingPage();
+              }
+            } catch (dbErr) {
+              console.warn("Could not verify admin session with database (offline/blocked), using local session:", dbErr);
+              // Offline fallback! Load the dashboard anyway using cached details
               loginAdmin(username, role);
               if (typeof window.selectRole === 'function') {
                 window.selectRole('admin');
@@ -349,15 +374,6 @@ import { $, val } from '../core/helpers.js';
                   }
                 }, 20);
               }
-            } else {
-              console.warn("🔐 Admin session failed database verification check. Logging out.");
-              localStorage.removeItem('techbook_admin_logged_in');
-              localStorage.removeItem('techbook_admin_user');
-              localStorage.removeItem('techbook_admin_role');
-              window.adminLoggedIn = false;
-              window._currentAdminRole = null;
-              window._currentAdminUser = null;
-              if (window.showLandingPage) window.showLandingPage();
             }
           } else {
             setTimeout(restoreAdminSession, 50);
