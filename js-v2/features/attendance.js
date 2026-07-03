@@ -70,16 +70,28 @@ import { $, val } from '../core/helpers.js';
       $("student-auth")?.classList.add("hidden");
       $("student-area")?.classList.remove("hidden");
 
-      // Load cached profile data instantly
+      // Load cached profile data instantly (or construct fallback)
+      let cachedData = null;
       try {
         const localDataStr = localStorage.getItem('techbook_student_data');
         if (localDataStr) {
-          const cachedData = JSON.parse(localDataStr);
-          renderStudentInfo(cachedData);
+          cachedData = JSON.parse(localDataStr);
         }
       } catch (cacheErr) {
         console.warn("Could not load cached student data:", cacheErr);
       }
+
+      if (!cachedData) {
+        cachedData = {
+          name: usn,
+          usn: usn,
+          course: 'B.Tech',
+          dept: 'CS/IS',
+          year: 'N/A',
+          sem: 'N/A'
+        };
+      }
+      renderStudentInfo(cachedData);
 
       // Load cached features list instantly
       try {
@@ -87,7 +99,8 @@ import { $, val } from '../core/helpers.js';
         const cachedFeatures = cachedFeaturesStr ? JSON.parse(cachedFeaturesStr) : {};
         applyFeatures(cachedFeatures);
       } catch (e) {
-        console.warn("Could not apply features from cache:", e);
+        console.warn("Could not apply features from cache, defaulting to show all:", e);
+        applyFeatures({});
       }
 
       // Set today's date
