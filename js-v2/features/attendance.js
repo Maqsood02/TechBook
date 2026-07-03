@@ -8,6 +8,93 @@ import { $, val } from '../core/helpers.js';
     =============================== */
     async function loadStudentDashboard(usn) {
       window._currentStudentUSN = usn;
+
+      function renderStudentInfo(data) {
+        if (!data || !data.name) return;
+        const firstName = data.name.split(' ')[0] || data.name;
+        $("student-info").innerHTML = `
+          <div class="user-card-banner"></div>
+          <div class="user-card-body">
+            <div class="avatar">🎓</div>
+            <div class="welcome">Welcome back, ${firstName}! 👋</div>
+            <div class="name">${data.name}</div>
+            <div class="usn">${data.usn || usn}</div>
+            <hr/>
+            <div class="profile-details">
+              <div class="detail-pill"><div class="label">Course</div><div class="value">${data.course || 'B.Tech'}</div></div>
+              <div class="detail-pill"><div class="label">Dept</div><div class="value">${data.dept || 'N/A'}</div></div>
+              <div class="detail-pill"><div class="label">Year</div><div class="value">${data.year || 'N/A'}</div></div>
+              <div class="detail-pill"><div class="label">Sem</div><div class="value">${data.sem || 'N/A'}</div></div>
+            </div>
+          </div>
+        `;
+      }
+
+      function applyFeatures(features) {
+        const featureMap = {
+          attendanceEnabled: "stab-attendance",
+          quizEnabled: "stab-quiz",
+          quizHistoryEnabled: "stab-quiz-history",
+          historyEnabled: "stab-history",
+          notesEnabled: "stab-notes",
+          pyqEnabled: "stab-pyq",
+          qbankEnabled: "stab-qbank",
+          iaTimetableEnabled: "stab-ia-timetable"
+        };
+        for (const [key, btnId] of Object.entries(featureMap)) {
+          const btn = document.getElementById(btnId);
+          const isEnabled = features[key] !== false; // Default to true if not cached
+          if (btn) {
+            if (isEnabled) btn.classList.remove("hidden");
+            else btn.classList.add("hidden");
+          }
+        }
+      }
+
+      function renderStudentNavbarActions() {
+        const actions = $("navbar-actions");
+        if (actions) {
+          actions.innerHTML = `
+            <button onclick="window.studentLogout && window.studentLogout()" 
+              style="display:flex;align-items:center;gap:6px;padding:8px 14px;background:#f9fafb;border:1px solid rgba(57,255,180,0.25);border-radius:10px;color:#3d5af1;font-weight:700;font-size:13px;cursor:pointer;transition:all 0.2s;"
+              onmouseover="this.style.background='#eef0ff';this.style.transform='translateY(-1px)'"
+              onmouseout="this.style.background='#f9fafb';this.style.transform=''">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3d5af1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              Logout
+            </button>
+          `;
+        }
+      }
+
+      // Show student area instantly
+      $("student-auth")?.classList.add("hidden");
+      $("student-area")?.classList.remove("hidden");
+
+      // Load cached profile data instantly
+      try {
+        const localDataStr = localStorage.getItem('techbook_student_data');
+        if (localDataStr) {
+          const cachedData = JSON.parse(localDataStr);
+          renderStudentInfo(cachedData);
+        }
+      } catch (cacheErr) {
+        console.warn("Could not load cached student data:", cacheErr);
+      }
+
+      // Load cached features list instantly
+      try {
+        const cachedFeaturesStr = localStorage.getItem('techbook_features');
+        const cachedFeatures = cachedFeaturesStr ? JSON.parse(cachedFeaturesStr) : {};
+        applyFeatures(cachedFeatures);
+      } catch (e) {
+        console.warn("Could not apply features from cache:", e);
+      }
+
+      // Set today's date
+      const attDateInput = $("att-date");
+      if (attDateInput) attDateInput.value = new Date().toISOString().split('T')[0];
+
+      // Database load attempt
       try {
         const studentDoc = await getDoc(doc(db, "students", usn));
         if (!studentDoc.exists()) {
@@ -19,40 +106,7 @@ import { $, val } from '../core/helpers.js';
         // Save session locally
         localStorage.setItem('techbook_student_logged_in', 'true');
         localStorage.setItem('techbook_student_usn', usn);
-
-        // Hide admin/about tabs
-
-
-
-        // Show student area
-        $("student-auth").classList.add("hidden");
-        $("student-area").classList.remove("hidden");
-
-        // Apply cached features immediately to prevent delay/blank space
-        try {
-          const cached = localStorage.getItem('techbook_features');
-          const cachedFeatures = cached ? JSON.parse(cached) : {};
-          const featureMap = {
-            attendanceEnabled: "stab-attendance",
-            quizEnabled: "stab-quiz",
-            quizHistoryEnabled: "stab-quiz-history",
-            historyEnabled: "stab-history",
-            notesEnabled: "stab-notes",
-            pyqEnabled: "stab-pyq",
-            qbankEnabled: "stab-qbank",
-            iaTimetableEnabled: "stab-ia-timetable"
-          };
-          for (const [key, btnId] of Object.entries(featureMap)) {
-            const btn = document.getElementById(btnId);
-            const isEnabled = cachedFeatures[key] !== false; // Default to true if not cached
-            if (btn) {
-              if (isEnabled) btn.classList.remove("hidden");
-              else btn.classList.add("hidden");
-            }
-          }
-        } catch (cacheErr) {
-          console.warn("Could not read cached features:", cacheErr);
-        }
+        localStorage.setItem('techbook_student_data', JSON.stringify(data));
 
         if (typeof updateAppHistory === 'function') updateAppHistory(null, true);
 
@@ -60,55 +114,22 @@ import { $, val } from '../core/helpers.js';
         const studentEmail = auth.currentUser?.email || data.email || (usn.toLowerCase() + '@techbook.ac.in');
         window._currentStudentEmail = studentEmail;
 
-        // Store full student record for other features (quiz result emails, etc.)
+        // Store full student record for other features
         window._currentStudentData = { ...data, _usn: usn };
 
         if (typeof window.trackUserActivity === 'function') {
           window.trackUserActivity('Logged into Student Portal', true);
         }
 
-
-        // Display profile
-        $("student-info").innerHTML = `
-          <div class="user-card-banner"></div>
-          <div class="user-card-body">
-            <div class="avatar">🎓</div>
-            <div class="welcome">Welcome back, ${data.name.split(' ')[0]}! 👋</div>
-            <div class="name">${data.name}</div>
-            <div class="usn">${data.usn}</div>
-            <hr/>
-            <div class="profile-details">
-              <div class="detail-pill"><div class="label">Course</div><div class="value">${data.course || 'B.Tech'}</div></div>
-              <div class="detail-pill"><div class="label">Dept</div><div class="value">${data.dept || 'N/A'}</div></div>
-              <div class="detail-pill"><div class="label">Year</div><div class="value">${data.year || 'N/A'}</div></div>
-              <div class="detail-pill"><div class="label">Sem</div><div class="value">${data.sem || 'N/A'}</div></div>
-            </div>
-          </div>
-        `;
-
-        // Add Logout button to navbar
-        const actions = $("navbar-actions");
-        if (actions) {
-          actions.innerHTML = `
-            <button onclick="window.studentLogout()" 
-              style="display:flex;align-items:center;gap:6px;padding:8px 14px;background:#f9fafb;border:1px solid rgba(57,255,180,0.25);border-radius:10px;color:#3d5af1;font-weight:700;font-size:13px;cursor:pointer;transition:all 0.2s;"
-              onmouseover="this.style.background='#eef0ff';this.style.transform='translateY(-1px)'"
-              onmouseout="this.style.background='#f9fafb';this.style.transform=''">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3d5af1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-              Logout
-            </button>
-          `;
-        }
-
-        // Set today's date
-        $("att-date").value = new Date().toISOString().split('T')[0];
+        // Render fresh student details & navbar actions
+        renderStudentInfo(data);
+        renderStudentNavbarActions();
 
         // Load attendance history
         loadStudentHistory(usn);
 
-        // --- Real-time Feature Blocking Listener ---
+        // Real-time settings listener
         if (window._featureUnsubscribe) window._featureUnsubscribe();
-
         window._featureUnsubscribe = onSnapshot(doc(db, "settings", "features"), (snapshot) => {
           const features = snapshot.exists() ? snapshot.data() : {};
           try {
@@ -116,47 +137,14 @@ import { $, val } from '../core/helpers.js';
           } catch (cacheErr) {
             console.warn("Could not write cached features:", cacheErr);
           }
-
-          // Map features to their button IDs
-          const featureMap = {
-            attendanceEnabled: "stab-attendance",
-            quizEnabled: "stab-quiz",
-            quizHistoryEnabled: "stab-quiz-history",
-            historyEnabled: "stab-history",
-            notesEnabled: "stab-notes",
-            pyqEnabled: "stab-pyq",
-            qbankEnabled: "stab-qbank",
-            iaTimetableEnabled: "stab-ia-timetable"
-          };
-
-          for (const [key, btnId] of Object.entries(featureMap)) {
-            const btn = document.getElementById(btnId);
-            const isEnabled = features[key] !== false; // Active by default if not set
-            if (btn) {
-              if (isEnabled) {
-                btn.classList.remove("hidden");
-              } else {
-                btn.classList.add("hidden");
-                // If student is currently viewing this tab, kick them back to home
-                const activeTabId = `stab-content-${btnId.replace('stab-', '')}`;
-                const tabContent = document.getElementById(activeTabId);
-                if (tabContent && tabContent.style.display !== 'none') {
-                  switchStudentTab(null);
-                  msg("login-msg", "This feature has been temporarily disabled by Admin.", "info");
-                }
-              }
-            }
-          }
+          applyFeatures(features);
         });
 
       } catch (e) {
-        console.error("loadStudentDashboard error:", e);
-        // Fallback for offline / ad blocker: if they are logged in locally, unhide student area
-        if (localStorage.getItem('techbook_student_logged_in') === 'true') {
-          $("student-auth")?.classList.add("hidden");
-          $("student-area")?.classList.remove("hidden");
-        }
-        msg("login-msg", "Error loading dashboard: " + e.message, "error");
+        console.warn("Firestore fetch failed, running on cached session:", e.message);
+        // Ensure buttons and features still work offline / under blocker
+        renderStudentNavbarActions();
+        loadStudentHistory(usn);
       }
     }
 
