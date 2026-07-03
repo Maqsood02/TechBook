@@ -1,4 +1,4 @@
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Poppins:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;850;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Poppins:wght@300;400;500;600;700&display=swap');
 
     :root {
       --bg-primary: #ffffff;
@@ -3808,13 +3808,14 @@
       margin-bottom: 0;
     }
 
-    /* Modern Premium Footer */
+    /* Modern Footer */
+    /* Modern Footer */
     .landing-footer {
-      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+      background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.03) 0%, rgba(61, 90, 241, 0.01) 50%, #fcfdfe 100%);
       border-top: 1px solid rgba(61, 90, 241, 0.08);
-      padding: 60px 24px;
+      box-shadow: 0 -10px 40px rgba(61, 90, 241, 0.015);
+      padding: 48px 24px;
       margin-top: 60px;
-      font-family: 'Outfit', 'Poppins', sans-serif;
     }
 
     .footer-container {
@@ -3824,32 +3825,26 @@
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
-      gap: 32px;
+      gap: 28px;
     }
 
     .footer-left {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 8px;
     }
 
     .footer-brand {
-      font-size: 24px;
+      font-size: 21px;
       font-weight: 850;
-      letter-spacing: -0.6px;
-      background: linear-gradient(135deg, #1e3a8a 0%, #3d5af1 45%, #6366f1 100%);
+      background: linear-gradient(135deg, #1e3a8a 0%, #3d5af1 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
       display: flex;
       align-items: center;
       gap: 10px;
-      margin: 0;
-      transition: transform 0.3s ease;
-    }
-
-    .footer-brand:hover {
-      transform: scale(1.02);
+      letter-spacing: -0.5px;
     }
 
     .footer-copyright {
@@ -3862,55 +3857,53 @@
     .footer-center {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 8px;
+      text-align: left;
     }
 
     .footer-contact-link {
-      font-size: 13.5px;
-      color: #3d5af1;
-      font-weight: 650;
-      text-decoration: none;
-      background: rgba(61, 90, 241, 0.04);
-      border: 1px solid rgba(61, 90, 241, 0.08);
-      padding: 10px 20px;
-      border-radius: 30px;
       display: inline-flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
+      font-size: 13px;
+      color: #3d5af1;
+      font-weight: 600;
+      text-decoration: none;
+      padding: 8px 14px;
+      background: rgba(61, 90, 241, 0.04);
+      border: 1px solid rgba(61, 90, 241, 0.06);
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(61, 90, 241, 0.02);
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      box-shadow: 0 2px 4px rgba(61, 90, 241, 0.02);
     }
 
     .footer-contact-link:hover {
       background: rgba(61, 90, 241, 0.08);
-      border-color: rgba(61, 90, 241, 0.2);
-      color: #1e3a8a;
-      transform: translateY(-2px);
-      box-shadow: 0 8px 16px rgba(61, 90, 241, 0.08);
+      border-color: rgba(61, 90, 241, 0.15);
+      color: #4f46e5;
+      transform: translateY(-1.5px);
+      box-shadow: 0 4px 12px rgba(61, 90, 241, 0.08);
     }
 
     .footer-dev-btn {
-      padding: 12px 24px;
-      background: linear-gradient(135deg, #ffffff 0%, #fffbeb 100%);
-      border: 1.5px solid rgba(217, 119, 6, 0.25);
-      border-radius: 30px;
-      color: #d97706;
+      padding: 10px 22px;
+      background: linear-gradient(135deg, #ff9f43 0%, #ff5252 100%);
+      border: none;
+      border-radius: 12px;
+      color: #ffffff;
       font-weight: 750;
-      font-size: 13.5px;
+      font-size: 13px;
       cursor: pointer;
-      box-shadow: 0 4px 12px rgba(217, 119, 6, 0.06);
+      box-shadow: 0 4px 14px rgba(255, 82, 82, 0.25);
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      font-family: 'Outfit', 'Poppins', sans-serif;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
+      font-family: 'Poppins', sans-serif;
+      letter-spacing: -0.2px;
     }
 
     .footer-dev-btn:hover {
-      background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
-      border-color: #d97706;
-      transform: translateY(-2px);
-      box-shadow: 0 10px 20px rgba(217, 119, 6, 0.14);
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 8px 22px rgba(255, 82, 82, 0.4);
+      filter: brightness(1.05);
     }
 
     /* Screen Reader helper */
