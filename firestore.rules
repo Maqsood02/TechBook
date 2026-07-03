@@ -22,6 +22,7 @@ service cloud.firestore {
     match /help_messages/{tid}/msgs/{msgId} { allow read, write: if true; }
     match /help_threads/{tid}               { allow read, write: if true; }
     match /admins/{adminId}              { allow read, write: if true; }
+    match /admins_uids/{uid}             { allow read, write: if true; }
     match /promos/{id}                   { allow read, write: if true; }
     match /user_sessions/{sessionId}     { allow read, write: if true; }
     match /user_activities/{activityId}  { allow read, write: if true; }
