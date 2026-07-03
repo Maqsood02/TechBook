@@ -3839,17 +3839,6 @@
       flex-direction: column;
     }
 
-    .footer-left::after {
-      content: "Empowering academic learning and attendance tracking with a fast, modern, and interactive platform.";
-      display: block;
-      font-size: 14px;
-      font-weight: 450;
-      color: #94a3b8;
-      margin: 14px 0 24px;
-      line-height: 1.6;
-      font-family: 'Outfit', sans-serif;
-    }
-
     .footer-brand {
       font-size: 24px;
       font-weight: 850;
@@ -3872,6 +3861,7 @@
       color: #475569;
       font-weight: 500;
       margin: 0;
+      margin-top: 12px;
     }
 
     .footer-center {
