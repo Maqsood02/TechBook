@@ -1,5 +1,5 @@
 import { auth, db } from '../core/firebase.js';
-import { signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+import { signInAnonymously, signOut } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
 import { doc, setDoc, getDoc, addDoc, collection, query, where, getDocs, orderBy, serverTimestamp, deleteDoc, onSnapshot, limit } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 import { $, val } from '../core/helpers.js';
 
@@ -311,6 +311,9 @@ import { $, val } from '../core/helpers.js';
       }
 
       loadAdminDashboard();
+      if (typeof window.updateNavbarLoginBtn === 'function') {
+        window.updateNavbarLoginBtn();
+      }
     }
 
     async function restoreAdminSession() {
@@ -391,6 +394,13 @@ import { $, val } from '../core/helpers.js';
       }
 
       msg("admin-login-msg", "Logged out successfully", "info");
+
+      // Clear Firebase Auth anonymous sign-in
+      signOut(auth).catch(err => console.warn("Firebase Admin SignOut failed:", err));
+
+      if (typeof window.updateNavbarLoginBtn === 'function') {
+        window.updateNavbarLoginBtn();
+      }
 
       // Optional: go back to landing page
       showLandingPage();

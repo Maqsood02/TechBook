@@ -714,47 +714,58 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
       console.log("Auth state changed:", user ? "Logged in" : "Logged out");
 
       if (user) {
-        // ── If admin is logged in AND the user is currently viewing the admin portal, do not force redirect to student ──
-        const isAdmLoggedIn = localStorage.getItem('techbook_admin_logged_in') === 'true';
-        const isCurrentlyAdminView = window.location.hash.startsWith('#admin');
-        if (isAdmLoggedIn && isCurrentlyAdminView) {
-          console.log("Admin session is active on admin tab, skipping student redirect.");
-          const usn = user.email.split('@')[0].toUpperCase();
-          window._currentStudentUSN = usn;
+        // If it's an anonymous login, it means it's an Admin auth session!
+        if (user.isAnonymous) {
+          console.log("Firebase anonymous user logged in (Admin session).");
+          // Restore admin session if saved locally
+          const isAdmLoggedIn = localStorage.getItem('techbook_admin_logged_in') === 'true';
+          if (isAdmLoggedIn) {
+            const username = localStorage.getItem('techbook_admin_user');
+            const role = localStorage.getItem('techbook_admin_role');
+            if (typeof window.loginAdmin === 'function') {
+              window.loginAdmin(username, role);
+            }
+            if (typeof window.selectRole === 'function') {
+              window.selectRole('admin');
+            }
+          }
+          if (typeof window.updateNavbarLoginBtn === 'function') {
+            window.updateNavbarLoginBtn();
+          }
           return;
         }
 
+        // Otherwise, it's a student login with email!
+        if (user.email) {
+          const usn = user.email.split('@')[0].toUpperCase();
+          console.log("Loading student data for USN:", usn);
+          await loadStudentDashboard(usn);
+          if (typeof window.selectRole === 'function') {
+            window.selectRole('student');
+          } else {
+            const timer = setInterval(() => {
+              if (typeof window.selectRole === 'function') {
+                window.selectRole('student');
+                clearInterval(timer);
+              }
+            }, 20);
+          }
 
-        const usn = user.email.split('@')[0].toUpperCase();
-        console.log("Loading student data for USN:", usn);
-        await loadStudentDashboard(usn);
-        if (typeof window.selectRole === 'function') {
-          window.selectRole('student');
-        } else {
-          const timer = setInterval(() => {
-            if (typeof window.selectRole === 'function') {
-              window.selectRole('student');
-              clearInterval(timer);
-            }
-          }, 20);
-        }
-
-
-        // ── Check if email is verified — show modal if not ──
-        try {
-          const studentSnap = await getDoc(doc(db, 'students', usn));
-          if (studentSnap.exists()) {
-            const studentData = studentSnap.data();
-            if (!studentData.email_verified) {
-              if (typeof window.showVerifyModal === 'function') {
-                window.showVerifyModal(usn, studentData.name || usn);
+          // ── Check if email is verified — show modal if not ──
+          try {
+            const studentSnap = await getDoc(doc(db, 'students', usn));
+            if (studentSnap.exists()) {
+              const studentData = studentSnap.data();
+              if (!studentData.email_verified) {
+                if (typeof window.showVerifyModal === 'function') {
+                  window.showVerifyModal(usn, studentData.name || usn);
+                }
               }
             }
+          } catch (snapErr) {
+            console.warn('Could not check email verification status:', snapErr.message);
           }
-        } catch (snapErr) {
-          console.warn('Could not check email verification status:', snapErr.message);
         }
-
       } else {
         // Hide modal if open
         if (typeof window.hideVerifyModal === 'function') window.hideVerifyModal();
@@ -769,6 +780,10 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
         if (typeof switchUnifiedPanel === 'function') {
           switchUnifiedPanel('login');
         }
+      }
+
+      if (typeof window.updateNavbarLoginBtn === 'function') {
+        window.updateNavbarLoginBtn();
       }
     });
 
@@ -1468,5 +1483,37 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
       });
     });
 
+    /* ==========================================
+       🔗 PERSISTENT NAV BUTTON SYNC
+    ========================================== */
+    function updateNavbarLoginBtn() {
+      const loginBtn = document.getElementById('navbar-login-btn');
+      if (!loginBtn) return;
 
+      const isStudentLoggedIn = !!auth.currentUser && !auth.currentUser.isAnonymous;
+      const isAdminLoggedIn = localStorage.getItem('techbook_admin_logged_in') === 'true';
 
+      if (isStudentLoggedIn || isAdminLoggedIn) {
+        loginBtn.textContent = 'Back to Dashboard';
+        loginBtn.onclick = (e) => {
+          e.preventDefault();
+          if (isStudentLoggedIn) {
+            if (typeof window.selectRole === 'function') {
+              window.selectRole('student');
+            }
+          } else if (isAdminLoggedIn) {
+            if (typeof window.selectRole === 'function') {
+              window.selectRole('admin');
+            }
+          }
+        };
+      } else {
+        loginBtn.textContent = 'Login';
+        loginBtn.onclick = (e) => {
+          e.preventDefault();
+          if (window.switchLandingTab) window.switchLandingTab('login-section');
+        };
+      }
+    }
+    window.updateNavbarLoginBtn = updateNavbarLoginBtn;
+    setTimeout(updateNavbarLoginBtn, 100);
