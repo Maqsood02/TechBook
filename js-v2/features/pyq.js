@@ -380,6 +380,24 @@ let lastPyqFetchTime = 0;
       const grid = document.getElementById('pyq-subject-grid');
       if (!grid) return;
       
+      const usn = window._currentStudentUSN;
+      if (usn) {
+        try {
+          const d = await getStudentProfile(usn);
+          if (d) {
+            const year = String(d.year || d.academicYear || '');
+            const sem = String(d.sem || d.semester || '');
+            const sec = String(d.section || d.branch || '');
+            const yEl = document.getElementById('pyq-year');
+            const sEl = document.getElementById('pyq-sem');
+            const cEl = document.getElementById('pyq-sec');
+            if (yEl && year) yEl.value = year;
+            if (sEl && sem) sEl.value = sem;
+            if (cEl && sec && sec.length === 1) cEl.value = sec.toUpperCase();
+          }
+        } catch (_) {}
+      }
+
       const hasCache = allStudentPYQ && allStudentPYQ.length > 0;
 
       const now = Date.now();
@@ -989,7 +1007,16 @@ let lastPyqFetchTime = 0;
     }
 
     async function fetchPyqBlob(id) {
-      // Bypass cache to prevent loading corrupted local entries
+      try {
+        const cached = await PdfDbCache.get('pyq', id);
+        if (cached) {
+          const validated = await validatePdfBlob(cached, 'pyq', id);
+          if (validated) {
+            console.log(`🚀 Serving PYQ ${id} from cache`);
+            return validated;
+          }
+        }
+      } catch (ce) { console.warn('Cache read error:', ce); }
 
       let parts = [];
       let pyqMeta = (window.allStudentPYQ || []).find(n => n.id === id);

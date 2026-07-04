@@ -86,7 +86,16 @@ let lastQbankFetchTime = 0;
     }
 
     async function fetchQBankBlob(qbankId) {
-      // Bypass cache to prevent loading corrupted local entries
+      try {
+        const cached = await PdfDbCache.get('qbank', qbankId);
+        if (cached) {
+          const validated = await validateQBankCache(cached, 'qbank', qbankId);
+          if (validated) {
+            console.log(`🚀 Serving Q-Bank ${qbankId} from cache`);
+            return validated;
+          }
+        }
+      } catch (ce) { console.warn('Cache read error:', ce); }
 
       let parts = [];
       let qbankMeta = allStudentQBank.find(n => n.id === qbankId);

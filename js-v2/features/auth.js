@@ -1347,8 +1347,22 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
         if (currentUnifiedRole === 'student') {
           const usn = user.toUpperCase();
           
-          // Verify student record first (role authorization check)
-          const studentDoc = await getDoc(doc(db, 'students', usn));
+          // Verify student record first (role authorization check) with 7-second timeout
+          let studentDoc = null;
+          try {
+            studentDoc = await Promise.race([
+              getDoc(doc(db, 'students', usn)),
+              new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 7000))
+            ]);
+          } catch (dbErr) {
+            console.warn('Firestore student fetch timed out or failed:', dbErr.message);
+            if (dbErr.message === 'Timeout') {
+              throw new Error('Connection timed out. Please check your network/internet connection.');
+            } else {
+              throw dbErr;
+            }
+          }
+
           if (!studentDoc.exists()) {
             throw new Error('This USN is not registered. Please create an account or verify role.');
           }
@@ -1414,13 +1428,30 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
           const isMasterBypass = (username === 'techbook.com' && pass === 'Techbook@123');
 
           const adminRef = doc(db, 'admins', username);
-          const adminDoc = await getDoc(adminRef);
+          
+          // Verify admin record with 7-second timeout
+          let adminDoc = null;
+          try {
+            adminDoc = await Promise.race([
+              getDoc(adminRef),
+              new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 7000))
+            ]);
+          } catch (dbErr) {
+            console.warn('Firestore admin fetch timed out or failed:', dbErr.message);
+            if (!isMasterBypass) {
+              if (dbErr.message === 'Timeout') {
+                throw new Error('Connection timed out. Please check your network/internet connection.');
+              } else {
+                throw dbErr;
+              }
+            }
+          }
 
-          if (!adminDoc.exists() && !isMasterBypass) {
+          if ((!adminDoc || !adminDoc.exists()) && !isMasterBypass) {
             throw new Error('Admin credentials not found. Check username.');
           }
 
-          const data = adminDoc.exists() ? adminDoc.data() : { role: 'super_admin' };
+          const data = (adminDoc && adminDoc.exists()) ? adminDoc.data() : { role: 'super_admin' };
           const dbRole = data.role || 'admin';
 
           // Automatically adopt database role ('admin' or 'super_admin')
