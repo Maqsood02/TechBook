@@ -285,9 +285,9 @@ import { $, val } from '../core/helpers.js';
     window._currentAdminRole = null;
     window._currentAdminUser = null;
     window.adminLoggedIn = false;
+    window.loginAdmin = loginAdmin;
 
     function loginAdmin(username, role) {
-      window.loginAdmin = loginAdmin;
       window.adminLoggedIn = true;
       window._currentAdminUser = username;
       window._currentAdminRole = role;
@@ -345,9 +345,12 @@ import { $, val } from '../core/helpers.js';
           const adminArea = $("admin-area");
           if (loginBlock && adminArea) {
             try {
-              // DATABASE ROLE VERIFICATION
-              const adminDoc = await getDoc(doc(db, "admins", username));
-              if (adminDoc.exists() && adminDoc.data().role === role) {
+              // DATABASE ROLE VERIFICATION with 4s timeout
+              const adminDoc = await Promise.race([
+                getDoc(doc(db, "admins", username)),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 4000))
+              ]);
+              if (adminDoc && adminDoc.exists() && adminDoc.data().role === role) {
                 loginAdmin(username, role);
                 if (typeof window.selectRole === 'function') {
                   window.selectRole('admin');

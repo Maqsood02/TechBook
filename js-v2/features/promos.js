@@ -503,10 +503,7 @@ import { $, base64ToBlob } from '../core/helpers.js';
                 if (video.readyState >= 1) {
                   video.currentTime = 0;
                 }
-                // Only try to play if a valid src is present (e.g. not empty/waiting for chunked download)
-                if (video.getAttribute('src')) {
-                  video.play().catch(e => console.log('Autoplay deferred for landing video:', e));
-                }
+                video.play().catch(e => console.log('Autoplay deferred for landing video:', e));
               } catch (err) {
                 console.log("Could not reset or play video yet", err);
               }
