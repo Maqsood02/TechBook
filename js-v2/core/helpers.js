@@ -100,6 +100,7 @@ export const PdfDbCache = {
   db: null,
   async init() {
     if (this.db) return true;
+    if (typeof indexedDB === 'undefined') return false;
     return new Promise((resolve) => {
       try {
         const request = indexedDB.open('techbook_pdf_cache', 1);
@@ -180,6 +181,23 @@ export async function getStudentProfile(usn) {
   if (window._cachedStudentProfiles[usn]) {
     return window._cachedStudentProfiles[usn];
   }
+  if (window._currentStudentData && (window._currentStudentData.usn === usn || String(window._currentStudentData.usn).toUpperCase() === usn.toUpperCase())) {
+    window._cachedStudentProfiles[usn] = window._currentStudentData;
+    return window._currentStudentData;
+  }
+  try {
+    const localDataStr = localStorage.getItem('techbook_student_data');
+    if (localDataStr) {
+      const localData = JSON.parse(localDataStr);
+      if (localData && (localData.usn === usn || String(localData.usn).toUpperCase() === usn.toUpperCase())) {
+        window._cachedStudentProfiles[usn] = localData;
+        return localData;
+      }
+    }
+  } catch (err) {
+    console.warn("Error reading local student profile cache:", err);
+  }
+
   const snap = await getDoc(doc(db, 'students', usn));
   if (snap.exists()) {
     window._cachedStudentProfiles[usn] = snap.data();

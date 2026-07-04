@@ -89,7 +89,7 @@ let lastQbankFetchTime = 0;
       try {
         const cached = await PdfDbCache.get('qbank', qbankId);
         if (cached) {
-          const validated = await validateQBankCache(cached, 'qbank', qbankId);
+          const validated = await validatePdfBlob(cached, 'qbank', qbankId);
           if (validated) {
             console.log(`🚀 Serving Q-Bank ${qbankId} from cache`);
             return validated;

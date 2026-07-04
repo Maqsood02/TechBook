@@ -326,7 +326,7 @@ let lastNotesFetchTime = 0;
       try {
         const cached = await PdfDbCache.get('note', noteId);
         if (cached) {
-          const validated = await validatePdfCache(cached, 'note', noteId);
+          const validated = await validatePdfBlob(cached, 'note', noteId);
           if (validated) {
             console.log(`🚀 Serving Note ${noteId} from cache`);
             return validated;
