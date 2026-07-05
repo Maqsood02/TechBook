@@ -1,4 +1,4 @@
-const CACHE_NAME = 'techbook-cache-v3';
+const CACHE_NAME = 'techbook-cache-v4';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -46,6 +46,26 @@ self.addEventListener('fetch', event => {
     return;
   }
 
+  // Network-First strategy for HTML navigation requests to prevent stale PWA cache lock
+  if (event.request.mode === 'navigate' || url.endsWith('.html') || url === self.location.origin + '/') {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          if (response && response.status === 200 && response.type === 'basic') {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+          }
+          return response;
+        })
+        .catch(() => {
+          // Offline fallback
+          return caches.match(event.request) || caches.match('/index.html');
+        })
+    );
+    return;
+  }
+
+  // Cache-First strategy for other static assets
   event.respondWith(
     caches.match(event.request)
       .then(cachedResponse => {
@@ -62,11 +82,6 @@ self.addEventListener('fetch', event => {
           });
           return response;
         });
-      }).catch(() => {
-        // Return index.html as fallback for navigation requests offline
-        if (event.request.mode === 'navigate') {
-          return caches.match('/index.html');
-        }
       })
   );
 });
