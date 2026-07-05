@@ -3,17 +3,13 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <link rel="manifest" href="manifest.json" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="TechBook" />
   <title>Tech Book — It makes you learn easy</title>
   <!-- Libraries -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <link rel="stylesheet" href="assets/css/style.css?v=20260705b" />
+  <link rel="stylesheet" href="assets/css/style.css" />
   <script>
     window.API_BASE_URL = 'https://tech-book-two.vercel.app';
   </script>
@@ -474,18 +470,6 @@
               <!-- TAB: Attendance -->
               <!-- All tab content sections (hidden by default, shown when nav button clicked) -->
               <div id="student-tab-content" style="display:none;">
-                <!-- Mobile Academics Sub-Tabs switcher -->
-                <div id="mobile-academics-tabs" class="mobile-academics-tabs hidden">
-                  <button class="mobile-subtab-btn active" data-subtab="notes" onclick="handleMobileSubtabClick('notes', this)">
-                    📚 Notes
-                  </button>
-                  <button class="mobile-subtab-btn" data-subtab="qbank" onclick="handleMobileSubtabClick('qbank', this)">
-                    📖 Q-Bank
-                  </button>
-                  <button class="mobile-subtab-btn" data-subtab="pyq" onclick="handleMobileSubtabClick('pyq', this)">
-                    🗂️ PYQs
-                  </button>
-                </div>
 
                 <!-- TAB: Attendance -->
                 <div id="stab-content-attendance" style="display:none;">
@@ -3052,160 +3036,8 @@
     </div>
 
 
-        <!-- Mobile Bottom Nav and Sheet Elements -->
-        <!-- Student Mobile Bottom Navigation -->
-        <div id="student-mobile-nav" class="mobile-bottom-nav student-only-nav hidden">
-          <button class="mobile-nav-item active" onclick="handleMobileNavClick('home', this)">
-            <span class="mobile-nav-icon">🏠</span>
-            <span class="mobile-nav-label">Home</span>
-          </button>
-          <button class="mobile-nav-item" onclick="handleMobileNavClick('attendance', this)">
-            <span class="mobile-nav-icon">📋</span>
-            <span class="mobile-nav-label">Attendance</span>
-          </button>
-          <button class="mobile-nav-item" onclick="handleMobileNavClick('quiz', this)">
-            <span class="mobile-nav-icon">🧠</span>
-            <span class="mobile-nav-label">Quizzes</span>
-          </button>
-          <button class="mobile-nav-item" onclick="handleMobileNavClick('academics', this)">
-            <span class="mobile-nav-icon">📚</span>
-            <span class="mobile-nav-label">Library</span>
-          </button>
-          <button class="mobile-nav-item" onclick="handleMobileNavClick('more', this)">
-            <span class="mobile-nav-icon">⚙️</span>
-            <span class="mobile-nav-label">More</span>
-          </button>
-        </div>
-
-        <!-- Admin Mobile Bottom Navigation -->
-        <div id="admin-mobile-nav" class="mobile-bottom-nav admin-only-nav hidden">
-          <button class="mobile-nav-item active" onclick="handleAdminMobileNavClick('stats', this)">
-            <span class="mobile-nav-icon">📊</span>
-            <span class="mobile-nav-label">Stats</span>
-          </button>
-          <button class="mobile-nav-item" onclick="handleAdminMobileNavClick('code', this)">
-            <span class="mobile-nav-icon">🎯</span>
-            <span class="mobile-nav-label">Code</span>
-          </button>
-          <button class="mobile-nav-item" onclick="handleAdminMobileNavClick('manual', this)">
-            <span class="mobile-nav-icon">📝</span>
-            <span class="mobile-nav-label">Manual</span>
-          </button>
-          <button class="mobile-nav-item" onclick="handleAdminMobileNavClick('promos', this)">
-            <span class="mobile-nav-icon">🎬</span>
-            <span class="mobile-nav-label">Promos</span>
-          </button>
-          <button class="mobile-nav-item" onclick="handleAdminMobileNavClick('more', this)">
-            <span class="mobile-nav-icon">⚙️</span>
-            <span class="mobile-nav-label">More</span>
-          </button>
-        </div>
-
-        <!-- Student Mobile Bottom Sheet Menu -->
-        <div id="mobile-more-sheet" class="mobile-bottom-sheet hidden">
-          <div class="sheet-overlay" onclick="closeMobileMoreSheet()"></div>
-          <div class="sheet-content">
-            <div class="sheet-handle"></div>
-            <h3 class="sheet-title">Menu & Settings</h3>
-            <div class="sheet-menu-list">
-              <button class="sheet-menu-item" onclick="switchStudentTab('ia-timetable'); closeMobileMoreSheet();">
-                <span class="sheet-menu-icon">📆</span>
-                <span class="sheet-menu-label">IA Timetable</span>
-              </button>
-              <button class="sheet-menu-item" onclick="switchStudentTab('quiz-history'); closeMobileMoreSheet();">
-                <span class="sheet-menu-icon">📊</span>
-                <span class="sheet-menu-label">Quiz History</span>
-              </button>
-              <button class="sheet-menu-item" onclick="switchStudentTab('history'); closeMobileMoreSheet();">
-                <span class="sheet-menu-icon">🗃️</span>
-                <span class="sheet-menu-label">Attendance History</span>
-              </button>
-              <button class="sheet-menu-item" onclick="openFounderModal(); closeMobileMoreSheet();">
-                <span class="sheet-menu-icon">🌟</span>
-                <span class="sheet-menu-label">Website Developer</span>
-              </button>
-              <button class="sheet-menu-item" onclick="openHelpCenter(); closeMobileMoreSheet();">
-                <span class="sheet-menu-icon">🤖</span>
-                <span class="sheet-menu-label">Contact helpline</span>
-              </button>
-              <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 10px 0;" />
-              <button class="sheet-menu-item logout-btn" onclick="triggerStudentLogout(); closeMobileMoreSheet();">
-                <span class="sheet-menu-icon">🚪</span>
-                <span class="sheet-menu-label" style="color: #ef4444;">Logout</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Admin Mobile Bottom Sheet Menu -->
-        <div id="admin-more-sheet" class="mobile-bottom-sheet hidden">
-          <div class="sheet-overlay" onclick="closeAdminMoreSheet()"></div>
-          <div class="sheet-content">
-            <div class="sheet-handle"></div>
-            <h3 class="sheet-title">Admin Controls</h3>
-            <div class="sheet-menu-list" style="max-height: 60vh; overflow-y: auto;">
-              <button class="sheet-menu-item" onclick="switchAdminSection('sec-register'); closeAdminMoreSheet();">
-                <span class="sheet-menu-icon">👤</span><span class="sheet-menu-label">Register Student</span>
-              </button>
-              <button class="sheet-menu-item" onclick="switchAdminSection('sec-session'); closeAdminMoreSheet();">
-                <span class="sheet-menu-icon">⚙️</span><span class="sheet-menu-label">Active Session</span>
-              </button>
-              <button class="sheet-menu-item" onclick="switchAdminSection('sec-records'); closeAdminMoreSheet();">
-                <span class="sheet-menu-icon">🗃️</span><span class="sheet-menu-label">Attendance Records</span>
-              </button>
-              <button class="sheet-menu-item" onclick="switchAdminSection('sec-export'); closeAdminMoreSheet();">
-                <span class="sheet-menu-icon">📤</span><span class="sheet-menu-label">Export Data</span>
-              </button>
-              <button class="sheet-menu-item" onclick="switchAdminSection('sec-manage'); closeAdminMoreSheet();">
-                <span class="sheet-menu-icon">✏️</span><span class="sheet-menu-label">Edit Student Records</span>
-              </button>
-              <button class="sheet-menu-item" onclick="switchAdminSection('sec-users-list'); closeAdminMoreSheet();">
-                <span class="sheet-menu-icon">🟢</span><span class="sheet-menu-label">Online User Profiles</span>
-              </button>
-              <button class="sheet-menu-item" onclick="switchAdminSection('sec-quiz-admin'); closeAdminMoreSheet();">
-                <span class="sheet-menu-icon">🧠</span><span class="sheet-menu-label">Manage Quizzes</span>
-              </button>
-              <button class="sheet-menu-item" onclick="switchAdminSection('sec-quiz-reset'); closeAdminMoreSheet();">
-                <span class="sheet-menu-icon">🔄</span><span class="sheet-menu-label">Reset Quiz Attempts</span>
-              </button>
-              <button class="sheet-menu-item" onclick="switchAdminSection('sec-leaderboard'); closeAdminMoreSheet();">
-                <span class="sheet-menu-icon">🏆</span><span class="sheet-menu-label">Quiz Leaderboard</span>
-              </button>
-              <button class="sheet-menu-item" onclick="switchAdminSection('sec-notes-upload'); closeAdminMoreSheet();">
-                <span class="sheet-menu-icon">📚</span><span class="sheet-menu-label">Upload Study Notes</span>
-              </button>
-              <button class="sheet-menu-item" onclick="switchAdminSection('sec-qbank-upload'); closeAdminMoreSheet();">
-                <span class="sheet-menu-icon">📖</span><span class="sheet-menu-label">Upload Question Banks</span>
-              </button>
-              <button class="sheet-menu-item" onclick="switchAdminSection('sec-pyq-upload'); closeAdminMoreSheet();">
-                <span class="sheet-menu-icon">🗂️</span><span class="sheet-menu-label">Upload PYQ Papers</span>
-              </button>
-              <button class="sheet-menu-item" onclick="switchAdminSection('sec-ia-timetable'); closeAdminMoreSheet();">
-                <span class="sheet-menu-icon">📆</span><span class="sheet-menu-label">Upload IA Timetable</span>
-              </button>
-              <button class="sheet-menu-item" onclick="switchAdminSection('sec-live-monitor'); closeAdminMoreSheet();">
-                <span class="sheet-menu-icon">🖥️</span><span class="sheet-menu-label">Live Monitor</span>
-              </button>
-              <button class="sheet-menu-item" onclick="switchAdminSection('sec-admins'); closeAdminMoreSheet();">
-                <span class="sheet-menu-icon">🔑</span><span class="sheet-menu-label">Manage Admin Accounts</span>
-              </button>
-              <button class="sheet-menu-item" onclick="switchAdminSection('sec-features'); closeAdminMoreSheet();">
-                <span class="sheet-menu-icon">⚙️</span><span class="sheet-menu-label">Feature Toggles</span>
-              </button>
-              <button class="sheet-menu-item" onclick="switchAdminSection('sec-settings'); closeAdminMoreSheet();">
-                <span class="sheet-menu-icon">🛠️</span><span class="sheet-menu-label">Admin Settings</span>
-              </button>
-              <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 10px 0;" />
-              <button class="sheet-menu-item logout-btn" onclick="triggerAdminLogout(); closeAdminMoreSheet();">
-                <span class="sheet-menu-icon">🚪</span>
-                <span class="sheet-menu-label" style="color: #ef4444;">Logout</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
+  </div>
+  </div>
 
   <!-- Success Modal -->
   <div id="success-modal" class="success-modal hidden">
@@ -3443,7 +3275,6 @@
   </div>
 
   <script type="module" src="js-v2/app.js?v=20260701"></script>
-  <script type="module" src="js-v2/features/mobile-navigation.js"></script>
 
   <!-- ══ FOUNDER MODAL ══ -->
   <div id="founder-modal"
