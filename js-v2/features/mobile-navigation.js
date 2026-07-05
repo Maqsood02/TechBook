@@ -8,7 +8,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   // ─── 1. Register Service Worker for PWA ───
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js?v=20260705f')
+    navigator.serviceWorker.register('/sw.js?v=20260705g')
       .then(reg => console.log('✅ PWA Service Worker Registered', reg.scope))
       .catch(err => console.error('❌ Service Worker Registration Failed', err));
   }
@@ -203,32 +203,37 @@ function wrapTabSwitchers() {
 
 function handleStudentTabStateChange(tab) {
   const subtabs = document.getElementById('mobile-academics-tabs');
+  const welcomeCard = document.getElementById('student-mobile-welcome');
   
   if (!tab) {
     syncMobileNavActiveState('home');
     if (subtabs) subtabs.classList.add('hidden');
-  } else if (tab === 'attendance') {
-    syncMobileNavActiveState('attendance');
-    if (subtabs) subtabs.classList.add('hidden');
-  } else if (tab === 'quiz') {
-    syncMobileNavActiveState('quiz');
-    if (subtabs) subtabs.classList.add('hidden');
-  } else if (['notes', 'qbank', 'pyq'].includes(tab)) {
-    syncMobileNavActiveState('academics');
-    if (subtabs) subtabs.classList.remove('hidden');
-    
-    // Highlight correct subtab pill
-    document.querySelectorAll('.mobile-subtab-btn').forEach(btn => {
-      const btnTab = btn.getAttribute('data-subtab');
-      if (btnTab === tab) {
-        btn.classList.add('active');
-      } else {
-        btn.classList.remove('active');
-      }
-    });
+    if (welcomeCard) welcomeCard.style.display = 'flex';
   } else {
-    //timetables, history etc
-    if (subtabs) subtabs.classList.add('hidden');
+    if (welcomeCard) welcomeCard.style.display = 'none';
+    if (tab === 'attendance') {
+      syncMobileNavActiveState('attendance');
+      if (subtabs) subtabs.classList.add('hidden');
+    } else if (tab === 'quiz') {
+      syncMobileNavActiveState('quiz');
+      if (subtabs) subtabs.classList.add('hidden');
+    } else if (['notes', 'qbank', 'pyq'].includes(tab)) {
+      syncMobileNavActiveState('academics');
+      if (subtabs) subtabs.classList.remove('hidden');
+      
+      // Highlight correct subtab pill
+      document.querySelectorAll('.mobile-subtab-btn').forEach(btn => {
+        const btnTab = btn.getAttribute('data-subtab');
+        if (btnTab === tab) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+    } else {
+      //timetables, history etc
+      if (subtabs) subtabs.classList.add('hidden');
+    }
   }
 }
 

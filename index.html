@@ -13,7 +13,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <link rel="stylesheet" href="assets/css/style.css?v=20260705f" />
+  <link rel="stylesheet" href="assets/css/style.css?v=20260705g" />
   <style>
     /* Force hide mobile navigation components on desktop view */
     @media (min-width: 768px) {
@@ -23,6 +23,161 @@
       .student-only-nav,
       .admin-only-nav {
         display: none !important;
+      }
+    }
+    
+    /* Mobile App Header styling */
+    .mobile-app-header {
+      display: none;
+    }
+    @media (max-width: 767px) {
+      .mobile-app-header {
+        display: flex;
+        flex-direction: column;
+        background: #0f0f23;
+        padding: 16px 16px 20px 16px;
+        color: #fff;
+        border-bottom-left-radius: 24px;
+        border-bottom-right-radius: 24px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        margin: -16px -16px 16px -16px;
+      }
+      .mobile-header-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+        width: 100%;
+      }
+      .mobile-header-brand {
+        text-align: center;
+        flex: 1;
+      }
+      .mobile-brand-title {
+        font-size: 24px;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        font-family: 'Outfit', sans-serif;
+      }
+      .mobile-brand-subtitle {
+        font-size: 10px;
+        opacity: 0.7;
+        margin-top: 2px;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+      }
+      .mobile-header-icon-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.05);
+        transition: background 0.2s;
+        border: none;
+        color: #fff;
+        font-size: 18px;
+        cursor: pointer;
+        padding: 0;
+      }
+      .mobile-header-icon-btn:active {
+        background: rgba(255, 255, 255, 0.15);
+      }
+      .mobile-welcome-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #ffffff;
+        border-radius: 20px;
+        padding: 16px 20px;
+        color: #0f172a;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        position: relative;
+        overflow: hidden;
+        margin-top: 4px;
+        border: 1px solid rgba(255,255,255,0.8);
+      }
+      .welcome-text-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        text-align: left;
+      }
+      .welcome-text-container h3 {
+        margin: 0;
+        font-size: 19px;
+        font-weight: 800;
+        color: #0f172a;
+        font-family: 'Outfit', sans-serif;
+      }
+      .welcome-text-container p {
+        margin: 0;
+        font-size: 13px;
+        color: #475569;
+        font-weight: 500;
+      }
+      .welcome-image-container {
+        width: 70px;
+        height: 70px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 10px;
+      }
+      .book-stack-illustration {
+        position: relative;
+        width: 60px;
+        height: 50px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-end;
+      }
+      .graduation-cap {
+        font-size: 28px;
+        position: absolute;
+        top: -20px;
+        z-index: 10;
+        animation: bounce 2.5s infinite ease-in-out;
+      }
+      .book {
+        width: 50px;
+        height: 9px;
+        border-radius: 3px;
+        margin-bottom: 2px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        position: relative;
+      }
+      .book::after {
+        content: '';
+        position: absolute;
+        left: 5px;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background: rgba(255, 255, 255, 0.4);
+      }
+      .book-blue {
+        background: #3d5af1;
+        transform: rotate(-1deg);
+        width: 48px;
+      }
+      .book-indigo {
+        background: #5c6bc0;
+        transform: rotate(2deg);
+        width: 52px;
+      }
+      .book-purple {
+        background: #7e57c2;
+        transform: rotate(-2deg);
+        width: 50px;
+      }
+      @keyframes bounce {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-3px) rotate(2deg); }
       }
     }
   </style>
@@ -430,6 +585,36 @@
 
             <!-- Logged In Area -->
             <div id="student-area" class="hidden">
+              <!-- Mobile App Header (only visible in mobile view) -->
+              <div class="mobile-app-header">
+                <div class="mobile-header-top">
+                  <button class="mobile-header-icon-btn" onclick="window.studentLogout && window.studentLogout()" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                  </button>
+                  <div class="mobile-header-brand">
+                    <div class="mobile-brand-title">Tech<span style="color:#60a5fa;">Book</span></div>
+                    <div class="mobile-brand-subtitle">— It makes you learn easy —</div>
+                  </div>
+                  <button class="mobile-header-icon-btn" onclick="alert('No new notifications')" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;">🔔</button>
+                </div>
+                
+                <!-- Welcome Card (only visible on student home tab) -->
+                <div class="mobile-welcome-card" id="student-mobile-welcome">
+                  <div class="welcome-text-container">
+                    <h3>Hello, Learner! 👋</h3>
+                    <p>What would you like to learn today?</p>
+                  </div>
+                  <div class="welcome-image-container">
+                    <div class="book-stack-illustration">
+                      <div class="graduation-cap">🎓</div>
+                      <div class="book book-blue"></div>
+                      <div class="book book-indigo"></div>
+                      <div class="book book-purple"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <!-- Top bar: session banner -->
               <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
                 <div id="session-banner" class="hidden"
@@ -3071,15 +3256,15 @@
             <span class="mobile-nav-icon">🏠</span>
             <span class="mobile-nav-label">Home</span>
           </button>
-          <button class="mobile-nav-item" onclick="handleMobileNavClick('attendance', this)">
+          <button id="m-nav-attendance" class="mobile-nav-item" onclick="handleMobileNavClick('attendance', this)">
             <span class="mobile-nav-icon">📋</span>
             <span class="mobile-nav-label">Attendance</span>
           </button>
-          <button class="mobile-nav-item" onclick="handleMobileNavClick('quiz', this)">
+          <button id="m-nav-quiz" class="mobile-nav-item" onclick="handleMobileNavClick('quiz', this)">
             <span class="mobile-nav-icon">🧠</span>
             <span class="mobile-nav-label">Quizzes</span>
           </button>
-          <button class="mobile-nav-item" onclick="handleMobileNavClick('academics', this)">
+          <button id="m-nav-library" class="mobile-nav-item" onclick="handleMobileNavClick('academics', this)">
             <span class="mobile-nav-icon">📚</span>
             <span class="mobile-nav-label">Library</span>
           </button>
@@ -3454,8 +3639,8 @@
     <iframe id="pdf-viewer-frame" src="" style="flex:1;width:100%;border:none;background:#525659;"></iframe>
   </div>
 
-  <script type="module" src="js-v2/app.js?v=20260705f"></script>
-  <script type="module" src="js-v2/features/mobile-navigation.js?v=20260705f"></script>
+  <script type="module" src="js-v2/app.js?v=20260705g"></script>
+  <script type="module" src="js-v2/features/mobile-navigation.js?v=20260705g"></script>
 
   <!-- ══ FOUNDER MODAL ══ -->
   <div id="founder-modal"

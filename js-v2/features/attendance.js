@@ -49,6 +49,26 @@ import { $, val } from '../core/helpers.js';
             else btn.classList.add("hidden");
           }
         }
+
+        // Apply features to Mobile Bottom Navigation
+        const mNavAttendance = document.getElementById("m-nav-attendance");
+        if (mNavAttendance) {
+          if (features.attendanceEnabled !== false) mNavAttendance.style.display = "";
+          else mNavAttendance.style.display = "none";
+        }
+
+        const mNavQuiz = document.getElementById("m-nav-quiz");
+        if (mNavQuiz) {
+          if (features.quizEnabled !== false) mNavQuiz.style.display = "";
+          else mNavQuiz.style.display = "none";
+        }
+
+        const mNavLibrary = document.getElementById("m-nav-library");
+        if (mNavLibrary) {
+          const libraryEnabled = (features.notesEnabled !== false || features.pyqEnabled !== false || features.qbankEnabled !== false);
+          if (libraryEnabled) mNavLibrary.style.display = "";
+          else mNavLibrary.style.display = "none";
+        }
       }
 
       function renderStudentNavbarActions() {
