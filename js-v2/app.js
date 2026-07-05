@@ -8,7 +8,7 @@ import './core/activity_tracker.js?v=20260705e';
 // Features & Components
 import './features/auth.js';
 import './features/promos.js?v=20260705e';
-import './features/attendance.js?v=20260705e';
+import './features/attendance.js?v=20260705f';
 import './features/notes.js';
 import './features/qbank.js';
 import './features/pyq.js';

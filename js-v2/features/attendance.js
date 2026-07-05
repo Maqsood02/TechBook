@@ -1735,6 +1735,9 @@ service cloud.firestore {
 
         snapshot.forEach(docSnap => {
           const data = docSnap.data();
+          if (data.role === 'guest') {
+            return;
+          }
           const lastActiveTime = data.lastActive ? data.lastActive.toMillis() : now;
           const diff = now - lastActiveTime;
           const isOnline = (diff < twoMinutes);
@@ -1821,6 +1824,9 @@ service cloud.firestore {
         let html = '';
         snapshot.forEach(docSnap => {
           const data = docSnap.data();
+          if (data.role === 'guest') {
+            return;
+          }
           const time = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : 'Recently';
           const dateStr = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : '';
 
