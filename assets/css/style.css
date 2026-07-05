@@ -4562,6 +4562,13 @@
       }
     }
 
+    /* Hide mobile navigation and sheet structures on desktop view */
+    .mobile-bottom-nav,
+    .mobile-bottom-sheet,
+    .mobile-academics-tabs {
+      display: none !important;
+    }
+
     /* =========================================================
        📱 MOBILE NATIVE-APP VIEW OVERRIDES (< 768px)
        ========================================================= */
