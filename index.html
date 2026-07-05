@@ -13,7 +13,19 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <link rel="stylesheet" href="assets/css/style.css?v=20260705b" />
+  <link rel="stylesheet" href="assets/css/style.css?v=20260705c" />
+  <style>
+    /* Force hide mobile navigation components on desktop view */
+    @media (min-width: 768px) {
+      .mobile-bottom-nav,
+      .mobile-bottom-sheet,
+      .mobile-academics-tabs,
+      .student-only-nav,
+      .admin-only-nav {
+        display: none !important;
+      }
+    }
+  </style>
   <script>
     window.API_BASE_URL = 'https://tech-book-two.vercel.app';
   </script>
@@ -3443,7 +3455,7 @@
   </div>
 
   <script type="module" src="js-v2/app.js?v=20260701"></script>
-  <script type="module" src="js-v2/features/mobile-navigation.js"></script>
+  <script type="module" src="js-v2/features/mobile-navigation.js?v=20260705c"></script>
 
   <!-- ══ FOUNDER MODAL ══ -->
   <div id="founder-modal"
