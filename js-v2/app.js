@@ -7,12 +7,12 @@ import './core/activity_tracker.js?v=20260705e';
 
 // Features & Components
 import './features/auth.js';
-import './features/promos.js?v=20260705e';
-import './features/attendance.js?v=20260705f';
+import './features/promos.js?v=20260705g';
+import './features/attendance.js?v=20260705g';
 import './features/notes.js';
 import './features/qbank.js';
 import './features/pyq.js';
-import './features/quiz.js';
+import './features/quiz.js?v=20260705g';
 import './features/chatbot.js';
 import './features/manage_students.js';
 

@@ -28,6 +28,10 @@ import { $, val } from '../core/helpers.js';
             </div>
           </div>
         `;
+        const welcomeEl = document.getElementById("mobile-welcome-name");
+        if (welcomeEl) {
+          welcomeEl.textContent = `Hello, ${firstName}! 👋`;
+        }
       }
 
       function applyFeatures(features) {
@@ -50,24 +54,53 @@ import { $, val } from '../core/helpers.js';
           }
         }
 
-        // Apply features to Mobile Bottom Navigation
-        const mNavAttendance = document.getElementById("m-nav-attendance");
-        if (mNavAttendance) {
-          if (features.attendanceEnabled !== false) mNavAttendance.style.display = "";
-          else mNavAttendance.style.display = "none";
+        // Hide/show mobile navigation items based on feature toggles
+        const mobAttendance = document.getElementById("mob-nav-attendance");
+        if (mobAttendance) {
+          if (features.attendanceEnabled !== false) mobAttendance.style.display = "";
+          else mobAttendance.style.display = "none";
         }
 
-        const mNavQuiz = document.getElementById("m-nav-quiz");
-        if (mNavQuiz) {
-          if (features.quizEnabled !== false) mNavQuiz.style.display = "";
-          else mNavQuiz.style.display = "none";
+        const mobQuiz = document.getElementById("mob-nav-quiz");
+        if (mobQuiz) {
+          if (features.quizEnabled !== false) mobQuiz.style.display = "";
+          else mobQuiz.style.display = "none";
         }
 
-        const mNavLibrary = document.getElementById("m-nav-library");
-        if (mNavLibrary) {
-          const libraryEnabled = (features.notesEnabled !== false || features.pyqEnabled !== false || features.qbankEnabled !== false);
-          if (libraryEnabled) mNavLibrary.style.display = "";
-          else mNavLibrary.style.display = "none";
+        // Hide Library tab if Notes, Q-Bank, and PYQs are all disabled
+        const mobLibrary = document.getElementById("mob-nav-library");
+        const libraryEnabled = (features.notesEnabled !== false) || (features.qbankEnabled !== false) || (features.pyqEnabled !== false);
+        if (mobLibrary) {
+          if (libraryEnabled) mobLibrary.style.display = "";
+          else mobLibrary.style.display = "none";
+        }
+
+        // Hide individual subtabs inside the mobile Academics/Library view
+        const mobSubtabNotes = document.getElementById("mob-subtab-notes");
+        if (mobSubtabNotes) {
+          if (features.notesEnabled !== false) mobSubtabNotes.style.display = "";
+          else mobSubtabNotes.style.display = "none";
+        }
+
+        const mobSubtabQbank = document.getElementById("mob-subtab-qbank");
+        if (mobSubtabQbank) {
+          if (features.qbankEnabled !== false) mobSubtabQbank.style.display = "";
+          else mobSubtabQbank.style.display = "none";
+        }
+
+        const mobSubtabPyq = document.getElementById("mob-subtab-pyq");
+        if (mobSubtabPyq) {
+          if (features.pyqEnabled !== false) mobSubtabPyq.style.display = "";
+          else mobSubtabPyq.style.display = "none";
+        }
+
+        // Fallback for active subtab if it gets disabled
+        const activeSubtabBtn = document.querySelector(".mobile-subtab-btn.active");
+        if (activeSubtabBtn && activeSubtabBtn.style.display === "none") {
+          const visibleSubtab = Array.from(document.querySelectorAll(".mobile-subtab-btn")).find(btn => btn.style.display !== "none");
+          if (visibleSubtab) {
+            visibleSubtab.click();
+          }
         }
       }
 
