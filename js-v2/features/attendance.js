@@ -288,6 +288,9 @@ import { $, val } from '../core/helpers.js';
     window.loginAdmin = loginAdmin;
 
     function loginAdmin(username, role) {
+      if (window.adminLoggedIn && window._currentAdminUser === username && window._currentAdminRole === role) {
+        return;
+      }
       window.adminLoggedIn = true;
       window._currentAdminUser = username;
       window._currentAdminRole = role;

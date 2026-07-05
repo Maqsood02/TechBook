@@ -10,6 +10,10 @@ let lastActivityTime = 0;
 let lastLoggedActivity = '';
 
 window.trackUserActivity = async function (description, logToHistory = false) {
+  // Do not track guest/anonymous users
+  if (!window._currentStudentUSN && !window._currentAdminUser) {
+    return;
+  }
   let userId = '';
   let name = '';
   let role = '';
