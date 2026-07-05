@@ -1,0 +1,22 @@
+{
+  "name": "TechBook Learning Platform",
+  "short_name": "TechBook",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3d5af1",
+  "description": "An all-in-one educational platform designed to streamline college attendance, quizzes, and learning resources.",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "img/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "img/logo_cropped.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
