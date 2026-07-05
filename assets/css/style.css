@@ -4561,3 +4561,373 @@
         padding: 32px 24px !important;
       }
     }
+
+    /* Hide mobile navigation and sheet structures on desktop view */
+    .mobile-bottom-nav,
+    .mobile-bottom-sheet,
+    .mobile-academics-tabs {
+      display: none !important;
+    }
+
+    /* =========================================================
+       📱 MOBILE NATIVE-APP VIEW OVERRIDES (< 768px)
+       ========================================================= */
+    @media (max-width: 767px) {
+      /* 1. Body & Container Viewport Lock - ONLY in App Mode (when logged in) */
+      body.mobile-app-mode {
+        margin: 0;
+        padding: 0;
+        height: 100vh !important;
+        width: 100vw !important;
+        overflow: hidden !important;
+        position: fixed !important;
+        top: 0;
+        left: 0;
+        background-color: #f3f4f6 !important;
+      }
+      body.mobile-app-mode .app-container, 
+      body.mobile-app-mode .app {
+        height: 100vh !important;
+        width: 100vw !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      
+      /* 2. Main Panel Containment - ONLY when visible/active */
+      #main-panel:not(.hidden) {
+        height: 100vh !important;
+        width: 100vw !important;
+        display: flex !important;
+        flex-direction: column !important;
+        overflow: hidden !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      /* 3. Redesigned Sticky Top Header (Navbar) - ONLY when dashboard is visible */
+      #main-panel:not(.hidden) #main-navbar {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        height: 56px !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        border: none !important;
+        border-bottom: 1px solid #e5e7eb !important;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05) !important;
+        background: rgba(255, 255, 255, 0.95) !important;
+        backdrop-filter: blur(8px) !important;
+        z-index: 9999 !important;
+        padding: 0 16px !important;
+        box-sizing: border-box !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+      }
+      #main-panel:not(.hidden) #main-navbar button#btn-home {
+        padding: 6px 12px !important;
+        font-size: 12px !important;
+        background-color: #f3f4f6 !important;
+        border-radius: 8px !important;
+        border: 1px solid #e5e7eb !important;
+      }
+
+      /* 4. Scrollable Content Area */
+      #content {
+        flex: 1 !important;
+        overflow-y: auto !important;
+        padding: 72px 16px 88px 16px !important; /* Top space for navbar, bottom space for mobile-nav */
+        box-sizing: border-box !important;
+        -webkit-overflow-scrolling: touch !important;
+      }
+
+      /* Hide Desktop Footers inside content */
+      #student-footer {
+        display: none !important;
+      }
+
+      /* 5. Mobile Bottom Navigation Styling */
+      .mobile-bottom-nav {
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        height: 68px !important;
+        background: rgba(255, 255, 255, 0.98) !important;
+        border-top: 1px solid #e5e7eb !important;
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05) !important;
+        display: flex !important;
+        justify-content: space-around !important;
+        align-items: center !important;
+        z-index: 9998 !important;
+        padding: 0 8px 8px 8px !important; /* Extra bottom padding for home indicator */
+        box-sizing: border-box !important;
+      }
+      .mobile-bottom-nav.hidden {
+        display: none !important;
+      }
+      .mobile-nav-item {
+        background: none !important;
+        border: none !important;
+        outline: none !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex: 1 !important;
+        height: 100% !important;
+        cursor: pointer !important;
+        color: #64748b !important;
+        transition: all 0.2s ease !important;
+        padding: 4px 0 !important;
+      }
+      .mobile-nav-icon {
+        font-size: 20px !important;
+        margin-bottom: 2px !important;
+        transition: transform 0.2s ease !important;
+      }
+      .mobile-nav-label {
+        font-size: 10px !important;
+        font-weight: 600 !important;
+        font-family: inherit !important;
+      }
+      .mobile-nav-item.active {
+        color: #3d5af1 !important;
+      }
+      .mobile-nav-item.active .mobile-nav-icon {
+        transform: scale(1.15) translateY(-1px) !important;
+      }
+
+      /* 6. Academics Top Subtab Switcher */
+      .mobile-academics-tabs {
+        display: flex !important;
+        background: #f1f5f9 !important;
+        padding: 4px !important;
+        border-radius: 12px !important;
+        margin-bottom: 16px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      .mobile-academics-tabs.hidden {
+        display: none !important;
+      }
+      .mobile-subtab-btn {
+        flex: 1 !important;
+        background: none !important;
+        border: none !important;
+        outline: none !important;
+        padding: 10px 0 !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        border-radius: 9px !important;
+        color: #64748b !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+      }
+      .mobile-subtab-btn.active {
+        background: #ffffff !important;
+        color: #3d5af1 !important;
+        box-shadow: 0 4px 12px rgba(61, 90, 241, 0.12) !important;
+      }
+
+      /* Hide native desktop subtab back buttons on mobile */
+      #student-tab-content button[onclick="switchStudentTab(null)"] {
+        display: none !important;
+      }
+
+      /* 7. Slide-Up Bottom Sheets */
+      .mobile-bottom-sheet {
+        position: fixed !important;
+        inset: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        z-index: 100000 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-end !important;
+        transition: visibility 0.3s ease !important;
+      }
+      .mobile-bottom-sheet.hidden {
+        visibility: hidden !important;
+        pointer-events: none !important;
+      }
+      .sheet-overlay {
+        position: absolute !important;
+        inset: 0 !important;
+        background: rgba(15, 23, 42, 0.5) !important;
+        backdrop-filter: blur(4px) !important;
+        transition: opacity 0.3s ease !important;
+      }
+      .mobile-bottom-sheet.hidden .sheet-overlay {
+        opacity: 0 !important;
+      }
+      .sheet-content {
+        position: relative !important;
+        background: #ffffff !important;
+        border-top-left-radius: 24px !important;
+        border-top-right-radius: 24px !important;
+        padding: 12px 20px 32px 20px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        transform: translateY(0) !important;
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        z-index: 1 !important;
+        box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.15) !important;
+      }
+      .mobile-bottom-sheet.hidden .sheet-content {
+        transform: translateY(100%) !important;
+      }
+      .sheet-handle {
+        width: 40px !important;
+        height: 5px !important;
+        background-color: #cbd5e1 !important;
+        border-radius: 3px !important;
+        margin: 0 auto 16px auto !important;
+      }
+      .sheet-title {
+        margin: 0 0 16px 0 !important;
+        font-size: 17px !important;
+        font-weight: 800 !important;
+        color: #0f172a !important;
+        text-align: center !important;
+      }
+      .sheet-menu-list {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 6px !important;
+      }
+      .sheet-menu-item {
+        background: none !important;
+        border: none !important;
+        outline: none !important;
+        width: 100% !important;
+        padding: 12px 16px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        border-radius: 12px !important;
+        cursor: pointer !important;
+        transition: background-color 0.2s !important;
+        text-align: left !important;
+      }
+      .sheet-menu-item:active {
+        background-color: #f1f5f9 !important;
+      }
+      .sheet-menu-icon {
+        font-size: 18px !important;
+      }
+      .sheet-menu-label {
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        color: #334155 !important;
+      }
+      
+      /* Card list style adaptations for touch targets */
+      .card {
+        padding: 18px !important;
+        border-radius: 16px !important;
+        margin-bottom: 12px !important;
+      }
+      .form-group input, .form-group select, .form-group textarea {
+        min-height: 48px !important;
+        font-size: 15px !important;
+      }
+      button.btn {
+        min-height: 48px !important;
+        font-size: 14px !important;
+        font-weight: 700 !important;
+        border-radius: 12px !important;
+      }
+
+      /* Adjust grids for 1 column on small screens */
+      #student-nav-grid {
+        grid-template-columns: 1fr !important;
+        gap: 8px !important;
+      }
+      
+      .admin-nav-grid {
+        grid-template-columns: 1fr !important;
+        gap: 8px !important;
+      }
+
+      /* Mobile scroll padding inside admin views */
+      .admin-section {
+        padding-bottom: 80px !important;
+      }
+
+      /* 8. Landing Page Mobile Optimization */
+      .landing-navbar {
+        height: 56px !important;
+        background: #ffffff !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+        position: sticky !important;
+        top: 0 !important;
+      }
+      .navbar-container {
+        padding: 6px 16px !important;
+      }
+      .nav-logo {
+        height: 38px !important;
+        border-radius: 8px !important;
+        border: 1px solid rgba(61, 90, 241, 0.2) !important;
+        box-shadow: 0 2px 8px rgba(61, 90, 241, 0.08) !important;
+      }
+      .nav-brand-text {
+        font-size: 18px !important;
+      }
+      .mobile-menu-toggle {
+        display: flex !important;
+      }
+      .navbar-menu {
+        top: 56px !important;
+      }
+
+      /* Hero Section Mobile Polish */
+      .hero-section {
+        padding: 30px 16px 40px 16px !important;
+      }
+      .hero-title {
+        font-size: 32px !important;
+        line-height: 1.2 !important;
+      }
+      .hero-subtitle {
+        font-size: 16px !important;
+        margin-bottom: 12px !important;
+      }
+      .hero-desc {
+        font-size: 13px !important;
+        line-height: 1.6 !important;
+        margin-bottom: 20px !important;
+      }
+      .hero-ctas {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 10px !important;
+        width: 100% !important;
+      }
+      .hero-ctas button.btn {
+        width: 100% !important;
+        margin: 0 !important;
+      }
+      .laptop-mockup {
+        max-width: 320px !important;
+        margin: 20px auto 10px auto !important;
+      }
+      .laptop-screen {
+        border-width: 8px !important;
+        border-bottom-width: 10px !important;
+        border-radius: 14px 14px 0 0 !important;
+      }
+      .laptop-hinge {
+        height: 6px !important;
+      }
+      .laptop-base {
+        height: 8px !important;
+      }
+    }
