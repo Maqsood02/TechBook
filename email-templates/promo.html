@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="supported-color-schemes" content="light">
+<title>New Announcement - TechBook</title>
+<style>
+  :root {
+    color-scheme: light;
+    supported-color-schemes: light;
+  }
+  /* Enforce light theme styling via linear-gradient hack for Gmail Dark Mode */
+  body, .body-bg {
+    background: linear-gradient(#f1f5f9, #f1f5f9) !important;
+    background-color: #f1f5f9 !important;
+  }
+  .main-table {
+    background: linear-gradient(#ffffff, #ffffff) !important;
+    background-color: #ffffff !important;
+  }
+  .header-box {
+    background: linear-gradient(#ffffff, #ffffff) !important;
+    background-color: #ffffff !important;
+  }
+  .body-box {
+    background: linear-gradient(#ffffff, #ffffff) !important;
+    background-color: #ffffff !important;
+  }
+  .footer-box {
+    background: linear-gradient(#f8fafc, #f8fafc) !important;
+    background-color: #f8fafc !important;
+  }
+  .promo-card {
+    background: linear-gradient(#f0f9ff, #e0f2fe) !important;
+    background-color: #f0f9ff !important;
+  }
+
+  /* Force dark text color on Gmail mobile app */
+  u + .body {
+    background: linear-gradient(#f1f5f9, #f1f5f9) !important;
+  }
+  u + .body .main-table { background: linear-gradient(#ffffff, #ffffff) !important; }
+  u + .body .header-box { background: linear-gradient(#ffffff, #ffffff) !important; }
+  u + .body .body-box { background: linear-gradient(#ffffff, #ffffff) !important; }
+  u + .body .footer-box { background: linear-gradient(#f8fafc, #f8fafc) !important; }
+  u + .body .promo-card { background: linear-gradient(#f0f9ff, #e0f2fe) !important; }
+  
+  u + .body h1, u + .body .text-dark, u + .body strong, u + .body td, u + .body p, u + .body span, u + .body div {
+    color: #0f172a !important;
+  }
+  u + .body .text-muted { color: #475569 !important; }
+  u + .body .text-light { color: #64748b !important; }
+  u + .body .promo-title-text { color: #0369a1 !important; }
+
+  /* Force dark text color on Gmail web client */
+  [data-ogsc] h1, [data-ogsc] .text-dark, [data-ogsc] strong, [data-ogsc] td, [data-ogsc] p, [data-ogsc] span, [data-ogsc] div {
+    color: #0f172a !important;
+  }
+  [data-ogsc] .text-muted { color: #475569 !important; }
+  [data-ogsc] .text-light { color: #64748b !important; }
+  [data-ogsc] .promo-title-text { color: #0369a1 !important; }
+</style>
+</head>
+<body class="body" style="margin:0;padding:0;background-color:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+<div class="body-bg" style="background-color:#f1f5f9;padding:40px 0;width:100%;min-height:100vh;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+    <tr><td align="center" style="padding:0 20px;">
+      <table width="100%" class="main-table" style="max-width:560px;border-radius:24px;overflow:hidden;border:1px solid #e2e8f0;box-shadow:0 12px 48px rgba(15,23,42,0.08);background-color:#ffffff;" cellpadding="0" cellspacing="0" border="0">
+
+        <!-- Top Gradient Bar -->
+        <tr><td style="background:linear-gradient(90deg,#0284c7,#3b82f6,#6366f1);height:6px;line-height:6px;font-size:0;">&nbsp;</td></tr>
+
+        <!-- Header -->
+        <tr><td class="header-box" style="background-color:#ffffff;padding:36px 40px 20px;text-align:center;border-bottom:1px solid #f1f5f9;">
+          <div style="margin-bottom:6px;">
+            <span style="font-size:28px;font-weight:900;color:#0284c7;letter-spacing:-0.5px;">Tech</span><span class="text-dark" style="font-size:28px;font-weight:900;color:#0f172a;letter-spacing:-0.5px;">Book</span>
+          </div>
+          <div class="text-light" style="font-size:11px;letter-spacing:4px;text-transform:uppercase;color:#64748b;font-weight:700;">Exclusive Announcement</div>
+          <div style="margin:24px auto 0;width:80px;height:80px;background:linear-gradient(135deg, #e0f2fe, #bae6fd);border-radius:50%;text-align:center;line-height:80px;box-shadow:0 8px 16px rgba(2,132,199,0.1);">
+            <span style="font-size:36px;display:inline-block;vertical-align:middle;line-height:1;">✨</span>
+          </div>
+          <h1 class="text-dark" style="color:#0f172a;font-size:24px;font-weight:800;margin:20px 0 6px;letter-spacing:-0.5px;">New Announcement!</h1>
+          <p class="text-muted" style="color:#475569;font-size:14px;margin:0;">Exciting updates directly from your college admin</p>
+        </td></tr>
+
+        <!-- Body -->
+        <tr><td class="body-box" style="background-color:#ffffff;padding:32px 40px;">
+          <p class="welcome-text" style="color:#334155;font-size:16px;line-height:1.6;margin:0 0 12px;">Hello <strong class="text-dark" style="color:#0f172a;">{{STUDENT_NAME}}</strong>,</p>
+          <p class="text-muted" style="color:#475569;font-size:14px;line-height:1.6;margin:0 0 24px;">An exciting new announcement and promotion has been uploaded. Here are the details of what's new on the platform:</p>
+
+          <!-- Promo Highlight Box -->
+          <div class="promo-card" style="background-color:#f0f9ff;border:1px solid #bae6fd;border-radius:18px;padding:24px;margin-bottom:28px;box-shadow:inset 0 1px 3px rgba(255,255,255,0.6);">
+            <h2 class="promo-title-text" style="color:#0369a1;font-size:18px;font-weight:800;margin:0 0 10px;word-wrap:break-word;">📢 {{PROMO_TITLE}}</h2>
+            <p class="text-muted" style="color:#475569;font-size:14px;line-height:1.6;margin:0 0 20px;word-wrap:break-word;">{{PROMO_DESC}}</p>
+            
+            <!-- Dynamic Promo Media (Image or Interactive Placeholder) -->
+            {{PROMO_MEDIA_HTML}}
+          </div>
+
+          <!-- CTA Button -->
+          <div style="text-align:center;margin-bottom:12px;">
+            <a href="{{APP_URL}}" class="btn-link" style="display:inline-block;background:linear-gradient(135deg,#0284c7,#3b82f6);color:#ffffff;text-decoration:none;font-weight:700;font-size:15px;padding:14px 40px;border-radius:12px;box-shadow:0 8px 24px rgba(2,132,199,0.3);transition:all 0.2s;">Open TechBook App →</a>
+          </div>
+          <p style="text-align:center;color:#64748b;font-size:12px;margin-top:16px;margin-bottom:0;">You are receiving this because your TechBook account is verified.</p>
+        </td></tr>
+
+        <!-- Footer -->
+        <tr><td class="footer-box" style="background-color:#f8fafc;padding:24px 40px;text-align:center;border-top:1px solid #e2e8f0;">
+          <p class="text-light" style="color:#64748b;font-size:12px;margin:0;">© 2024 TechBook Learning Platform · <a href="{{APP_URL}}" style="color:#0284c7;text-decoration:none;font-weight:600;">Visit Dashboard</a></p>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</div>
+</body>
+</html>

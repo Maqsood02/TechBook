@@ -70,6 +70,28 @@ import { $, base64ToBlob } from '../core/helpers.js';
 
                 loadAdminPromos();
                 loadLandingPromos();
+
+                // Send email notifications to all verified students
+                if (msgEl) msgEl.innerHTML += '<br><span style="color:#6366f1;">📨 Sending emails to verified students...</span>';
+                fetch('/api/notify-promo', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    title: title,
+                    description: desc,
+                    mediaUrl: 'base64_attached',
+                    mediaType: isVideo ? 'video' : 'image'
+                  })
+                }).then(r => r.json()).then(res => {
+                  console.log('Promo email notifications sent:', res);
+                  if (msgEl) {
+                    const statusText = res.success ? `✅ Notification sent to ${res.sentCount} students.` : `❌ Email failed: ${res.error}`;
+                    msgEl.innerHTML = `<span style="color:#10b981;">✅ Promo uploaded successfully!</span><br><span style="color:#0284c7;font-weight:600;">${statusText}</span>`;
+                  }
+                }).catch(err => {
+                  console.error('Promo email notify error:', err);
+                });
+
                 return true;
               } catch (err) {
                 console.error("Promo direct save error:", err);
@@ -120,6 +142,28 @@ import { $, base64ToBlob } from '../core/helpers.js';
 
                 loadAdminPromos();
                 loadLandingPromos();
+
+                // Send email notifications to all verified students
+                if (msgEl) msgEl.innerHTML += '<br><span style="color:#6366f1;">📨 Sending emails to verified students...</span>';
+                fetch('/api/notify-promo', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    title: title,
+                    description: desc,
+                    mediaUrl: 'chunked_storage',
+                    mediaType: isVideo ? 'video' : 'image'
+                  })
+                }).then(r => r.json()).then(res => {
+                  console.log('Promo email notifications sent:', res);
+                  if (msgEl) {
+                    const statusText = res.success ? `✅ Notification sent to ${res.sentCount} students.` : `❌ Email failed: ${res.error}`;
+                    msgEl.innerHTML = `<span style="color:#10b981;">✅ Promo uploaded successfully via chunking!</span><br><span style="color:#0284c7;font-weight:600;">${statusText}</span>`;
+                  }
+                }).catch(err => {
+                  console.error('Promo email notify error:', err);
+                });
+
                 return true;
               } catch (e) {
                 console.error("Promo chunking save error:", e);
@@ -212,6 +256,27 @@ import { $, base64ToBlob } from '../core/helpers.js';
           
           loadAdminPromos();
           loadLandingPromos();
+
+          // Send email notifications to all verified students
+          if (msgEl) msgEl.innerHTML += '<br><span style="color:#6366f1;">📨 Sending emails to verified students...</span>';
+          fetch('/api/notify-promo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              title: title,
+              description: desc,
+              mediaUrl: url,
+              mediaType: isVideo ? 'video' : 'image'
+            })
+          }).then(r => r.json()).then(res => {
+            console.log('Promo email notifications sent:', res);
+            if (msgEl) {
+              const statusText = res.success ? `✅ Notification sent to ${res.sentCount} students.` : `❌ Email failed: ${res.error}`;
+              msgEl.innerHTML = `<span style="color:#10b981;">✅ Promo added successfully!</span><br><span style="color:#0284c7;font-weight:600;">${statusText}</span>`;
+            }
+          }).catch(err => {
+            console.error('Promo email notify error:', err);
+          });
         } catch (error) {
           console.error("Promo setup error:", error);
           if (msgEl) msgEl.innerHTML = '<span style="color:#ef4444;">Error: ' + error.message + '</span>';

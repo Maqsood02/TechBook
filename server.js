@@ -512,6 +512,104 @@ app.post('/api/notify-upload', async (req, res) => {
 });
 
 /**
+ * POST /api/notify-promo
+ * Sends promo upload notification emails to all verified students.
+ */
+app.post('/api/notify-promo', async (req, res) => {
+  const { title, description, mediaUrl, mediaType } = req.body;
+
+  if (!title) {
+    return res.status(400).json({ success: false, error: 'Promo title is required.' });
+  }
+
+  try {
+    const queryResult = await firestoreRunQuery({
+      structuredQuery: {
+        from: [{ collectionId: 'students' }],
+        where: {
+          fieldFilter: {
+            field: { fieldPath: 'email_verified' },
+            op: 'EQUAL',
+            value: { booleanValue: true }
+          }
+        }
+      }
+    });
+
+    if (!Array.isArray(queryResult.data)) {
+      return res.json({ success: true, sentCount: 0 });
+    }
+
+    const students = queryResult.data
+      .filter(r => r.document)
+      .map(r => parseDoc(r.document));
+
+    // Construct the promo media html block to embed in the email
+    let mediaHtml = '';
+    const isPublicUrl = mediaUrl && (mediaUrl.startsWith('http://') || mediaUrl.startsWith('https://'));
+
+    if (isPublicUrl) {
+      if (mediaType === 'video') {
+        mediaHtml = `
+          <div style="text-align:center;margin-top:16px;">
+            <div style="position:relative;display:inline-block;border-radius:12px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.1);background-color:#0f172a;max-width:100%;">
+              <video src="${mediaUrl}" style="max-width:100%;height:auto;display:block;" controls></video>
+            </div>
+          </div>
+        `;
+      } else {
+        mediaHtml = `
+          <div style="text-align:center;margin-top:16px;">
+            <img src="${mediaUrl}" style="max-width:100%;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.1);display:block;margin:0 auto;" alt="Announcement Banner">
+          </div>
+        `;
+      }
+    } else if (mediaUrl) {
+      // Chunked base64 or other data URL representation
+      mediaHtml = `
+        <div style="text-align:center;margin-top:20px;padding:24px;border:2px dashed #bae6fd;border-radius:12px;background-color:#f0f9ff;">
+          <span style="font-size:36px;display:block;margin-bottom:8px;">🎬</span>
+          <span style="color:#0369a1;font-size:14px;font-weight:700;display:block;">Exclusive Media Attached</span>
+          <span style="color:#475569;font-size:12px;display:block;margin-top:4px;">Open TechBook to view the video/image attachment for this promo.</span>
+        </div>
+      `;
+    }
+
+    let sentCount = 0;
+    for (const student of students) {
+      if (!student.email) continue;
+      try {
+        const clientOrigin = req.headers.origin || req.get('origin') || APP_URL;
+        const html = loadTemplate('promo.html', {
+          STUDENT_NAME: student.name || student.usn,
+          PROMO_TITLE: title,
+          PROMO_DESC: description || 'No description provided.',
+          PROMO_MEDIA_HTML: mediaHtml,
+          APP_URL: clientOrigin
+        });
+
+        await sendEmail({
+          to: student.email,
+          subject: `📢 New Announcement: ${title} — TechBook`,
+          html
+        });
+        sentCount++;
+      } catch (emailErr) {
+        console.error(`Failed email to ${student.email}:`, emailErr.message);
+      }
+    }
+
+    console.log(`✅ Promo notification complete: ${sentCount}/${students.length} emails sent`);
+    res.json({ success: true, sentCount, total: students.length });
+
+  } catch (err) {
+    console.error('Notify promo error:', err.message);
+    res.status(500).json({ success: false, error: 'Failed to send promo notifications.' });
+  }
+});
+
+
+/**
  * POST /api/notify-quiz
  * Sends quiz published notification to eligible students.
  */
