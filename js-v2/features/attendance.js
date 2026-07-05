@@ -1969,6 +1969,10 @@ service cloud.firestore {
         if (typeof window.pyqAdmLoadAll === 'function') {
           window.pyqAdmLoadAll();
         }
+      } else if (sectionId === 'sec-promos') {
+        if (typeof window.loadAdminPromos === 'function') {
+          window.loadAdminPromos();
+        }
       }
 
       document.querySelectorAll(".admin-section").forEach(sec => {
