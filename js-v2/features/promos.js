@@ -1,7 +1,7 @@
 import { db, storage } from '../core/firebase.js';
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-storage.js";
 import { doc, setDoc, getDoc, addDoc, collection, query, where, getDocs, orderBy, deleteDoc, writeBatch, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
-import { $, base64ToBlob } from '../core/helpers.js';
+import { $, base64ToBlob, API_BASE_URL } from '../core/helpers.js';
 
     /* =========================================================
        🎬 PROMO MANAGEMENT SYSTEM (ADMIN & LANDING PAGE)
@@ -73,7 +73,7 @@ import { $, base64ToBlob } from '../core/helpers.js';
 
                 // Send email notifications to all verified students
                 if (msgEl) msgEl.innerHTML += '<br><span style="color:#6366f1;">📨 Sending emails to verified students...</span>';
-                fetch('/api/notify-promo', {
+                fetch(`${API_BASE_URL}/api/notify-promo`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({
@@ -145,7 +145,7 @@ import { $, base64ToBlob } from '../core/helpers.js';
 
                 // Send email notifications to all verified students
                 if (msgEl) msgEl.innerHTML += '<br><span style="color:#6366f1;">📨 Sending emails to verified students...</span>';
-                fetch('/api/notify-promo', {
+                fetch(`${API_BASE_URL}/api/notify-promo`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({
@@ -259,7 +259,7 @@ import { $, base64ToBlob } from '../core/helpers.js';
 
           // Send email notifications to all verified students
           if (msgEl) msgEl.innerHTML += '<br><span style="color:#6366f1;">📨 Sending emails to verified students...</span>';
-          fetch('/api/notify-promo', {
+          fetch(`${API_BASE_URL}/api/notify-promo`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
