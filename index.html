@@ -3179,9 +3179,9 @@
                   <div style="font-size: 24px;">✉️</div>
                   <h3 style="margin: 0; font-size: 17px; font-weight: 800; font-family: 'Poppins', sans-serif; color: #111827;">Direct Message to Super Admin / Founder</h3>
                 </div>
-                <textarea id="cof-message-input" placeholder="Type your message for Super Admin / Maqsood M D here..." style="width: 100%; height: 100px; padding: 12px; border: 1px solid #d1d5db; border-radius: 12px; font-family: 'Poppins', sans-serif; font-size: 13px; margin-bottom: 12px; resize: none; box-sizing: border-box;"></textarea>
+                <textarea placeholder="Type your message for Super Admin / Maqsood M D here..." style="width: 100%; height: 100px; padding: 12px; border: 1px solid #d1d5db; border-radius: 12px; font-family: 'Poppins', sans-serif; font-size: 13px; margin-bottom: 12px; resize: none; box-sizing: border-box;"></textarea>
                 <div style="display: flex; justify-content: flex-end;">
-                  <button id="cof-send-btn" style="background: linear-gradient(135deg, #3d5af1, #6366f1); color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: 'Poppins', sans-serif;">Send Message</button>
+                  <button onclick="alert('Message sent successfully to Super Admin & Founder Maqsood M D!')" style="background: linear-gradient(135deg, #3d5af1, #6366f1); color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: 'Poppins', sans-serif;">Send Message</button>
                 </div>
               </div>
 
@@ -3647,19 +3647,6 @@
 
   <script type="module" src="js-v2/app.js?v=20260706o"></script>
   <script type="module" src="js-v2/features/mobile-navigation.js?v=20260706o"></script>
-
-  <!-- ══ SUPER ADMIN NOTIFICATIONS MODAL ══ -->
-  <div id="super-admin-notif-modal" style="display:none;position:fixed;inset:0;z-index:99998;align-items:center;justify-content:center;padding:20px;background:rgba(30,30,60,0.6);backdrop-filter:blur(8px);" onclick="if(event.target===this) document.getElementById('super-admin-notif-modal').style.display='none'">
-    <div style="background:#ffffff;border-radius:24px;max-width:420px;width:100%;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,0.2);">
-      <div style="padding:20px;background:linear-gradient(135deg,#111827,#374151);color:white;display:flex;justify-content:space-between;align-items:center;">
-        <h3 style="margin:0;font-family:'Poppins',sans-serif;font-size:18px;">Executive Notifications</h3>
-        <button onclick="document.getElementById('super-admin-notif-modal').style.display='none'" style="background:none;border:none;color:white;font-size:20px;cursor:pointer;">✕</button>
-      </div>
-      <div id="super-admin-notif-list" style="padding:20px;flex:1;overflow-y:auto;background:#f9fafb;display:flex;flex-direction:column;gap:12px;">
-        <div style="text-align:center;color:#6b7280;padding:20px;font-size:14px;font-family:'Poppins',sans-serif;">No new notifications</div>
-      </div>
-    </div>
-  </div>
 
   <!-- ══ FOUNDER MODAL ══ -->
   <div id="founder-modal"

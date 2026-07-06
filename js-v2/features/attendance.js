@@ -925,12 +925,6 @@ import { $, val } from '../core/helpers.js';
                     </div>
                   </div>
                 </div>
-                
-                <!-- Notification Bell -->
-                <div style="position: relative; cursor: pointer; padding: 12px; background: rgba(255,255,255,0.5); border-radius: 50%; border: 1px solid rgba(61,90,241,0.2); transition: all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.8)';this.style.transform='scale(1.05)';" onmouseout="this.style.background='rgba(255,255,255,0.5)';this.style.transform='scale(1)';">
-                  <div style="font-size: 26px;">🔔</div>
-                  <div id="super-admin-notif-badge" style="display: none; position: absolute; top: 0px; right: 0px; background: #ef4444; color: white; font-size: 11px; font-weight: 800; font-family: 'Poppins', sans-serif; width: 20px; height: 20px; border-radius: 50%; border: 2px solid #ffffff; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(239,68,68,0.5);">0</div>
-                </div>
 
               </div>
             `;
@@ -951,57 +945,6 @@ import { $, val } from '../core/helpers.js';
                 </div>
               </div>
             `;
-          }
-          
-          // If Super Admin, subscribe to messages for notifications
-          if (role === 'super_admin') {
-            const bell = document.querySelector('div[id="super-admin-notif-badge"]')?.parentElement;
-            if (bell) {
-              bell.addEventListener('click', () => {
-                const modal = document.getElementById('super-admin-notif-modal');
-                if (modal) modal.style.display = 'flex';
-              });
-            }
-
-            const qMsgs = query(collection(db, 'super_admin_messages'), orderBy('timestamp', 'desc'));
-            onSnapshot(qMsgs, (snapshot) => {
-              let unread = 0;
-              let html = '';
-              snapshot.forEach(doc => {
-                const data = doc.data();
-                if (!data.read) unread++;
-                
-                const time = data.timestamp?.toDate ? data.timestamp.toDate().toLocaleString() : 'Just now';
-                html += `
-                  <div style="background: white; border-radius: 12px; padding: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid ${data.read ? '#e5e7eb' : '#3d5af1'}; border-left: 4px solid ${data.read ? '#9ca3af' : '#3d5af1'};">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-                      <div style="font-weight: 700; font-size: 14px; font-family: 'Poppins', sans-serif; color: #111827;">${data.sender} <span style="font-size: 11px; color: #6b7280; font-weight: 500;">(${data.role})</span></div>
-                      <div style="font-size: 11px; color: #9ca3af;">${time}</div>
-                    </div>
-                    <div style="font-size: 13.5px; color: #4b5563; line-height: 1.5; white-space: pre-wrap;">${data.text}</div>
-                  </div>
-                `;
-              });
-
-              const badge = document.getElementById('super-admin-notif-badge');
-              if (badge) {
-                if (unread > 0) {
-                  badge.style.display = 'flex';
-                  badge.textContent = unread > 9 ? '9+' : unread;
-                } else {
-                  badge.style.display = 'none';
-                }
-              }
-
-              const list = document.getElementById('super-admin-notif-list');
-              if (list) {
-                if (snapshot.empty) {
-                  list.innerHTML = `<div style="text-align:center;color:#6b7280;padding:20px;font-size:14px;font-family:'Poppins',sans-serif;">No new notifications</div>`;
-                } else {
-                  list.innerHTML = html;
-                }
-              }
-            });
           }
         }
 
@@ -2233,3 +2176,12 @@ service cloud.firestore {
     function handleBackClick() {
       window.switchAdminSection(null);
     }
+
+    // Call loadAdminDashboard if admin session is already active (to handle page reloads where auth.js fired before attendance.js was fully loaded)
+    setTimeout(() => {
+      if (window.adminLoggedIn && window._currentAdminRole !== 'co_founder') {
+        if (typeof window.loadAdminDashboard === 'function') {
+          window.loadAdminDashboard();
+        }
+      }
+    }, 100);
