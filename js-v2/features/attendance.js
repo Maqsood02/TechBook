@@ -909,7 +909,7 @@ import { $, val } from '../core/helpers.js';
                   <div style="position: relative; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                     <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(45deg, #f59e0b, #ef4444, #3d5af1, #a855f7); background-size: 400% 400%; animation: spin-gradient 8s linear infinite reverse; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);"></div>
                     <div style="position: relative; width: 90px; height: 90px; border-radius: 50%; background: #ffffff; padding: 2px; z-index: 2; box-sizing: border-box; overflow: hidden;">
-                      <img src="img/developer-profile.jpg" onerror="this.src='img/cof-profile.jpg?v=3'" alt="Maqsood M D" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; transform: scale(1.6); transform-origin: 50% 20%;" />
+                      <img src="img/developer-photo.jpg" onerror="this.src='img/cof-profile.jpg?v=3'" alt="Maqsood M D" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; transform: scale(1.6); transform-origin: 50% 20%;" />
                     </div>
                     <span style="position: absolute; bottom: 5px; right: 5px; width: 18px; height: 18px; background: #22c55e; border: 3px solid #ffffff; border-radius: 50%; z-index: 10; box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);"></span>
                   </div>
