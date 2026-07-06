@@ -248,6 +248,25 @@ window.loadAdminLaunches = async function() {
 };
 
 // Setup landing page real-time listener for the active launch floating banner
+window.updateFloatingBannerVisibility = function() {
+  const banner = document.getElementById('landing-floating-download');
+  if (!banner) return;
+
+  const landingPage = document.getElementById('landing-page');
+  const homeSection = document.getElementById('home');
+  const hasActiveLaunch = !banner.classList.contains('no-active-launch');
+
+  const isLandingVisible = landingPage && !landingPage.classList.contains('hidden');
+  const isHomeTabVisible = homeSection && !homeSection.classList.contains('hidden');
+
+  if (isLandingVisible && isHomeTabVisible && hasActiveLaunch) {
+    banner.style.display = 'block';
+    banner.classList.remove('hidden');
+  } else {
+    banner.style.display = 'none';
+  }
+};
+
 window.initLaunchListener = function() {
   const floatingCard = document.getElementById('landing-floating-download');
   if (!floatingCard) return;
@@ -280,12 +299,11 @@ window.initLaunchListener = function() {
         };
       }
       
-      floatingCard.style.display = 'flex';
-      floatingCard.classList.remove('hidden');
+      floatingCard.classList.remove('no-active-launch');
     } else {
-      floatingCard.style.display = 'none';
-      floatingCard.classList.add('hidden');
+      floatingCard.classList.add('no-active-launch');
     }
+    window.updateFloatingBannerVisibility();
   }, (err) => {
     console.warn("Real-time launch listener disabled or failed:", err);
   });

@@ -1,21 +1,21 @@
 // TechBook App — Core Entry Point & Module Coordinator
 
 // Config & Utilities
-import './core/firebase.js?v=20260706x';
-import './core/helpers.js?v=20260706x';
-import './core/activity_tracker.js?v=20260706x';
+import './core/firebase.js?v=20260706y';
+import './core/helpers.js?v=20260706y';
+import './core/activity_tracker.js?v=20260706y';
 
 // Features & Components
-import './features/auth.js?v=20260706x';
-import './features/promos.js?v=20260706x';
-import './features/attendance.js?v=20260706x';
-import './features/notes.js?v=20260706x';
-import './features/qbank.js?v=20260706x';
-import './features/pyq.js?v=20260706x';
-import './features/quiz.js?v=20260706x';
-import './features/chatbot.js?v=20260706x';
-import './features/manage_students.js?v=20260706x';
-import './features/launches.js?v=20260706x';
+import './features/auth.js?v=20260706y';
+import './features/promos.js?v=20260706y';
+import './features/attendance.js?v=20260706y';
+import './features/notes.js?v=20260706y';
+import './features/qbank.js?v=20260706y';
+import './features/pyq.js?v=20260706y';
+import './features/quiz.js?v=20260706y';
+import './features/chatbot.js?v=20260706y';
+import './features/manage_students.js?v=20260706y';
+import './features/launches.js?v=20260706y';
 
 
 console.log('🚀 TechBook App fully initialized');
@@ -198,6 +198,9 @@ function selectRole(role) {
 
   if (!window._historyNavLock) {
     window.history.pushState({ role: role, tab: null, section: null }, '', '#' + role);
+  }
+  if (typeof window.updateFloatingBannerVisibility === 'function') {
+    window.updateFloatingBannerVisibility();
   }
 }
 
@@ -389,6 +392,9 @@ function switchLandingTab(tabId) {
       }
     }
   });
+  if (typeof window.updateFloatingBannerVisibility === 'function') {
+    window.updateFloatingBannerVisibility();
+  }
 }
 window.switchLandingTab = switchLandingTab;
 
