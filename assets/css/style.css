@@ -4609,10 +4609,7 @@
 
       /* 3. Redesigned Sticky Top Header (Navbar) - ONLY when dashboard is visible */
       #main-panel:not(.hidden) #main-navbar {
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
+        position: relative !important; /* Changed from fixed to relative to prevent shaking on mobile scroll */
         width: 100% !important;
         height: auto !important;
         min-height: 56px !important;
@@ -4629,6 +4626,9 @@
         display: flex !important;
         align-items: center !important;
         justify-content: space-between !important;
+        flex-shrink: 0 !important;
+        transform: translate3d(0, 0, 0) !important;
+        will-change: transform !important;
       }
       #main-panel:not(.hidden) #main-navbar button#btn-home {
         padding: 6px 12px !important;
@@ -4642,7 +4642,7 @@
       #content {
         flex: 1 !important;
         overflow-y: auto !important;
-        padding: calc(env(safe-area-inset-top, 0px) + 84px) 16px 88px 16px !important; /* Top space for navbar, bottom space for mobile-nav */
+        padding: 16px 16px 88px 16px !important; /* Removed safe-area padding since relative navbar already offsets it */
         box-sizing: border-box !important;
         -webkit-overflow-scrolling: touch !important;
       }
@@ -4669,6 +4669,8 @@
         z-index: 9998 !important;
         padding: 0 8px 8px 8px !important; /* Extra bottom padding for home indicator */
         box-sizing: border-box !important;
+        transform: translate3d(0, 0, 0) !important; /* Hardware acceleration to prevent mobile scroll lag/shaking */
+        will-change: transform !important;
       }
       .mobile-bottom-nav.hidden {
         display: none !important;
