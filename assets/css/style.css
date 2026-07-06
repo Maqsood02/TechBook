@@ -4868,8 +4868,41 @@
       }
       
       .admin-nav-grid {
-        grid-template-columns: 1fr !important;
-        gap: 8px !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+      }
+
+      /* Make admin nav buttons more compact on mobile */
+      .admin-nav-btn {
+        padding: 14px 8px 12px !important;
+        border-radius: 16px !important;
+        font-size: 11px !important;
+      }
+
+      .admin-nav-btn .nav-icon {
+        font-size: 22px !important;
+      }
+
+      /* Co-founder dashboard: 2-col stats grid on mobile */
+      .cof-stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+        margin-bottom: 18px !important;
+      }
+
+      /* Co-founder hero card: fix alignment/wrapping on mobile */
+      #cof-view > div:first-child {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 16px !important;
+        padding: 16px !important;
+        margin-bottom: 16px !important;
+      }
+
+      /* The date/term pill in hero card should not overflow */
+      #cof-view > div:first-child > div:last-child {
+        width: 100% !important;
+        justify-content: flex-start !important;
       }
 
       /* Mobile scroll padding inside admin views */
@@ -4948,5 +4981,66 @@
       }
       .laptop-base {
         height: 8px !important;
+      }
+
+      /* 9. Super Admin profile hero card — mobile responsive */
+      #admin-header-card > div {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        padding: 18px !important;
+        gap: 14px !important;
+        margin-bottom: 16px !important;
+      }
+
+      /* Avatar row + text side-by-side on mobile */
+      #admin-header-card > div > div:first-child {
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 14px !important;
+      }
+
+      /* Shrink the avatar on mobile */
+      #admin-header-card > div > div:first-child > div:first-child {
+        width: 80px !important;
+        height: 80px !important;
+      }
+
+      /* Shrink inner avatar image circle */
+      #admin-header-card > div > div:first-child > div:first-child > div:nth-child(3) {
+        width: 70px !important;
+        height: 70px !important;
+      }
+
+      /* Smaller heading for name */
+      #admin-header-card h2 {
+        font-size: 22px !important;
+        letter-spacing: -0.3px !important;
+      }
+
+      /* "Developer & Founder" badge: wrap allowed */
+      #admin-header-card span[style*="DEVELOPER"] {
+        font-size: 9px !important;
+        padding: 4px 8px !important;
+      }
+
+      /* Subtitle text */
+      #admin-header-card p {
+        font-size: 13px !important;
+      }
+
+      /* Move the bell button inline */
+      #admin-header-card > div > div:last-child {
+        align-self: flex-end !important;
+        position: absolute !important;
+        top: 16px !important;
+        right: 16px !important;
+      }
+
+      /* Notification bell size */
+      #super-admin-bell {
+        width: 40px !important;
+        height: 40px !important;
+        border-radius: 12px !important;
+        font-size: 18px !important;
       }
     }

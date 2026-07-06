@@ -15,6 +15,7 @@ import './features/pyq.js?v=20260706s';
 import './features/quiz.js?v=20260706s';
 import './features/chatbot.js?v=20260706s';
 import './features/manage_students.js?v=20260706s';
+import { initLaunches } from './features/launches.js?v=20260706s';
 
 
 console.log('🚀 TechBook App fully initialized');
@@ -336,11 +337,13 @@ if (document.readyState === 'loading') {
     initNavigation();
     handleInitialRoute();
     if (typeof window._initStudentManagement === 'function') window._initStudentManagement();
+    initLaunches();
   });
 } else {
   initNavigation();
   handleInitialRoute();
   if (typeof window._initStudentManagement === 'function') window._initStudentManagement();
+  initLaunches();
 }
 
 // Bind to window so that inline HTML handlers or other modules can call them

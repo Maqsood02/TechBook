@@ -2421,6 +2421,10 @@ service cloud.firestore {
         if (typeof window.loadAdminPromos === 'function') {
           window.loadAdminPromos();
         }
+      } else if (sectionId === 'sec-launches') {
+        if (typeof window.loadLaunches === 'function') {
+          window.loadLaunches();
+        }
       }
 
       document.querySelectorAll(".admin-section").forEach(sec => {

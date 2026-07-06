@@ -793,6 +793,71 @@ app.post('/api/notify-founder-message', async (req, res) => {
   }
 });
 
+/**
+ * POST /api/launch-feature
+ * Deploys a new feature launch and emails all verified students.
+ */
+app.post('/api/launch-feature', async (req, res) => {
+  const { launchName, launchUrl } = req.body;
+
+  if (!launchName || !launchUrl) {
+    return res.status(400).json({ success: false, error: 'Launch name and URL are required.' });
+  }
+
+  try {
+    // 1. Fetch all verified students
+    const filters = [
+      { fieldFilter: { field: { fieldPath: 'email_verified' }, op: 'EQUAL', value: { booleanValue: true } } }
+    ];
+
+    const queryResult = await firestoreRunQuery({
+      structuredQuery: {
+        from: [{ collectionId: 'students' }],
+        where: { compositeFilter: { op: 'AND', filters } }
+      }
+    });
+
+    let targetStudents = [];
+    if (Array.isArray(queryResult.data)) {
+      targetStudents = queryResult.data
+        .filter(r => r.document)
+        .map(r => parseDoc(r.document))
+        .filter(s => s && s.email);
+    }
+
+    // 2. Render email and send
+    const clientOrigin = req.headers.origin || req.get('origin') || APP_URL;
+    
+    let sentCount = 0;
+    for (const student of targetStudents) {
+      try {
+        const html = loadTemplate('feature-launch.html', {
+          STUDENT_NAME: student.name || student._id || 'Student',
+          LAUNCH_NAME: launchName,
+          LAUNCH_URL: launchUrl,
+          APP_URL: clientOrigin
+        });
+
+        await sendEmail({
+          to: student.email,
+          subject: `🚀 New Feature Launched on TechBook: ${launchName}`,
+          html
+        });
+        sentCount++;
+      } catch (err) {
+        console.error(`Failed to send launch email to ${student.email || student._id}:`, err.message);
+      }
+    }
+
+    console.log(`✅ Launch notification emails sent to ${sentCount} students.`);
+    res.json({ success: true, sentCount });
+
+  } catch (err) {
+    console.error('Launch feature notification error:', err.message);
+    res.status(500).json({ success: false, error: 'Failed to process launch notifications.' });
+  }
+});
+
 // ─── Serve index.html for all unmatched routes ───
 app.get('/*splat', (req, res) => {
   res.sendFile(path.join(process.cwd(), 'index.html'));
