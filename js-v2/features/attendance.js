@@ -901,6 +901,55 @@ import { $, val } from '../core/helpers.js';
                 </div>
               </div>
             `;
+          } else if (role === 'super_admin') {
+            headerCard.innerHTML = `
+              <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px; background: linear-gradient(135deg, rgba(61, 90, 241, 0.08) 0%, rgba(168, 85, 247, 0.08) 100%); border: 1.5px solid rgba(61, 90, 241, 0.15); padding: 20px 30px; border-radius: 24px; backdrop-filter: blur(10px); margin-bottom: 24px; box-shadow: 0 10px 30px rgba(61, 90, 241, 0.04);">
+                
+                <!-- Left Profile (Chinmay K V) -->
+                <div style="display: flex; align-items: center; gap: 20px; flex: 1; min-width: 250px;">
+                  <div style="position: relative; width: 90px; height: 90px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(45deg, #3d5af1, #a855f7, #ef4444, #10b981); background-size: 400% 400%; animation: spin-gradient 8s linear infinite; box-shadow: 0 4px 15px rgba(61, 90, 241, 0.2);"></div>
+                    <div style="position: relative; width: 80px; height: 80px; border-radius: 50%; background: #ffffff; padding: 2px; z-index: 2; box-sizing: border-box; overflow: hidden;">
+                      <img src="img/cof-profile.jpg?v=3" alt="Co-Founder" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; transform: scale(2.4); transform-origin: 50% 72%;" />
+                    </div>
+                    <span style="position: absolute; bottom: 4px; right: 4px; width: 15px; height: 15px; background: #22c55e; border: 2.5px solid #ffffff; border-radius: 50%; z-index: 10; box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);"></span>
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                      <h2 style="margin: 0; font-size: 22px; font-weight: 800; color: #111827; font-family: 'Poppins', sans-serif; letter-spacing: -0.5px;">Chinmay K V</h2>
+                      <span style="background: linear-gradient(135deg, #3d5af1, #a855f7); color: #ffffff; font-size: 9.5px; font-weight: 800; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.8px; box-shadow: 0 2px 8px rgba(61, 90, 241, 0.25);">Co-Founder</span>
+                    </div>
+                    <p style="margin: 0; font-size: 13.5px; color: #4b5563; font-weight: 600; font-family: 'Poppins', sans-serif;">TechBook Operations</p>
+                  </div>
+                </div>
+
+                <!-- Divider (hidden on small screens) -->
+                <div style="width: 1.5px; height: 70px; background: rgba(61, 90, 241, 0.15); margin: 0 10px; display: block;" class="desktop-only-divider"></div>
+
+                <!-- Right Profile (Maqsood M D) -->
+                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 20px; flex: 1; min-width: 250px;">
+                  <div style="display: flex; flex-direction: column; gap: 4px; text-align: right;">
+                    <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap-reverse;">
+                      <span style="background: linear-gradient(135deg, #f59e0b, #ef4444); color: #ffffff; font-size: 9.5px; font-weight: 800; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.8px; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.25);">DEVELOPER & FOUNDER</span>
+                      <h2 style="margin: 0; font-size: 22px; font-weight: 800; color: #111827; font-family: 'Poppins', sans-serif; letter-spacing: -0.5px;">Maqsood M D</h2>
+                    </div>
+                    <p style="margin: 0; font-size: 13.5px; color: #4b5563; font-weight: 600; font-family: 'Poppins', sans-serif;">TechBook Core Engineering</p>
+                    <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px; font-size: 11px; color: #10b981; font-weight: 700; margin-top: 2px;">
+                      All Systems Online
+                      <span style="display: inline-block; width: 6px; height: 6px; background: #10b981; border-radius: 50%; animation: blink 1.5s infinite;"></span>
+                    </div>
+                  </div>
+                  <div style="position: relative; width: 90px; height: 90px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(45deg, #f59e0b, #ef4444, #3d5af1, #a855f7); background-size: 400% 400%; animation: spin-gradient 8s linear infinite reverse; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);"></div>
+                    <div style="position: relative; width: 80px; height: 80px; border-radius: 50%; background: #ffffff; padding: 2px; z-index: 2; box-sizing: border-box; overflow: hidden;">
+                      <img src="img/developer-profile.jpg" onerror="this.src='img/cof-profile.jpg?v=3'" alt="Maqsood M D" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; transform: scale(2.4); transform-origin: 50% 72%;" />
+                    </div>
+                    <span style="position: absolute; bottom: 4px; left: 4px; width: 15px; height: 15px; background: #22c55e; border: 2.5px solid #ffffff; border-radius: 50%; z-index: 10; box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);"></span>
+                  </div>
+                </div>
+
+              </div>
+            `;
           } else {
             headerCard.innerHTML = `
               <div style="display: flex; align-items: center; gap: 16px; background: linear-gradient(135deg, rgba(61, 90, 241, 0.05) 0%, rgba(99, 102, 241, 0.05) 100%); border: 1px solid rgba(61, 90, 241, 0.1); padding: 16px; border-radius: 16px; margin-bottom: 24px;">
@@ -911,7 +960,7 @@ import { $, val } from '../core/helpers.js';
                   <div style="display: flex; align-items: center; gap: 8px;">
                     <h2 style="margin: 0; font-size: 18px; font-weight: 750; color: #111827; font-family: 'Poppins', sans-serif;">Administrator Dashboard</h2>
                     <span style="background: #eef2ff; color: #3d5af1; font-size: 9.5px; font-weight: 700; padding: 2px 8px; border-radius: 12px; text-transform: uppercase; letter-spacing: 0.5px;">
-                      ${role === 'super_admin' ? 'Super Admin' : 'Admin'}
+                      Admin
                     </span>
                   </div>
                   <p style="margin: 0; font-size: 12.5px; color: #6b7280; font-family: 'Poppins', sans-serif;">Logged in as ${window._currentAdminUser || 'admin'}</p>
