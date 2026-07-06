@@ -8,7 +8,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   // ─── 1. Register Service Worker for PWA ───
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js?v=20260706d')
+    navigator.serviceWorker.register('/sw.js?v=20260706e')
       .then(reg => console.log('✅ PWA Service Worker Registered', reg.scope))
       .catch(err => console.error('❌ Service Worker Registration Failed', err));
   }
@@ -51,8 +51,10 @@ function updateMobileNavVisibility() {
   const isAdminLoggedIn = adminArea && !adminArea.classList.contains('hidden');
 
   if (isStudentLoggedIn || isAdminLoggedIn) {
+    document.documentElement.classList.add('mobile-app-mode');
     document.body.classList.add('mobile-app-mode');
   } else {
+    document.documentElement.classList.remove('mobile-app-mode');
     document.body.classList.remove('mobile-app-mode');
   }
   
