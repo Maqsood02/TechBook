@@ -51,10 +51,8 @@ function updateMobileNavVisibility() {
   const isAdminLoggedIn = adminArea && !adminArea.classList.contains('hidden');
 
   if (isStudentLoggedIn || isAdminLoggedIn) {
-    document.documentElement.classList.add('mobile-app-mode');
     document.body.classList.add('mobile-app-mode');
   } else {
-    document.documentElement.classList.remove('mobile-app-mode');
     document.body.classList.remove('mobile-app-mode');
   }
   

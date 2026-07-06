@@ -4574,7 +4574,7 @@
        ========================================================= */
     @media (max-width: 767px) {
       /* 1. Body & Container Viewport Lock - ONLY in App Mode (when logged in) */
-      html.mobile-app-mode {
+      html:has(body.mobile-app-mode) {
         overflow: hidden !important;
         height: 100dvh !important;
         position: fixed !important;
@@ -4604,6 +4604,7 @@
         flex-direction: column !important;
         margin: 0 !important;
         padding: 0 !important;
+        overscroll-behavior: none !important;
       }
       
       /* 2. Main Panel Containment - ONLY when visible/active */
@@ -4651,11 +4652,12 @@
       /* 4. Scrollable Content Area */
       #content {
         flex: 1 !important;
+        min-height: 0 !important; /* Critical fix for iOS Safari flex item scroll bug */
         overflow-y: auto !important;
         padding: 16px 16px 88px 16px !important; /* Removed safe-area padding since relative navbar already offsets it */
         box-sizing: border-box !important;
         -webkit-overflow-scrolling: touch !important;
-        overscroll-behavior-y: contain !important;
+        overscroll-behavior-y: contain !important; /* Prevent scroll momentum chaining to background */
       }
 
       /* Hide Desktop Footers inside content */
