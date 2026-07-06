@@ -610,6 +610,74 @@ app.post('/api/notify-promo', async (req, res) => {
 
 
 /**
+ * POST /api/notify-launch
+ * Sends new feature launch notification emails to all verified students.
+ */
+app.post('/api/notify-launch', async (req, res) => {
+  const { launchName, launchUrl } = req.body;
+
+  if (!launchName || !launchUrl) {
+    return res.status(400).json({ success: false, error: 'Launch name and URL are required.' });
+  }
+
+  try {
+    const queryResult = await firestoreRunQuery({
+      structuredQuery: {
+        from: [{ collectionId: 'students' }],
+        where: {
+          fieldFilter: {
+            field: { fieldPath: 'email_verified' },
+            op: 'EQUAL',
+            value: { booleanValue: true }
+          }
+        }
+      }
+    });
+
+    if (!Array.isArray(queryResult.data)) {
+      return res.json({ success: true, sentCount: 0 });
+    }
+
+    const students = queryResult.data
+      .filter(r => r.document)
+      .map(r => parseDoc(r.document));
+
+    let sentCount = 0;
+    for (const student of students) {
+      if (!student.email) continue;
+      try {
+        const clientOrigin = req.headers.origin || req.get('origin') || APP_URL;
+        const html = loadTemplate('feature-launch.html', {
+          STUDENT_NAME: student.name || student.usn,
+          LAUNCH_NAME: launchName,
+          LAUNCH_URL: launchUrl,
+          APP_URL: clientOrigin
+        });
+
+        await sendEmail({
+          to: student.email,
+          subject: `🚀 New Feature Launched: ${launchName} — TechBook`,
+          html
+        });
+        sentCount++;
+      } catch (emailErr) {
+        console.error(`Failed email to ${student.email}:`, emailErr.message);
+      }
+    }
+
+    console.log(`✅ Launch notification complete: ${sentCount}/${students.length} emails sent`);
+    res.json({ success: true, sentCount, total: students.length });
+
+  } catch (err) {
+    console.error('Notify launch error:', err.message);
+    res.status(500).json({ success: false, error: 'Failed to send launch notifications.' });
+  }
+});
+
+
+
+
+/**
  * POST /api/notify-quiz
  * Sends quiz published notification to eligible students.
  */
@@ -790,71 +858,6 @@ app.post('/api/notify-founder-message', async (req, res) => {
   } catch (err) {
     console.error('Founder message notification error:', err.message);
     res.status(500).json({ success: false, error: 'Failed to send email notification.' });
-  }
-});
-
-/**
- * POST /api/launch-feature
- * Deploys a new feature launch and emails all verified students.
- */
-app.post('/api/launch-feature', async (req, res) => {
-  const { launchName, launchUrl } = req.body;
-
-  if (!launchName || !launchUrl) {
-    return res.status(400).json({ success: false, error: 'Launch name and URL are required.' });
-  }
-
-  try {
-    // 1. Fetch all verified students
-    const filters = [
-      { fieldFilter: { field: { fieldPath: 'email_verified' }, op: 'EQUAL', value: { booleanValue: true } } }
-    ];
-
-    const queryResult = await firestoreRunQuery({
-      structuredQuery: {
-        from: [{ collectionId: 'students' }],
-        where: { compositeFilter: { op: 'AND', filters } }
-      }
-    });
-
-    let targetStudents = [];
-    if (Array.isArray(queryResult.data)) {
-      targetStudents = queryResult.data
-        .filter(r => r.document)
-        .map(r => parseDoc(r.document))
-        .filter(s => s && s.email);
-    }
-
-    // 2. Render email and send
-    const clientOrigin = req.headers.origin || req.get('origin') || APP_URL;
-    
-    let sentCount = 0;
-    for (const student of targetStudents) {
-      try {
-        const html = loadTemplate('feature-launch.html', {
-          STUDENT_NAME: student.name || student._id || 'Student',
-          LAUNCH_NAME: launchName,
-          LAUNCH_URL: launchUrl,
-          APP_URL: clientOrigin
-        });
-
-        await sendEmail({
-          to: student.email,
-          subject: `🚀 New Feature Launched on TechBook: ${launchName}`,
-          html
-        });
-        sentCount++;
-      } catch (err) {
-        console.error(`Failed to send launch email to ${student.email || student._id}:`, err.message);
-      }
-    }
-
-    console.log(`✅ Launch notification emails sent to ${sentCount} students.`);
-    res.json({ success: true, sentCount });
-
-  } catch (err) {
-    console.error('Launch feature notification error:', err.message);
-    res.status(500).json({ success: false, error: 'Failed to process launch notifications.' });
   }
 });
 

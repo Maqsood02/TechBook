@@ -2333,7 +2333,8 @@ service cloud.firestore {
           'sec-admins': 'Managing Admin Accounts',
           'sec-features': 'Managing Feature Block Toggles',
           'sec-promos': 'Managing Video Promos',
-          'sec-live-monitor': 'Monitoring Live User Activities'
+          'sec-live-monitor': 'Monitoring Live User Activities',
+          'sec-launches': 'Managing Feature Launches'
         };
         const desc = sectionId ? (secNameMap[sectionId] || `Viewing Admin Section: ${sectionId}`) : 'Viewing Admin Navigation Menu';
         window.trackUserActivity(desc, false);
@@ -2341,6 +2342,7 @@ service cloud.firestore {
 
       if (!sectionId) {
         if (role === 'co_founder') {
+          window._isCofAccessingSection = false;
           document.querySelectorAll(".admin-section").forEach(sec => {
             sec.classList.remove("active");
             sec.style.display = "none";
@@ -2378,6 +2380,7 @@ service cloud.firestore {
       }
 
       if (role === 'co_founder') {
+        window._isCofAccessingSection = true;
         if (typeof window.selectRole === 'function') {
           window.selectRole('admin');
         }
@@ -2422,8 +2425,8 @@ service cloud.firestore {
           window.loadAdminPromos();
         }
       } else if (sectionId === 'sec-launches') {
-        if (typeof window.loadLaunches === 'function') {
-          window.loadLaunches();
+        if (typeof window.loadAdminLaunches === 'function') {
+          window.loadAdminLaunches();
         }
       }
 

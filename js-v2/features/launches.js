@@ -1,377 +1,301 @@
 import { db } from '../core/firebase.js';
-import { doc, setDoc, getDoc, addDoc, collection, query, where, getDocs, orderBy, deleteDoc, writeBatch, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
-import { $, API_BASE_URL } from '../core/helpers.js';
+import { doc, setDoc, getDoc, addDoc, collection, query, where, getDocs, orderBy, deleteDoc, writeBatch, serverTimestamp, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+import { $, val, API_BASE_URL } from '../core/helpers.js';
 
 /* =========================================================
-   🚀 LAUNCH CONTROL SYSTEM (CO-FOUNDER & SUPER ADMIN)
+   🚀 FEATURE LAUNCHES SYSTEM (ADMIN & LANDING PAGE)
    ========================================================= */
 
-let activeLaunchUnsub = null;
-let currentEditId = null;
+let editLaunchId = null; // Track document ID when in edit mode
 
-// Initialize Launch Subsystem
-export function initLaunches() {
-  console.log("Initializing Launches subsystem...");
-  
-  // Start real-time observer for active launch (visible to all students on homepage)
-  observeActiveLaunch();
+// Create or update a feature launch
+window.adminSaveLaunch = async function() {
+  const nameInput = document.getElementById('launch-name');
+  const urlInput = document.getElementById('launch-url');
+  const scheduleInput = document.getElementById('launch-schedule');
+  const activeInput = document.getElementById('launch-active');
+  const msgEl = document.getElementById('admin-launch-msg');
+  const btn = document.getElementById('btn-save-launch');
 
-  // If we are already on an admin panel or co-founder panel, load launch lists
-  const launchesTbody = $('launches-list-tbody');
-  if (launchesTbody) {
-    loadLaunches();
-  }
-}
+  if (!nameInput || !urlInput) return;
 
-// Observe active launch in Firestore to toggle the homepage floating banner
-function observeActiveLaunch() {
-  if (activeLaunchUnsub) activeLaunchUnsub();
-
-  const q = query(collection(db, 'launches'), where('active', '==', true));
-  activeLaunchUnsub = onSnapshot(q, (snapshot) => {
-    const banner = $('floating-launch-banner');
-    const titleEl = $('floating-launch-title');
-    const linkEl = $('floating-launch-link');
-
-    if (!banner) return;
-
-    if (snapshot.empty) {
-      banner.style.display = 'none';
-    } else {
-      // Get the latest active launch
-      let latestLaunch = null;
-      snapshot.forEach(docSnap => {
-        const data = docSnap.data();
-        data.id = docSnap.id;
-        if (!latestLaunch || data.createdAt > latestLaunch.createdAt) {
-          latestLaunch = data;
-        }
-      });
-
-      if (latestLaunch && latestLaunch.name && latestLaunch.url) {
-        titleEl.textContent = latestLaunch.name;
-        linkEl.href = latestLaunch.url;
-        
-        // Don't show if user dismissed it in this session
-        if (sessionStorage.getItem('dismissed_launch_' + latestLaunch.id) !== 'true') {
-          banner.style.display = 'block';
-          // Bind the close/dismiss click specifically to store dismissal
-          const closeBtn = banner.querySelector('button');
-          if (closeBtn) {
-            closeBtn.onclick = (e) => {
-              e.preventDefault();
-              sessionStorage.setItem('dismissed_launch_' + latestLaunch.id, 'true');
-              banner.style.display = 'none';
-            };
-          }
-        } else {
-          banner.style.display = 'none';
-        }
-      } else {
-        banner.style.display = 'none';
-      }
-    }
-  }, (error) => {
-    console.error("Error observing active launch:", error);
-  });
-}
-
-// Load all launches for the Admin list
-async function loadLaunches() {
-  const tbody = $('launches-list-tbody');
-  if (!tbody) return;
-
-  try {
-    const q = query(collection(db, 'launches'), orderBy('createdAt', 'desc'));
-    const querySnapshot = await getDocs(q);
-    
-    if (querySnapshot.empty) {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="4" style="text-align: center; padding: 20px; color: #6b7280; font-weight: 500;">
-            No features have been launched yet.
-          </td>
-        </tr>`;
-      return;
-    }
-
-    let html = '';
-    querySnapshot.forEach(docSnap => {
-      const launch = docSnap.data();
-      const id = docSnap.id;
-      const statusBadge = launch.active 
-        ? `<span style="background:#d1fae5; color:#065f46; font-size:11px; font-weight:800; padding:2px 8px; border-radius:12px; text-transform:uppercase;">Active</span>`
-        : `<span style="background:#f3f4f6; color:#374151; font-size:11px; font-weight:800; padding:2px 8px; border-radius:12px; text-transform:uppercase;">Inactive</span>`;
-      
-      const toggleAction = launch.active ? 'Deactivate' : 'Activate';
-      const toggleColor = launch.active ? '#d97706' : '#059669';
-
-      html += `
-        <tr style="border-bottom: 1px solid #e2e8f0;">
-          <td style="padding: 12px 10px; font-weight: 700; color: #1f2937;">${launch.name}</td>
-          <td style="padding: 12px 10px; color: #4b5563; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-            <a href="${launch.url}" target="_blank" style="color: #3d5af1; text-decoration: none; font-weight: 600;">${launch.url}</a>
-          </td>
-          <td style="padding: 12px 10px;">${statusBadge}</td>
-          <td style="padding: 12px 10px; text-align: right; white-space: nowrap;">
-            <button onclick="window.toggleLaunchActive('${id}', ${!launch.active})" style="background: none; border: none; color: ${toggleColor}; font-weight: 700; cursor: pointer; margin-right: 12px; font-size: 12px;">
-              ${toggleAction}
-            </button>
-            <button onclick="window.openEditLaunch('${id}')" style="background: none; border: none; color: #3d5af1; font-weight: 700; cursor: pointer; margin-right: 12px; font-size: 12px;">
-              Edit
-            </button>
-            <button onclick="window.deleteLaunch('${id}')" style="background: none; border: none; color: #ef4444; font-weight: 700; cursor: pointer; font-size: 12px;">
-              Delete
-            </button>
-          </td>
-        </tr>`;
-    });
-
-    tbody.innerHTML = html;
-  } catch (err) {
-    console.error("Error loading launches:", err);
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="4" style="text-align: center; padding: 20px; color: #ef4444; font-weight: bold;">
-          ⚠️ Error loading launches: ${err.message}
-        </td>
-      </tr>`;
-  }
-}
-
-// Open the deploy/launch wizard modal
-window.openLaunchWizard = function() {
-  const wizard = $('launch-wizard-modal');
-  if (wizard) {
-    // Reset form elements
-    const nameInput = $('wizard-launch-name');
-    const urlInput = $('wizard-launch-url');
-    if (nameInput) nameInput.value = '';
-    if (urlInput) urlInput.value = '';
-
-    // Reset status elements
-    $('wizard-form-container').style.display = 'block';
-    $('wizard-progress-container').style.display = 'none';
-    
-    wizard.style.display = 'flex';
-  }
-};
-
-window.closeLaunchWizard = function() {
-  const wizard = $('launch-wizard-modal');
-  if (wizard) {
-    wizard.style.display = 'none';
-  }
-};
-
-// Create a new launch
-window.createFeatureLaunch = async function() {
-  // Can be called from Co-Founder modal or Admin panel form
-  const isFromWizard = $('launch-wizard-modal') && $('launch-wizard-modal').style.display === 'flex';
-  
-  const nameId = isFromWizard ? 'wizard-launch-name' : 'launch-name';
-  const urlId = isFromWizard ? 'wizard-launch-url' : 'launch-url';
-  const msgId = isFromWizard ? 'wizard-launch-msg' : 'admin-launch-msg';
-
-  const name = val(nameId);
-  const url = val(urlId);
+  const name = nameInput.value.trim();
+  const url = urlInput.value.trim();
+  const scheduleVal = scheduleInput ? scheduleInput.value : '';
+  const isActive = activeInput ? activeInput.checked : true;
 
   if (!name || !url) {
-    alert("Please enter a Launch Name and URL.");
+    if (msgEl) msgEl.innerHTML = '<span style="color:#ef4444;">Please provide both a Launch Name and a Launch URL.</span>';
     return;
   }
 
-  const msgEl = $(msgId);
-
-  if (isFromWizard) {
-    // Show visual wizard timeline animation
-    $('wizard-form-container').style.display = 'none';
-    $('wizard-progress-container').style.display = 'block';
-    updateWizardProgress(1, 'Deploying launch metadata to database...');
-  } else {
-    if (msgEl) msgEl.innerHTML = '<span style="color:#3d5af1; font-weight:bold;">⏳ Deploying new launch...</span>';
-  }
+  btn.disabled = true;
+  const originalBtnText = btn.textContent;
+  btn.textContent = 'Saving...';
 
   try {
-    // 1. Deactivate other launches using a Batch
-    const batch = writeBatch(db);
-    const activeQuery = query(collection(db, 'launches'), where('active', '==', true));
-    const activeSnapshot = await getDocs(activeQuery);
-    
-    activeSnapshot.forEach(docSnap => {
-      batch.update(docSnap.ref, { active: false });
-    });
-    await batch.commit();
+    const launchData = {
+      name: name,
+      url: url,
+      scheduledAt: scheduleVal ? new Date(scheduleVal).getTime() : null,
+      active: isActive,
+      updatedAt: serverTimestamp()
+    };
 
-    if (isFromWizard) {
-      updateWizardProgress(2, 'Broadcasting announcement notifications to verified students...');
-    }
-
-    // 2. Add the new launch doc
-    const newLaunchRef = await addDoc(collection(db, 'launches'), {
-      name,
-      url,
-      active: true,
-      createdAt: new Date().toISOString()
-    });
-
-    // 3. Trigger email notifications via Server endpoint
-    const response = await fetch(`${API_BASE_URL}/api/launch-feature`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ launchName: name, launchUrl: url })
-    });
-    const result = await response.json();
-
-    if (isFromWizard) {
-      updateWizardProgress(3, `Successfully notified verified students!`);
-      setTimeout(() => {
-        window.closeLaunchWizard();
-        loadLaunches();
-      }, 2500);
-    } else {
-      if (msgEl) {
-        msgEl.innerHTML = `<span style="color:#10b981; font-weight:bold;">🚀 Launched successfully! Notified ${result.sentCount || 0} student(s).</span>`;
-        // Clear inputs
-        $(nameId).value = '';
-        $(urlId).value = '';
-        setTimeout(() => { msgEl.innerHTML = ''; }, 5000);
-      }
-      loadLaunches();
-    }
-  } catch (err) {
-    console.error("Feature deployment failed:", err);
-    if (isFromWizard) {
-      $('wizard-progress-text').innerHTML = `<span style="color:#ef4444; font-weight:bold;">❌ Deployment Failed: ${err.message}</span>`;
-      $('wizard-bar-fill').style.background = '#ef4444';
-    } else {
-      if (msgEl) msgEl.innerHTML = `<span style="color:#ef4444; font-weight:bold;">❌ Failed: ${err.message}</span>`;
-    }
-  }
-};
-
-function updateWizardProgress(step, text) {
-  const bar = $('wizard-bar-fill');
-  const txt = $('wizard-progress-text');
-  
-  if (step === 1) {
-    if (bar) bar.style.width = '33%';
-    if (txt) txt.textContent = text;
-  } else if (step === 2) {
-    if (bar) bar.style.width = '66%';
-    if (txt) txt.textContent = text;
-  } else if (step === 3) {
-    if (bar) {
-      bar.style.width = '100%';
-      bar.style.background = 'linear-gradient(90deg, #10b981, #059669)';
-    }
-    if (txt) txt.innerHTML = `🌟 <strong>Done!</strong> ${text}`;
-  }
-}
-
-// Toggle launch status between active/inactive
-window.toggleLaunchActive = async function(id, newStatus) {
-  try {
-    if (newStatus === true) {
-      // Deactivate all other launches first
+    // If active, deactivate other launches to maintain a single active launch
+    if (isActive) {
+      const q = query(collection(db, 'launches'), where('active', '==', true));
+      const snap = await getDocs(q);
       const batch = writeBatch(db);
-      const activeQuery = query(collection(db, 'launches'), where('active', '==', true));
-      const activeSnapshot = await getDocs(activeQuery);
-      activeSnapshot.forEach(docSnap => {
-        batch.update(docSnap.ref, { active: false });
-      });
-      await batch.commit();
-    }
-
-    await updateDoc(doc(db, 'launches', id), { active: newStatus });
-    loadLaunches();
-  } catch (err) {
-    console.error("Error toggling launch status:", err);
-    alert("Failed to toggle status: " + err.message);
-  }
-};
-
-// Open the edit launch modal
-window.openEditLaunch = async function(id) {
-  const modal = $('edit-launch-modal');
-  if (!modal) return;
-
-  try {
-    const docSnap = await getDoc(doc(db, 'launches', id));
-    if (docSnap.exists()) {
-      const data = docSnap.data();
-      currentEditId = id;
-      $('edit-launch-name').value = data.name || '';
-      $('edit-launch-url').value = data.url || '';
-      $('edit-launch-active').checked = data.active || false;
-      
-      modal.style.display = 'flex';
-    }
-  } catch (err) {
-    console.error("Error loading launch details for editing:", err);
-    alert("Failed to fetch launch details.");
-  }
-};
-
-window.closeEditLaunch = function() {
-  const modal = $('edit-launch-modal');
-  if (modal) {
-    modal.style.display = 'none';
-  }
-};
-
-window.saveLaunchEdit = async function() {
-  if (!currentEditId) return;
-
-  const name = val('edit-launch-name');
-  const url = val('edit-launch-url');
-  const active = $('edit-launch-active').checked;
-
-  if (!name || !url) {
-    alert("Please enter Name and URL.");
-    return;
-  }
-
-  try {
-    if (active === true) {
-      // Deactivate all other launches first
-      const batch = writeBatch(db);
-      const activeQuery = query(collection(db, 'launches'), where('active', '==', true));
-      const activeSnapshot = await getDocs(activeQuery);
-      activeSnapshot.forEach(docSnap => {
-        if (docSnap.id !== currentEditId) {
+      snap.forEach(docSnap => {
+        if (docSnap.id !== editLaunchId) {
           batch.update(docSnap.ref, { active: false });
         }
       });
       await batch.commit();
     }
 
-    await updateDoc(doc(db, 'launches', currentEditId), {
-      name,
-      url,
-      active
-    });
+    if (editLaunchId) {
+      // Modify mode
+      await updateDoc(doc(db, 'launches', editLaunchId), launchData);
+      if (msgEl) msgEl.innerHTML = '<span style="color:#10b981;">✅ Feature launch updated successfully!</span>';
+      window.adminCancelEditLaunch();
+    } else {
+      // Create mode
+      launchData.createdAt = serverTimestamp();
+      const docRef = await addDoc(collection(db, 'launches'), launchData);
+      if (msgEl) msgEl.innerHTML = '<span style="color:#10b981;">✅ Feature launched successfully!</span>';
 
-    window.closeEditLaunch();
-    loadLaunches();
+      // Send email notifications to all verified students if activated immediately
+      const isImmediate = !launchData.scheduledAt || launchData.scheduledAt <= Date.now();
+      if (isImmediate) {
+        if (msgEl) msgEl.innerHTML += '<br><span style="color:#6366f1;">📨 Sending notification emails to all verified students...</span>';
+        
+        fetch(`${API_BASE_URL || 'https://tech-book-two.vercel.app'}/api/notify-launch`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            launchName: name,
+            launchUrl: url
+          })
+        }).then(r => r.json()).then(res => {
+          console.log('Launch email notifications sent:', res);
+          if (msgEl) {
+            const statusText = res.success ? `✅ Notifications sent to ${res.sentCount} students.` : `❌ Email failed: ${res.error}`;
+            msgEl.innerHTML = `<span style="color:#10b981;">✅ Feature launched successfully!</span><br><span style="color:#0284c7;font-weight:600;">${statusText}</span>`;
+          }
+        }).catch(err => {
+          console.error('Launch email notify error:', err);
+          if (msgEl) msgEl.innerHTML += `<br><span style="color:#ef4444;">❌ Notification API error.</span>`;
+        });
+      } else {
+        if (msgEl) msgEl.innerHTML += `<br><span style="color:#f59e0b;">⏰ Scheduled to activate on ${new Date(launchData.scheduledAt).toLocaleString()}. Emails will not be sent immediately.</span>`;
+      }
+
+      // Reset form
+      nameInput.value = '';
+      urlInput.value = '';
+      if (scheduleInput) scheduleInput.value = '';
+      if (activeInput) activeInput.checked = true;
+    }
+
+    loadAdminLaunches();
   } catch (err) {
-    console.error("Error updating launch:", err);
-    alert("Failed to save changes: " + err.message);
+    console.error("Save launch error:", err);
+    if (msgEl) msgEl.innerHTML = `<span style="color:#ef4444;">❌ Failed to save launch: ${err.message}</span>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalBtnText;
   }
+};
+
+// Populate form to edit launch
+window.adminEditLaunch = function(id, name, url, scheduledAt, active) {
+  const nameInput = document.getElementById('launch-name');
+  const urlInput = document.getElementById('launch-url');
+  const scheduleInput = document.getElementById('launch-schedule');
+  const activeInput = document.getElementById('launch-active');
+  const titleEl = document.getElementById('launch-form-title');
+  const btn = document.getElementById('btn-save-launch');
+  const cancelBtn = document.getElementById('btn-cancel-launch-edit');
+
+  if (!nameInput || !urlInput) return;
+
+  editLaunchId = id;
+  nameInput.value = name;
+  urlInput.value = url;
+  
+  if (scheduleInput && scheduledAt) {
+    // Convert timestamp to local datetime-local format YYYY-MM-DDTHH:MM
+    const dateObj = new Date(parseInt(scheduledAt));
+    const tzOffset = dateObj.getTimezoneOffset() * 60000;
+    const localISOTime = (new Date(dateObj - tzOffset)).toISOString().slice(0, 16);
+    scheduleInput.value = localISOTime;
+  } else if (scheduleInput) {
+    scheduleInput.value = '';
+  }
+
+  if (activeInput) {
+    activeInput.checked = active === 'true' || active === true;
+  }
+
+  if (titleEl) titleEl.innerHTML = '✏️ Modify Feature Launch';
+  if (btn) btn.textContent = '💾 Update Launch';
+  if (cancelBtn) cancelBtn.style.display = 'inline-block';
+};
+
+// Revert form back to create mode
+window.adminCancelEditLaunch = function() {
+  editLaunchId = null;
+  const nameInput = document.getElementById('launch-name');
+  const urlInput = document.getElementById('launch-url');
+  const scheduleInput = document.getElementById('launch-schedule');
+  const activeInput = document.getElementById('launch-active');
+  const titleEl = document.getElementById('launch-form-title');
+  const btn = document.getElementById('btn-save-launch');
+  const cancelBtn = document.getElementById('btn-cancel-launch-edit');
+
+  if (nameInput) nameInput.value = '';
+  if (urlInput) urlInput.value = '';
+  if (scheduleInput) scheduleInput.value = '';
+  if (activeInput) activeInput.checked = true;
+
+  if (titleEl) titleEl.innerHTML = '🚀 Launch New Feature';
+  if (btn) btn.textContent = '🚀 Launch & Notify';
+  if (cancelBtn) cancelBtn.style.display = 'none';
 };
 
 // Delete a launch
-window.deleteLaunch = async function(id) {
-  if (!confirm("Are you sure you want to delete this launch record? This cannot be undone.")) return;
+window.adminDeleteLaunch = async function(id) {
+  if (!confirm("Are you sure you want to delete this feature launch?")) return;
 
   try {
     await deleteDoc(doc(db, 'launches', id));
-    loadLaunches();
+    loadAdminLaunches();
   } catch (err) {
-    console.error("Error deleting launch record:", err);
-    alert("Failed to delete record: " + err.message);
+    console.error("Delete launch error:", err);
+    alert("Failed to delete launch: " + err.message);
   }
 };
 
-// Re-expose loadLaunches globally
-window.loadLaunches = loadLaunches;
+// Load list of launches for admin view
+window.loadAdminLaunches = async function() {
+  const container = document.getElementById('launches-list-container');
+  if (!container) return;
+
+  container.innerHTML = '<p style="text-align:center;padding:20px;color:var(--text-secondary);">⏳ Loading launches...</p>';
+
+  try {
+    const q = query(collection(db, 'launches'), orderBy('updatedAt', 'desc'));
+    const snap = await getDocs(q);
+
+    if (snap.empty) {
+      container.innerHTML = '<p style="text-align:center;padding:20px;color:var(--text-secondary);font-size:13px;">No launches registered yet.</p>';
+      return;
+    }
+
+    let html = '';
+    snap.forEach(docSnap => {
+      const data = docSnap.data();
+      const id = docSnap.id;
+      const createdStr = data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleString() : 'N/A';
+      
+      const activeBadge = data.active 
+        ? `<span style="background:rgba(16,185,129,0.1);color:#10b981;font-size:11px;font-weight:700;padding:4px 10px;border-radius:12px;">Active</span>`
+        : `<span style="background:rgba(107,114,128,0.1);color:#6b7280;font-size:11px;font-weight:700;padding:4px 10px;border-radius:12px;">Inactive</span>`;
+
+      const scheduleText = data.scheduledAt
+        ? `<span style="color:#d97706;font-size:11px;font-weight:600;">⏰ Activation: ${new Date(data.scheduledAt).toLocaleString()}</span>`
+        : `<span style="color:#10b981;font-size:11px;font-weight:600;">✓ Immediate Activation</span>`;
+
+      // Escaping helper values for safety in onclick arguments
+      const escName = (data.name || '').replace(/'/g, "\\'");
+      const escUrl = (data.url || '').replace(/'/g, "\\'");
+      const schedVal = data.scheduledAt ? String(data.scheduledAt) : '';
+
+      html += `
+        <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:16px;padding:16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <h4 style="margin:0;font-size:15px;font-weight:800;color:#0f172a;">🚀 ${data.name}</h4>
+              ${activeBadge}
+            </div>
+            <a href="${data.url}" target="_blank" style="color:#3d5af1;font-size:12px;font-weight:600;text-decoration:none;word-break:break-all;">🔗 ${data.url}</a>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:2px;">
+              <span style="color:#6b7280;font-size:11px;">Created: ${createdStr}</span>
+              ${scheduleText}
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button onclick="window.adminEditLaunch('${id}', '${escName}', '${escUrl}', '${schedVal}', ${data.active})" 
+              style="padding:6px 12px;background:#ffffff;border:1px solid #d1d5db;border-radius:8px;color:#4b5563;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:4px;">
+              ✏️ Edit
+            </button>
+            <button onclick="window.adminDeleteLaunch('${id}')" 
+              style="padding:6px 12px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;color:#ef4444;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:4px;">
+              🗑️ Delete
+            </button>
+          </div>
+        </div>
+      `;
+    });
+
+    container.innerHTML = html;
+  } catch (err) {
+    console.error("Load launches error:", err);
+    container.innerHTML = `<p style="text-align:center;padding:20px;color:#ef4444;font-size:13px;">Failed to load launches: ${err.message}</p>`;
+  }
+};
+
+// Setup landing page real-time listener for the active launch floating banner
+window.initLaunchListener = function() {
+  const floatingCard = document.getElementById('landing-floating-download');
+  if (!floatingCard) return;
+
+  // Listen to any changes in launches
+  const q = query(collection(db, 'launches'), where('active', '==', true));
+  onSnapshot(q, (snap) => {
+    let activeLaunch = null;
+    const now = Date.now();
+
+    snap.forEach(docSnap => {
+      const data = docSnap.data();
+      // Verify if scheduled time has passed
+      if (!data.scheduledAt || data.scheduledAt <= now) {
+        activeLaunch = { id: docSnap.id, ...data };
+      }
+    });
+
+    if (activeLaunch) {
+      // Configure and show floating button
+      const titleEl = document.getElementById('floating-download-title');
+      const linkEl = document.getElementById('floating-download-link');
+      
+      if (titleEl) titleEl.textContent = activeLaunch.name;
+      if (linkEl) {
+        linkEl.href = activeLaunch.url;
+        linkEl.onclick = () => {
+          window.open(activeLaunch.url, '_blank');
+          return false;
+        };
+      }
+      
+      floatingCard.style.display = 'flex';
+      floatingCard.classList.remove('hidden');
+    } else {
+      floatingCard.style.display = 'none';
+      floatingCard.classList.add('hidden');
+    }
+  }, (err) => {
+    console.warn("Real-time launch listener disabled or failed:", err);
+  });
+};
+
+// Automatically boot up listener if we are on the landing page
+document.addEventListener('DOMContentLoaded', () => {
+  window.initLaunchListener();
+});
+// Execute it immediately as well since module script might load after DOMContentLoaded
+setTimeout(() => {
+  window.initLaunchListener();
+}, 1000);

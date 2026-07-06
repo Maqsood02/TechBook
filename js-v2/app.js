@@ -15,7 +15,7 @@ import './features/pyq.js?v=20260706s';
 import './features/quiz.js?v=20260706s';
 import './features/chatbot.js?v=20260706s';
 import './features/manage_students.js?v=20260706s';
-import { initLaunches } from './features/launches.js?v=20260706s';
+import './features/launches.js?v=20260706s';
 
 
 console.log('🚀 TechBook App fully initialized');
@@ -131,7 +131,7 @@ function selectRole(role) {
     const isAdmLoggedIn = localStorage.getItem('techbook_admin_logged_in') === 'true';
     if (isAdmLoggedIn) {
       const storedRole = localStorage.getItem('techbook_admin_role');
-      if (storedRole === 'co_founder') {
+      if (storedRole === 'co_founder' && !window._isCofAccessingSection) {
         // Redirect Co-founder to their dedicated portal page!
         selectRole('cof');
         return;
@@ -246,6 +246,10 @@ window.addEventListener('popstate', (event) => {
       window._studentHistoryNavLock = false;
     }
   } else if (state.role === 'admin') {
+    const isCof = localStorage.getItem('techbook_admin_role') === 'co_founder';
+    if (isCof) {
+      window._isCofAccessingSection = !!state.section;
+    }
     selectRole('admin');
     if (typeof window.switchAdminSection === 'function') {
       window._adminHistoryNavLock = true;
@@ -282,6 +286,10 @@ function handleInitialRoute() {
   } else if (hash.startsWith('#admin')) {
     const parts = hash.split('-');
     const section = parts[1] || null;
+    const isCof = localStorage.getItem('techbook_admin_role') === 'co_founder';
+    if (isCof && section) {
+      window._isCofAccessingSection = true;
+    }
 
     window._historyNavLock = true;
     selectRole('admin');
@@ -337,13 +345,11 @@ if (document.readyState === 'loading') {
     initNavigation();
     handleInitialRoute();
     if (typeof window._initStudentManagement === 'function') window._initStudentManagement();
-    initLaunches();
   });
 } else {
   initNavigation();
   handleInitialRoute();
   if (typeof window._initStudentManagement === 'function') window._initStudentManagement();
-  initLaunches();
 }
 
 // Bind to window so that inline HTML handlers or other modules can call them
