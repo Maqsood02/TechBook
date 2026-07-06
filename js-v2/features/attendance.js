@@ -1282,6 +1282,11 @@ service cloud.firestore {
             </div>
           `;
           document.body.appendChild(errorModal);
+        } else if (e.message && (e.message.includes('offline') || e.code === 'unavailable')) {
+          console.warn("Firestore client is offline. Running with persistent local cache.");
+          if (typeof window.showOfflineBanner === 'function') {
+            window.showOfflineBanner();
+          }
         } else {
           // Other error - show generic message
           alert("Error loading dashboard: " + e.message + "\n\nCheck browser console for details.");
@@ -2750,3 +2755,38 @@ service cloud.firestore {
         }
       }
     }, 100);
+
+    window.showOfflineBanner = function() {
+      let banner = document.getElementById("offline-toast-banner");
+      if (!banner) {
+        banner = document.createElement("div");
+        banner.id = "offline-toast-banner";
+        banner.style.cssText = "position:fixed; top:24px; left:50%; transform:translateX(-50%); z-index:999999; background:rgba(239, 68, 68, 0.95); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); color:white; padding:12px 24px; border-radius:16px; box-shadow:0 10px 25px rgba(239, 68, 68, 0.3); font-family:'Poppins', sans-serif; display:flex; align-items:center; gap:12px; font-size:13px; font-weight:700; transition:all 0.3s ease;";
+        banner.innerHTML = `
+          <span style="font-size:16px;">⚠️</span>
+          <span>You are currently offline. Running on local cache...</span>
+          <button onclick="this.parentElement.remove()" style="background:none; border:none; color:white; font-size:14px; font-weight:bold; cursor:pointer; padding-left:8px;">✕</button>
+        `;
+        document.body.appendChild(banner);
+      }
+    };
+
+    window.addEventListener('offline', () => {
+      window.showOfflineBanner();
+    });
+
+    window.addEventListener('online', () => {
+      const banner = document.getElementById("offline-toast-banner");
+      if (banner) {
+        banner.style.background = "rgba(16, 185, 129, 0.95)";
+        banner.style.boxShadow = "0 10px 25px rgba(16, 185, 129, 0.3)";
+        banner.innerHTML = `
+          <span style="font-size:16px;">✓</span>
+          <span>Connection restored. Back online!</span>
+        `;
+        setTimeout(() => {
+          banner.style.opacity = '0';
+          setTimeout(() => banner.remove(), 300);
+        }, 3000);
+      }
+    });
