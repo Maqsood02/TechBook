@@ -1,4 +1,4 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
 import {
   getAuth,
   createUserWithEmailAndPassword,
@@ -17,6 +17,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
 import {
   initializeFirestore,
+  getFirestore,
   doc,
   setDoc,
   getDoc,
@@ -52,14 +53,19 @@ const firebaseConfig = {
   measurementId: "G-QBH17TSDJZ"
 };
 
-const app = initializeApp(firebaseConfig);
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
-const db = initializeFirestore(app, {
-  experimentalAutoDetectLongPolling: true,
-  localCache: persistentLocalCache({
-    tabManager: persistentMultipleTabManager()
-  })
-});
+let db;
+try {
+  db = initializeFirestore(app, {
+    experimentalAutoDetectLongPolling: true,
+    localCache: persistentLocalCache({
+      tabManager: persistentMultipleTabManager()
+    })
+  });
+} catch (e) {
+  db = getFirestore(app);
+}
 const storage = getStorage(app);
 
 setPersistence(auth, browserLocalPersistence).catch(e => console.warn("Persistence:", e));
