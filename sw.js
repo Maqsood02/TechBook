@@ -1,4 +1,4 @@
-const CACHE_NAME = 'techbook-cache-v26';
+const CACHE_NAME = 'techbook-cache-v27';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -46,8 +46,13 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Network-First strategy for HTML navigation requests to prevent stale PWA cache lock
-  if (event.request.mode === 'navigate' || url.endsWith('.html') || url === self.location.origin + '/') {
+  // Network-First strategy for HTML navigation and JS requests to prevent stale PWA cache lock
+  if (
+    event.request.mode === 'navigate' || 
+    url.endsWith('.html') || 
+    url.includes('.js') || 
+    url === self.location.origin + '/'
+  ) {
     event.respondWith(
       fetch(event.request)
         .then(response => {
