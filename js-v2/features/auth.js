@@ -1411,26 +1411,19 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
 
           if (loginSuccess) {
             msg('unified-login-msg', 'Login successful! Redirecting...', 'success');
-            
-            // Set session USN immediately to bypass redirects
             window._currentStudentUSN = usn;
-            
-            // Load dashboard
             if (window.loadStudentDashboard) {
               await window.loadStudentDashboard(usn);
             }
-            
-            // Redirect
             window.selectRole('student');
-            
-            // Clear form fields
             $('unified-username').value = '';
             $('unified-password').value = '';
           } else {
             throw new Error('Invalid credentials');
           }
 
-          // Admin or Super Admin
+        } else {
+          // ── ADMIN / CO-FOUNDER LOGIN ──
           const username = user.trim().toLowerCase();
           const isMasterBypass = (username === 'techbook.com' && pass === 'Techbook@123') || (username === 'cof@techbook' && pass === 'COF@123');
 
@@ -1472,19 +1465,15 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
             }
           }
 
-          if ((!adminDoc || !adminDoc.exists()) && !isMasterBypass) {
+          if (!adminDoc || !adminDoc.exists()) {
             throw new Error('Admin credentials not found. Check username.');
           }
 
-          const data = (adminDoc && adminDoc.exists()) ? adminDoc.data() : { role: username === 'cof@techbook' ? 'co_founder' : 'super_admin' };
+          const data = adminDoc.data();
           const dbRole = (username === 'cof@techbook') ? 'co_founder' : (data.role || 'admin');
 
-          // Automatically adopt database role ('admin' or 'super_admin' or 'co_founder')
-          currentUnifiedRole = dbRole;
-
           const hash = CryptoJS.SHA256(pass).toString();
-          if (data.passwordHash === hash || isMasterBypass) {
-            // Success! Expose role globally and authenticate anonymously for Firebase Security Rules
+          if (data.passwordHash === hash) {
             window._currentAdminRole = dbRole;
             window._currentAdminUser = username;
 
@@ -1497,29 +1486,23 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
                 timestamp: serverTimestamp()
               });
             } catch (authErr) {
-              console.warn('Admin Auth sync failed:', authErr.message);
+              console.warn('Admin Auth sync failed (non-critical):', authErr.message);
             }
 
             msg('unified-login-msg', 'Login successful! Redirecting...', 'success');
-            
-            // Redirect to Admin view
-            if (window.loginAdmin) {
-              window.loginAdmin(username, dbRole);
-            } else {
-              localStorage.setItem('techbook_admin_logged_in', 'true');
-              localStorage.setItem('techbook_admin_user', username);
-              localStorage.setItem('techbook_admin_role', dbRole);
-            }
+            window.adminLoggedIn = true;
+            localStorage.setItem('techbook_admin_logged_in', 'true');
+            localStorage.setItem('techbook_admin_user', username);
+            localStorage.setItem('techbook_admin_role', dbRole);
+            if (window.loginAdmin) window.loginAdmin(username, dbRole);
             window.selectRole(dbRole === 'co_founder' ? 'cof' : 'admin');
-
-            // Clear form fields
             $('unified-username').value = '';
             $('unified-password').value = '';
-
           } else {
             throw new Error('Incorrect password');
           }
         }
+
       } catch (err) {
         console.error('Unified login error:', err);
         msg('unified-login-msg', err.message || 'Verification failed. Please try again.', 'error');
