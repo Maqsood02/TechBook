@@ -4614,7 +4614,8 @@
         left: 0 !important;
         right: 0 !important;
         width: 100% !important;
-        height: 56px !important;
+        height: auto !important;
+        min-height: 56px !important;
         margin: 0 !important;
         border-radius: 0 !important;
         border: none !important;
@@ -4623,7 +4624,7 @@
         background: rgba(255, 255, 255, 0.95) !important;
         backdrop-filter: blur(8px) !important;
         z-index: 9999 !important;
-        padding: 0 16px !important;
+        padding: calc(env(safe-area-inset-top, 0px) + 12px) 16px 12px 16px !important;
         box-sizing: border-box !important;
         display: flex !important;
         align-items: center !important;
@@ -4641,7 +4642,7 @@
       #content {
         flex: 1 !important;
         overflow-y: auto !important;
-        padding: 72px 16px 88px 16px !important; /* Top space for navbar, bottom space for mobile-nav */
+        padding: calc(env(safe-area-inset-top, 0px) + 84px) 16px 88px 16px !important; /* Top space for navbar, bottom space for mobile-nav */
         box-sizing: border-box !important;
         -webkit-overflow-scrolling: touch !important;
       }
