@@ -880,27 +880,73 @@ import { $, val } from '../core/helpers.js';
         if (headerCard) {
           if (role === 'co_founder') {
             headerCard.innerHTML = `
-              <div style="display: flex; align-items: center; gap: 20px; background: linear-gradient(135deg, rgba(61, 90, 241, 0.08) 0%, rgba(168, 85, 247, 0.08) 100%); border: 1.5px solid rgba(61, 90, 241, 0.15); padding: 20px; border-radius: 24px; backdrop-filter: blur(10px); margin-bottom: 24px; box-shadow: 0 10px 30px rgba(61, 90, 241, 0.04);">
-                <div style="position: relative; width: 90px; height: 90px; display: flex; align-items: center; justify-content: center;">
-                  <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(45deg, #3d5af1, #a855f7, #ef4444, #10b981); background-size: 400% 400%; animation: spin-gradient 8s linear infinite; box-shadow: 0 4px 15px rgba(61, 90, 241, 0.2);"></div>
-                  <div style="position: relative; width: 80px; height: 80px; border-radius: 50%; background: #ffffff; padding: 2px; z-index: 2; box-sizing: border-box; overflow: hidden;">
-                    <img src="img/cof-profile.jpg?v=3" alt="Co-Founder" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; transform: scale(2.4); transform-origin: 50% 72%;" />
+              <div class="cof-profile-card" style="position: relative; display: flex; align-items: center; justify-content: space-between; gap: 20px; background: linear-gradient(135deg, rgba(61, 90, 241, 0.08) 0%, rgba(168, 85, 247, 0.08) 100%); border: 1.5px solid rgba(61, 90, 241, 0.15); padding: 20px; border-radius: 24px; backdrop-filter: blur(10px); margin-bottom: 24px; box-shadow: 0 10px 30px rgba(61, 90, 241, 0.04); overflow: visible;">
+                <style>
+                  @media (max-width: 600px) {
+                    .cof-profile-card {
+                      padding: 16px 12px 20px !important;
+                      flex-direction: column !important;
+                      align-items: center !important;
+                      text-align: center !important;
+                    }
+                    .cof-profile-card > div:first-child {
+                      flex-direction: column !important;
+                      align-items: center !important;
+                      text-align: center !important;
+                      gap: 12px !important;
+                    }
+                    .cof-profile-card .cof-bell-wrap {
+                      position: absolute !important;
+                      top: 14px !important;
+                      right: 14px !important;
+                    }
+                    .cof-profile-card .cof-bell-wrap button {
+                      width: 40px !important;
+                      height: 40px !important;
+                      font-size: 18px !important;
+                      border-radius: 12px !important;
+                    }
+                  }
+                </style>
+                <div style="display: flex; align-items: center; gap: 20px; flex: 1;">
+                  <div style="position: relative; width: 90px; height: 90px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(45deg, #3d5af1, #a855f7, #ef4444, #10b981); background-size: 400% 400%; animation: spin-gradient 8s linear infinite; box-shadow: 0 4px 15px rgba(61, 90, 241, 0.2);"></div>
+                    <div style="position: relative; width: 80px; height: 80px; border-radius: 50%; background: #ffffff; padding: 2px; z-index: 2; box-sizing: border-box; overflow: hidden;">
+                      <img src="img/cof-profile.jpg?v=3" alt="Co-Founder" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; transform: scale(2.4); transform-origin: 50% 72%;" />
+                    </div>
+                    <span style="position: absolute; bottom: 4px; right: 4px; width: 15px; height: 15px; background: #22c55e; border: 2.5px solid #ffffff; border-radius: 50%; z-index: 10; box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);"></span>
                   </div>
-                  <span style="position: absolute; bottom: 4px; right: 4px; width: 15px; height: 15px; background: #22c55e; border: 2.5px solid #ffffff; border-radius: 50%; z-index: 10; box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);"></span>
+                  <div style="display: flex; flex-direction: column; gap: 4px; text-align: left;">
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                      <h2 style="margin: 0; font-size: 22px; font-weight: 800; color: #111827; font-family: 'Poppins', sans-serif; letter-spacing: -0.5px;">Chinmay K V</h2>
+                      <span style="background: linear-gradient(135deg, #3d5af1, #a855f7); color: #ffffff; font-size: 9.5px; font-weight: 800; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.8px; box-shadow: 0 2px 8px rgba(61, 90, 241, 0.25); white-space: nowrap;">Co-Founder</span>
+                    </div>
+                    <p style="margin: 0; font-size: 13.5px; color: #4b5563; font-weight: 600; font-family: 'Poppins', sans-serif;">TechBook Operations & Development</p>
+                    <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: #10b981; font-weight: 700; margin-top: 2px;">
+                      <span style="display: inline-block; width: 6px; height: 6px; background: #10b981; border-radius: 50%; animation: blink 1.5s infinite;"></span>
+                      All Systems Online
+                    </div>
+                  </div>
                 </div>
-                <div style="display: flex; flex-direction: column; gap: 4px;">
-                  <div style="display: flex; align-items: center; gap: 8px;">
-                    <h2 style="margin: 0; font-size: 22px; font-weight: 800; color: #111827; font-family: 'Poppins', sans-serif; letter-spacing: -0.5px;">Chinmay K V</h2>
-                    <span style="background: linear-gradient(135deg, #3d5af1, #a855f7); color: #ffffff; font-size: 9.5px; font-weight: 800; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.8px; box-shadow: 0 2px 8px rgba(61, 90, 241, 0.25);">Co-Founder</span>
-                  </div>
-                  <p style="margin: 0; font-size: 13.5px; color: #4b5563; font-weight: 600; font-family: 'Poppins', sans-serif;">TechBook Operations & Development</p>
-                  <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: #10b981; font-weight: 700; margin-top: 2px;">
-                    <span style="display: inline-block; width: 6px; height: 6px; background: #10b981; border-radius: 50%; animation: blink 1.5s infinite;"></span>
-                    All Systems Online
-                  </div>
+                <!-- Co-founder Bell -->
+                <div class="cof-bell-wrap" style="position: relative; z-index: 10;">
+                  <button id="co-founder-bell" onclick="window.toggleCoFounderReplies && window.toggleCoFounderReplies()" style="position: relative; background: #f8fafc; border: 1.5px solid #e2e8f0; width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); outline: none;" onmouseover="this.style.transform='scale(1.08) rotate(5deg)';this.style.background='#eff6ff';this.style.borderColor='#3b82f6';" onmouseout="this.style.transform='none';this.style.background='#f8fafc';this.style.borderColor='#e2e8f0';">
+                    🔔
+                    <!-- Glowing unread badge -->
+                    <span id="cof-bell-badge" style="display: none; position: absolute; top: -4px; right: -4px; background: #ef4444; color: #ffffff; font-size: 9px; font-weight: 800; min-width: 16px; height: 16px; border-radius: 9px; padding: 0 4px; display: flex; align-items: center; justify-content: center; border: 2.5px solid #ffffff; box-shadow: 0 0 8px rgba(239, 68, 68, 0.6); animation: blink 1.5s infinite;">0</span>
+                  </button>
                 </div>
               </div>
             `;
+            // Initiate live replies listener — also ensure the portal dropdown exists
+            setTimeout(() => {
+              if (!document.getElementById('co-founder-reply-dropdown')) {
+                window.toggleCoFounderReplies && window.toggleCoFounderReplies();
+                const dd = document.getElementById('co-founder-reply-dropdown');
+                if (dd) dd.style.display = 'none';
+              }
+              if (typeof window.listenCoFounderReplies === 'function') window.listenCoFounderReplies();
+            }, 100);
           } else if (role === 'super_admin') {
             headerCard.innerHTML = `
               <style>
@@ -2049,6 +2095,164 @@ service cloud.firestore {
       }
     };
 
+    window.sendAdminReply = async function(messageId, recipientName) {
+      const replyInput = document.getElementById(`reply-input-${messageId}`);
+      if (!replyInput) return;
+      const replyText = replyInput.value.trim();
+      if (!replyText) {
+        alert("Please enter a reply.");
+        return;
+      }
+
+      try {
+        // 1. Write the reply to founder_messages collection
+        await addDoc(collection(db, "founder_messages"), {
+          senderName: "Maqsood M D",
+          senderRole: "super_admin",
+          message: replyText,
+          replyToId: messageId,
+          createdAt: new Date().toISOString(),
+          read: false
+        });
+
+        // 2. Mark the co-founder's original message as read
+        await window.markFounderMessageAsRead(messageId);
+
+        replyInput.value = "";
+        alert(`✓ Reply sent successfully to Co-Founder ${recipientName}!`);
+      } catch (err) {
+        console.error("Error sending reply:", err);
+        alert("❌ Failed to send reply: " + err.message);
+      }
+    };
+
+    window.toggleCoFounderReplies = function() {
+      let dropdown = document.getElementById("co-founder-reply-dropdown");
+      if (!dropdown) {
+        dropdown = document.createElement('div');
+        dropdown.id = 'co-founder-reply-dropdown';
+        dropdown.style.cssText = 'display:none; position:fixed; width:360px; max-width:92vw; background:#ffffff; border:1.5px solid #e2e8f0; border-radius:20px; box-shadow:0 20px 50px rgba(0,0,0,0.18); padding:18px; z-index:99999; font-family:Poppins,sans-serif;';
+        dropdown.innerHTML = `
+          <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #f1f5f9; padding-bottom:10px; margin-bottom:12px;">
+            <h4 style="margin:0; font-size:15px; font-weight:800; color:#0f172a;">📩 Super Admin Replies</h4>
+            <button onclick="window.markAllCofRepliesAsRead && window.markAllCofRepliesAsRead()" style="background:none; border:none; color:#3d5af1; font-size:11px; font-weight:700; cursor:pointer;">Mark all read</button>
+          </div>
+          <div id="cof-replies-list" style="max-height:300px; overflow-y:auto; display:flex; flex-direction:column; gap:10px;">
+            <div style="text-align:center; padding:20px; color:#94a3b8; font-size:12.5px;">No replies received</div>
+          </div>
+        `;
+        document.body.appendChild(dropdown);
+      }
+
+      const isHidden = dropdown.style.display === 'none' || !dropdown.style.display;
+      if (isHidden) {
+        const bell = document.getElementById('co-founder-bell');
+        if (bell) {
+          const rect = bell.getBoundingClientRect();
+          dropdown.style.top = (rect.bottom + 8) + 'px';
+          const dropdownWidth = 360;
+          let left = rect.right - dropdownWidth;
+          if (left < 8) left = 8;
+          dropdown.style.left = left + 'px';
+        }
+        dropdown.style.display = 'block';
+      } else {
+        dropdown.style.display = 'none';
+      }
+    };
+
+    window.markCofReplyAsRead = async function(id) {
+      try {
+        await setDoc(doc(db, "founder_messages", id), { read: true }, { merge: true });
+      } catch (err) {
+        console.error("Failed to mark reply as read:", err);
+      }
+    };
+
+    window.markAllCofRepliesAsRead = async function() {
+      try {
+        const q = query(
+          collection(db, "founder_messages"),
+          where("senderRole", "==", "super_admin"),
+          where("read", "==", false)
+        );
+        const snap = await getDocs(q);
+        const promises = [];
+        snap.forEach(docSnap => {
+          promises.push(setDoc(doc(db, "founder_messages", docSnap.id), { read: true }, { merge: true }));
+        });
+        await Promise.all(promises);
+      } catch (err) {
+        console.error("Failed to mark all replies as read:", err);
+      }
+    };
+
+    let _cofRepliesUnsub = null;
+    window.listenCoFounderReplies = function() {
+      if (_cofRepliesUnsub) {
+        try { _cofRepliesUnsub(); } catch (_) {}
+      }
+
+      const q = query(
+        collection(db, "founder_messages"),
+        where("senderRole", "==", "super_admin"),
+        orderBy("createdAt", "desc"),
+        limit(20)
+      );
+
+      _cofRepliesUnsub = onSnapshot(q, (snapshot) => {
+        const replies = [];
+        let unreadCount = 0;
+
+        snapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          replies.push({ id: docSnap.id, ...data });
+          if (!data.read) unreadCount++;
+        });
+
+        // Update badge
+        const badge = document.getElementById("cof-bell-badge");
+        if (badge) {
+          if (unreadCount > 0) {
+            badge.style.display = "flex";
+            badge.textContent = unreadCount;
+          } else {
+            badge.style.display = "none";
+          }
+        }
+
+        // Render replies list
+        const listEl = document.getElementById("cof-replies-list");
+        if (listEl) {
+          if (replies.length === 0) {
+            listEl.innerHTML = `<div style="text-align: center; padding: 20px; color: #94a3b8; font-size: 12.5px;">No replies received</div>`;
+          } else {
+            listEl.innerHTML = replies.map(r => {
+              let dateStr = "";
+              try {
+                dateStr = new Date(r.createdAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+              } catch (_) {
+                dateStr = r.createdAt || "";
+              }
+
+              return `
+                <div style="padding: 10px 12px; border-radius: 12px; background: ${r.read ? '#f8fafc' : 'rgba(99,102,241,0.04)'}; border: 1px solid ${r.read ? '#f1f5f9' : 'rgba(99,102,241,0.1)'}; transition: all 0.2s; position: relative;">
+                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                    <span style="font-weight: 700; font-size: 12.0px; color: #1e293b;">${r.senderName}</span>
+                    <span style="font-size: 9.5px; color: #94a3b8;">${dateStr}</span>
+                  </div>
+                  <p style="margin: 0; font-size: 12px; color: #475569; line-height: 1.4; word-break: break-word; text-align: left; padding-right: 12px;">${r.message}</p>
+                  ${!r.read ? `
+                    <button onclick="event.stopPropagation(); window.markCofReplyAsRead('${r.id}')" style="position: absolute; top: 12px; right: 12px; width: 8px; height: 8px; border-radius: 50%; background: #3d5af1; border: none; cursor: pointer; padding: 0;" title="Mark as read"></button>
+                  ` : ''}
+                </div>
+              `;
+            }).join('');
+          }
+        }
+      });
+    };
+
     function listenFounderMessages() {
       if (_founderMsgUnsub) {
         try { _founderMsgUnsub(); } catch (_) {}
@@ -2056,6 +2260,7 @@ service cloud.firestore {
       
       const q = query(
         collection(db, "founder_messages"),
+        where("senderRole", "==", "co_founder"),
         orderBy("createdAt", "desc"),
         limit(20)
       );
@@ -2096,15 +2301,22 @@ service cloud.firestore {
               }
               
               return `
-                <div style="padding: 10px 12px; border-radius: 12px; background: ${m.read ? '#f8fafc' : 'rgba(61,90,241,0.04)'}; border: 1px solid ${m.read ? '#f1f5f9' : 'rgba(61,90,241,0.1)'}; transition: all 0.2s; position: relative;">
-                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
-                    <span style="font-weight: 700; font-size: 12.0px; color: #1e293b;">${m.senderName}</span>
-                    <span style="font-size: 9.5px; color: #94a3b8;">${dateStr}</span>
+                <div style="padding: 10px 12px; border-radius: 12px; background: ${m.read ? '#f8fafc' : 'rgba(61,90,241,0.04)'}; border: 1px solid ${m.read ? '#f1f5f9' : 'rgba(61,90,241,0.1)'}; transition: all 0.2s; position: relative; display: flex; flex-direction: column; gap: 6px;">
+                  <div>
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                      <span style="font-weight: 700; font-size: 12.0px; color: #1e293b;">${m.senderName}</span>
+                      <span style="font-size: 9.5px; color: #94a3b8;">${dateStr}</span>
+                    </div>
+                    <p style="margin: 0; font-size: 12px; color: #475569; line-height: 1.4; word-break: break-word; text-align: left; padding-right: 12px;">${m.message}</p>
+                    ${!m.read ? `
+                      <button onclick="event.stopPropagation(); window.markFounderMessageAsRead('${m.id}')" style="position: absolute; top: 12px; right: 12px; width: 8px; height: 8px; border-radius: 50%; background: #3d5af1; border: none; cursor: pointer; padding: 0;" title="Mark as read"></button>
+                    ` : ''}
                   </div>
-                  <p style="margin: 0; font-size: 12px; color: #475569; line-height: 1.4; word-break: break-word; text-align: left; padding-right: 12px;">${m.message}</p>
-                  ${!m.read ? `
-                    <button onclick="event.stopPropagation(); window.markFounderMessageAsRead('${m.id}')" style="position: absolute; top: 12px; right: 12px; width: 8px; height: 8px; border-radius: 50%; background: #3d5af1; border: none; cursor: pointer; padding: 0;" title="Mark as read"></button>
-                  ` : ''}
+                  <!-- Reply Input Block -->
+                  <div style="display: flex; gap: 6px; margin-top: 4px; border-top: 1px solid #f1f5f9; padding-top: 8px;">
+                    <input type="text" id="reply-input-${m.id}" placeholder="Reply to ${m.senderName}..." style="flex: 1; min-width: 0; font-size: 11px; padding: 5px 8px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-family: 'Poppins', sans-serif; outline: none; background: #ffffff;" />
+                    <button onclick="event.stopPropagation(); window.sendAdminReply('${m.id}', '${m.senderName}')" style="padding: 5px 12px; background: linear-gradient(135deg, #3d5af1, #6366f1); color: #ffffff; border: none; border-radius: 8px; font-size: 10.5px; font-weight: 700; cursor: pointer; font-family: 'Poppins', sans-serif;">Reply</button>
+                  </div>
                 </div>
               `;
             }).join('');
@@ -2113,16 +2325,21 @@ service cloud.firestore {
       });
     }
 
-    // Close dropdown on click outside
+    // Close dropdowns on click outside
     document.addEventListener("click", (e) => {
       const dropdown = document.getElementById("super-admin-msg-dropdown");
       const bell = document.getElementById("super-admin-bell");
       if (dropdown && dropdown.style.display !== 'none' && bell && !dropdown.contains(e.target) && !bell.contains(e.target)) {
         dropdown.style.display = "none";
       }
+      const cofDropdown = document.getElementById("co-founder-reply-dropdown");
+      const cofBell = document.getElementById("co-founder-bell");
+      if (cofDropdown && cofDropdown.style.display !== 'none' && cofBell && !cofDropdown.contains(e.target) && !cofBell.contains(e.target)) {
+        cofDropdown.style.display = "none";
+      }
     });
 
-    // Reposition dropdown on window scroll/resize so it stays anchored to bell
+    // Reposition dropdowns on window scroll/resize so they stay anchored to bells
     ['scroll', 'resize'].forEach(evt => {
       window.addEventListener(evt, () => {
         const dropdown = document.getElementById('super-admin-msg-dropdown');
@@ -2134,6 +2351,17 @@ service cloud.firestore {
             let left = rect.right - 360;
             if (left < 8) left = 8;
             dropdown.style.left = left + 'px';
+          }
+        }
+        const cofDropdown = document.getElementById('co-founder-reply-dropdown');
+        if (cofDropdown && cofDropdown.style.display !== 'none') {
+          const cofBell = document.getElementById('co-founder-bell');
+          if (cofBell) {
+            const rect = cofBell.getBoundingClientRect();
+            cofDropdown.style.top = (rect.bottom + 8) + 'px';
+            let left = rect.right - 360;
+            if (left < 8) left = 8;
+            cofDropdown.style.left = left + 'px';
           }
         }
       }, { passive: true });
