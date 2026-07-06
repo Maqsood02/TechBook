@@ -2342,6 +2342,7 @@ service cloud.firestore {
 
       if (!sectionId) {
         if (role === 'co_founder') {
+          window._isCofAccessingSection = false;
           document.querySelectorAll(".admin-section").forEach(sec => {
             sec.classList.remove("active");
             sec.style.display = "none";
@@ -2384,6 +2385,7 @@ service cloud.firestore {
       }
 
       if (role === 'co_founder') {
+        window._isCofAccessingSection = true;
         if (typeof window.selectRole === 'function') {
           window.selectRole('admin');
         }
