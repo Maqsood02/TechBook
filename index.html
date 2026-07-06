@@ -29,8 +29,8 @@
     }
     .modern-avatar-wrapper {
       position: relative;
-      width: 120px;
-      height: 120px;
+      width: 140px;
+      height: 140px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -60,23 +60,26 @@
     }
     .modern-avatar-inner {
       position: relative;
-      width: 108px;
-      height: 108px;
+      width: 124px;
+      height: 124px;
       border-radius: 50%;
       background: #ffffff;
       padding: 3px;
       z-index: 2;
       box-sizing: border-box;
+      overflow: hidden;
     }
     .modern-avatar-img {
       width: 100%;
       height: 100%;
       border-radius: 50%;
       object-fit: cover;
+      transform: scale(2.4);
+      transform-origin: 50% 72%;
       transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
     .modern-avatar-wrapper:hover .modern-avatar-img {
-      transform: scale(1.08);
+      transform: scale(2.6) rotate(3deg);
     }
     /* Force hide mobile navigation components on desktop view */
     @media (min-width: 768px) {
@@ -3661,8 +3664,8 @@
     <iframe id="pdf-viewer-frame" src="" style="flex:1;width:100%;border:none;background:#525659;"></iframe>
   </div>
 
-  <script type="module" src="js-v2/app.js?v=20260706h"></script>
-  <script type="module" src="js-v2/features/mobile-navigation.js?v=20260706h"></script>
+  <script type="module" src="js-v2/app.js?v=20260706i"></script>
+  <script type="module" src="js-v2/features/mobile-navigation.js?v=20260706i"></script>
 
   <!-- ══ FOUNDER MODAL ══ -->
   <div id="founder-modal"

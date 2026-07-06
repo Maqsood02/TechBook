@@ -883,8 +883,8 @@ import { $, val } from '../core/helpers.js';
               <div style="display: flex; align-items: center; gap: 20px; background: linear-gradient(135deg, rgba(61, 90, 241, 0.08) 0%, rgba(168, 85, 247, 0.08) 100%); border: 1.5px solid rgba(61, 90, 241, 0.15); padding: 20px; border-radius: 24px; backdrop-filter: blur(10px); margin-bottom: 24px; box-shadow: 0 10px 30px rgba(61, 90, 241, 0.04);">
                 <div style="position: relative; width: 90px; height: 90px; display: flex; align-items: center; justify-content: center;">
                   <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(45deg, #3d5af1, #a855f7, #ef4444, #10b981); background-size: 400% 400%; animation: spin-gradient 8s linear infinite; box-shadow: 0 4px 15px rgba(61, 90, 241, 0.2);"></div>
-                  <div style="position: relative; width: 80px; height: 80px; border-radius: 50%; background: #ffffff; padding: 2px; z-index: 2; box-sizing: border-box;">
-                    <img src="img/cof-profile.jpg?v=3" alt="Co-Founder" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" />
+                  <div style="position: relative; width: 80px; height: 80px; border-radius: 50%; background: #ffffff; padding: 2px; z-index: 2; box-sizing: border-box; overflow: hidden;">
+                    <img src="img/cof-profile.jpg?v=3" alt="Co-Founder" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; transform: scale(2.4); transform-origin: 50% 72%;" />
                   </div>
                   <span style="position: absolute; bottom: 4px; right: 4px; width: 15px; height: 15px; background: #22c55e; border: 2.5px solid #ffffff; border-radius: 50%; z-index: 10; box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);"></span>
                 </div>
