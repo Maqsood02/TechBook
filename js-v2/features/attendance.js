@@ -905,25 +905,44 @@ import { $, val } from '../core/helpers.js';
             headerCard.innerHTML = `
               <style>
                 @keyframes superAdminEntrance {
-                  0% { opacity: 0; transform: translateY(30px) scale(0.95); }
-                  100% { opacity: 1; transform: translateY(0) scale(1); }
+                  0% { opacity: 0; transform: translateY(18px); }
+                  100% { opacity: 1; transform: translateY(0); }
                 }
-                @keyframes superAdminFloat {
-                  0% { transform: translateY(0px); }
-                  50% { transform: translateY(-6px); }
-                  100% { transform: translateY(0px); }
+                @keyframes orbit-1 {
+                  0% { transform: translate(0, 0) scale(1); }
+                  50% { transform: translate(25px, -15px) scale(1.15); filter: blur(25px); }
+                  100% { transform: translate(0, 0) scale(1); }
+                }
+                @keyframes orbit-2 {
+                  0% { transform: translate(0, 0) scale(1); }
+                  50% { transform: translate(-25px, 20px) scale(0.9); filter: blur(35px); }
+                  100% { transform: translate(0, 0) scale(1); }
+                }
+                @keyframes card-shimmer {
+                  0% { left: -150%; }
+                  50% { left: 150%; }
+                  100% { left: 150%; }
+                }
+                @keyframes pulse-ring {
+                  0% { box-shadow: 0 8px 25px rgba(239, 68, 68, 0.25), 0 0 0 0px rgba(239, 68, 68, 0.4); }
+                  70% { box-shadow: 0 8px 30px rgba(139, 92, 246, 0.35), 0 0 0 12px rgba(139, 92, 246, 0); }
+                  100% { box-shadow: 0 8px 25px rgba(239, 68, 68, 0.25), 0 0 0 0px rgba(139, 92, 246, 0); }
                 }
               </style>
-              <div style="position: relative; display: flex; align-items: center; justify-content: space-between; gap: 24px; background: #ffffff; border: 1px solid rgba(226, 232, 240, 0.8); padding: 28px 36px; border-radius: 28px; margin-bottom: 28px; box-shadow: 0 20px 40px -10px rgba(61, 90, 241, 0.15), 0 0 30px rgba(168, 85, 247, 0.05) inset; overflow: hidden; animation: superAdminEntrance 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, superAdminFloat 6s ease-in-out infinite alternate; opacity: 0;">
-                <!-- Decorative background shapes -->
-                <div style="position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; background: radial-gradient(circle, rgba(168, 85, 247, 0.15) 0%, transparent 70%); border-radius: 50%; pointer-events: none;"></div>
-                <div style="position: absolute; bottom: -80px; left: 100px; width: 250px; height: 250px; background: radial-gradient(circle, rgba(61, 90, 241, 0.1) 0%, transparent 70%); border-radius: 50%; pointer-events: none;"></div>
+              <div style="position: relative; display: flex; align-items: center; justify-content: space-between; gap: 24px; background: #ffffff; border: 1px solid rgba(226, 232, 240, 0.8); padding: 28px 36px; border-radius: 28px; margin-bottom: 28px; box-shadow: 0 20px 40px -10px rgba(61, 90, 241, 0.15), 0 0 30px rgba(168, 85, 247, 0.03) inset; overflow: hidden; animation: superAdminEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0;">
+                
+                <!-- Sleek card shine overlay sweeping every 8s -->
+                <div style="position: absolute; top: 0; left: -150%; width: 60%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent); transform: skewX(-20deg); animation: card-shimmer 7s cubic-bezier(0.3, 1, 0.3, 1) infinite; pointer-events: none; z-index: 2;"></div>
+
+                <!-- Decorative slowly orbiting background shapes -->
+                <div style="position: absolute; top: -50px; right: -50px; width: 220px; height: 220px; background: radial-gradient(circle, rgba(168, 85, 247, 0.2) 0%, transparent 70%); border-radius: 50%; pointer-events: none; animation: orbit-1 12s ease-in-out infinite alternate;"></div>
+                <div style="position: absolute; bottom: -80px; left: 100px; width: 270px; height: 270px; background: radial-gradient(circle, rgba(61, 90, 241, 0.12) 0%, transparent 70%); border-radius: 50%; pointer-events: none; animation: orbit-2 15s ease-in-out infinite alternate;"></div>
                 
                 <div style="display: flex; align-items: center; gap: 28px; flex: 1; z-index: 1;">
                   <!-- Avatar Container -->
-                  <div style="position: relative; width: 140px; height: 140px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);" onmouseover="this.style.transform='scale(1.05) rotate(-2deg)';" onmouseout="this.style.transform='none';">
+                  <div style="position: relative; width: 140px; height: 140px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); border-radius: 50%; animation: pulse-ring 3s infinite;" onmouseover="this.style.transform='scale(1.04) rotate(-1.5deg)';" onmouseout="this.style.transform='none';">
                     <!-- Spinning glowing border -->
-                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(45deg, #f59e0b, #ef4444, #ec4899, #8b5cf6, #3b82f6); background-size: 300% 300%; animation: spin-gradient 6s linear infinite reverse; box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);"></div>
+                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(45deg, #f59e0b, #ef4444, #ec4899, #8b5cf6, #3b82f6); background-size: 300% 300%; animation: spin-gradient 6s linear infinite reverse;"></div>
                     <div style="position: absolute; top: -2px; left: -2px; width: calc(100% + 4px); height: calc(100% + 4px); border-radius: 50%; background: inherit; filter: blur(10px); opacity: 0.5; z-index: -1;"></div>
                     
                     <!-- Inner avatar -->
