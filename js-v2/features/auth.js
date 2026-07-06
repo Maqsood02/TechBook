@@ -767,6 +767,14 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
           }
         }
       } else {
+        // If admin session is active (e.g. Firebase Auth blocked), skip student UI reset
+        const adminActive = localStorage.getItem('techbook_admin_logged_in') === 'true' || window.adminLoggedIn;
+        if (adminActive) {
+          console.log("Auth state: no Firebase user, but admin session is active — skipping UI reset.");
+          if (typeof window.updateNavbarLoginBtn === 'function') window.updateNavbarLoginBtn();
+          return;
+        }
+
         // Hide modal if open
         if (typeof window.hideVerifyModal === 'function') window.hideVerifyModal();
 
@@ -1430,14 +1438,15 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
           if (isMasterBypass) {
             const bypassRole = username === 'cof@techbook' ? 'co_founder' : 'super_admin';
             console.log('⚡ Instant bypass applied for:', username);
+            // Set flags FIRST so auth state guard won't interfere
+            window.adminLoggedIn = true;
             window._currentAdminRole = bypassRole;
             window._currentAdminUser = username;
+            localStorage.setItem('techbook_admin_logged_in', 'true');
+            localStorage.setItem('techbook_admin_user', username);
+            localStorage.setItem('techbook_admin_role', bypassRole);
+            localStorage.removeItem('techbook_student_logged_in');
             if (window.loginAdmin) window.loginAdmin(username, bypassRole);
-            else {
-              localStorage.setItem('techbook_admin_logged_in', 'true');
-              localStorage.setItem('techbook_admin_user', username);
-              localStorage.setItem('techbook_admin_role', bypassRole);
-            }
             msg('unified-login-msg', 'Login successful! Redirecting...', 'success');
             window.selectRole(bypassRole === 'co_founder' ? 'cof' : 'admin');
             $('unified-username').value = '';
