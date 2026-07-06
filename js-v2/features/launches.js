@@ -66,9 +66,9 @@ window.adminSaveLaunch = async function() {
       const docRef = await addDoc(collection(db, 'launches'), launchData);
       if (msgEl) msgEl.innerHTML = '<span style="color:#10b981;">✅ Feature launched successfully!</span>';
 
-      // Send email notifications to all verified students if activated immediately
-      const isImmediate = !launchData.scheduledAt || launchData.scheduledAt <= Date.now();
-      if (isImmediate) {
+      // Send email notifications to all verified students if active and scheduled within the next 24 hours
+      const shouldNotify = isActive && (!launchData.scheduledAt || (launchData.scheduledAt - Date.now()) < 86400000);
+      if (shouldNotify) {
         if (msgEl) msgEl.innerHTML += '<br><span style="color:#6366f1;">📨 Sending notification emails to all verified students...</span>';
         
         fetch(`${API_BASE_URL || 'https://tech-book-two.vercel.app'}/api/notify-launch`, {
@@ -267,6 +267,8 @@ window.updateFloatingBannerVisibility = function() {
   }
 };
 
+let _launchTimerId = null;
+
 window.initLaunchListener = function() {
   const floatingCard = document.getElementById('landing-floating-download');
   if (!floatingCard) return;
@@ -274,7 +276,13 @@ window.initLaunchListener = function() {
   // Listen to any changes in launches
   const q = query(collection(db, 'launches'), where('active', '==', true));
   onSnapshot(q, (snap) => {
+    if (_launchTimerId) {
+      clearTimeout(_launchTimerId);
+      _launchTimerId = null;
+    }
+
     let activeLaunch = null;
+    let nextScheduledLaunch = null;
     const now = Date.now();
 
     snap.forEach(docSnap => {
@@ -282,6 +290,8 @@ window.initLaunchListener = function() {
       // Verify if scheduled time has passed
       if (!data.scheduledAt || data.scheduledAt <= now) {
         activeLaunch = { id: docSnap.id, ...data };
+      } else {
+        nextScheduledLaunch = { id: docSnap.id, ...data };
       }
     });
 
@@ -302,6 +312,18 @@ window.initLaunchListener = function() {
       floatingCard.classList.remove('no-active-launch');
     } else {
       floatingCard.classList.add('no-active-launch');
+      
+      // If there is a scheduled launch in the future, set a timer to activate it
+      if (nextScheduledLaunch) {
+        const delay = nextScheduledLaunch.scheduledAt - Date.now();
+        if (delay > 0) {
+          console.log(`⏱️ Setting client-side activation timer for scheduled launch in ${delay} ms`);
+          _launchTimerId = setTimeout(() => {
+            console.log("⏰ Scheduled launch activation time reached. Refreshing banner state.");
+            window.initLaunchListener();
+          }, delay + 1000); // add a tiny buffer
+        }
+      }
     }
     window.updateFloatingBannerVisibility();
   }, (err) => {
