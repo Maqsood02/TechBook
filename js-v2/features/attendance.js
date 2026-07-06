@@ -501,7 +501,7 @@ import { $, val } from '../core/helpers.js';
         const cofRef = doc(db, "admins", "cof@techbook");
         console.log("🛠️ Enforcing default co-founder in Firestore...");
         await setDoc(cofRef, {
-          name: "Co-Founder",
+          name: "Chinmay K V",
           passwordHash: CryptoJS.SHA256("COF@123").toString(),
           role: "co_founder",
           createdAt: serverTimestamp()
@@ -599,7 +599,7 @@ import { $, val } from '../core/helpers.js';
           // Document does not exist - check for first-time login
           if (isMasterBypass) {
             const newHash = CryptoJS.SHA256(password).toString();
-            const bypassName = username === 'cof@techbook' ? "Co-Founder" : "TechBook Support";
+            const bypassName = username === 'cof@techbook' ? "Chinmay K V" : "TechBook Support";
             const bypassRole = username === 'cof@techbook' ? "co_founder" : "super_admin";
             try {
               await setDoc(doc(db, "admins", username), {
@@ -880,19 +880,22 @@ import { $, val } from '../core/helpers.js';
         if (headerCard) {
           if (role === 'co_founder') {
             headerCard.innerHTML = `
-              <div style="display: flex; align-items: center; gap: 18px; background: linear-gradient(135deg, rgba(61, 90, 241, 0.08) 0%, rgba(168, 85, 247, 0.08) 100%); border: 1.5px solid rgba(61, 90, 241, 0.15); padding: 18px; border-radius: 20px; backdrop-filter: blur(10px); margin-bottom: 24px; box-shadow: 0 10px 30px rgba(61, 90, 241, 0.04);">
-                <div style="position: relative;">
-                  <img src="img/cof-profile.jpg?v=1" alt="Co-Founder" style="width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 3px solid #ffffff; box-shadow: 0 4px 15px rgba(61, 90, 241, 0.25);" />
-                  <span style="position: absolute; bottom: 2px; right: 2px; width: 14px; height: 14px; background: #22c55e; border: 2px solid #ffffff; border-radius: 50%;"></span>
+              <div style="display: flex; align-items: center; gap: 20px; background: linear-gradient(135deg, rgba(61, 90, 241, 0.08) 0%, rgba(168, 85, 247, 0.08) 100%); border: 1.5px solid rgba(61, 90, 241, 0.15); padding: 20px; border-radius: 24px; backdrop-filter: blur(10px); margin-bottom: 24px; box-shadow: 0 10px 30px rgba(61, 90, 241, 0.04);">
+                <div style="position: relative; width: 90px; height: 90px; display: flex; align-items: center; justify-content: center;">
+                  <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(45deg, #3d5af1, #a855f7, #ef4444, #10b981); background-size: 400% 400%; animation: spin-gradient 8s linear infinite; box-shadow: 0 4px 15px rgba(61, 90, 241, 0.2);"></div>
+                  <div style="position: relative; width: 80px; height: 80px; border-radius: 50%; background: #ffffff; padding: 2px; z-index: 2; box-sizing: border-box;">
+                    <img src="img/cof-profile.jpg?v=3" alt="Co-Founder" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" />
+                  </div>
+                  <span style="position: absolute; bottom: 4px; right: 4px; width: 15px; height: 15px; background: #22c55e; border: 2.5px solid #ffffff; border-radius: 50%; z-index: 10; box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);"></span>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 4px;">
                   <div style="display: flex; align-items: center; gap: 8px;">
-                    <h2 style="margin: 0; font-size: 20px; font-weight: 800; color: #111827; font-family: 'Poppins', sans-serif;">Maqsood M D</h2>
-                    <span style="background: linear-gradient(135deg, #ef4444, #f43f5e); color: #ffffff; font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.8px; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);">Co-Founder</span>
+                    <h2 style="margin: 0; font-size: 22px; font-weight: 800; color: #111827; font-family: 'Poppins', sans-serif; letter-spacing: -0.5px;">Chinmay K V</h2>
+                    <span style="background: linear-gradient(135deg, #3d5af1, #a855f7); color: #ffffff; font-size: 9.5px; font-weight: 800; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.8px; box-shadow: 0 2px 8px rgba(61, 90, 241, 0.25);">Co-Founder</span>
                   </div>
-                  <p style="margin: 0; font-size: 13px; color: #4b5563; font-weight: 500; font-family: 'Poppins', sans-serif;">TechBook Operations & Development</p>
-                  <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: #10b981; font-weight: 600; margin-top: 2px;">
-                    <span style="display: inline-block; width: 6px; height: 6px; background: #10b981; border-radius: 50%;"></span>
+                  <p style="margin: 0; font-size: 13.5px; color: #4b5563; font-weight: 600; font-family: 'Poppins', sans-serif;">TechBook Operations & Development</p>
+                  <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: #10b981; font-weight: 700; margin-top: 2px;">
+                    <span style="display: inline-block; width: 6px; height: 6px; background: #10b981; border-radius: 50%; animation: blink 1.5s infinite;"></span>
                     All Systems Online
                   </div>
                 </div>

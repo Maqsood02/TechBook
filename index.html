@@ -19,6 +19,65 @@
       0%, 100% { opacity: 1; }
       50% { opacity: 0.4; }
     }
+    @keyframes spin-gradient {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes float-avatar {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+    .modern-avatar-wrapper {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: float-avatar 6s ease-in-out infinite;
+    }
+    .modern-avatar-border {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: linear-gradient(45deg, #3d5af1, #a855f7, #ef4444, #10b981);
+      background-size: 400% 400%;
+      animation: spin-gradient 8s linear infinite;
+      box-shadow: 0 8px 32px rgba(61, 90, 241, 0.25);
+    }
+    .modern-avatar-border::before {
+      content: '';
+      position: absolute;
+      top: -4px; left: -4px; right: -4px; bottom: -4px;
+      border-radius: 50%;
+      background: inherit;
+      filter: blur(12px);
+      opacity: 0.6;
+      z-index: -1;
+    }
+    .modern-avatar-inner {
+      position: relative;
+      width: 108px;
+      height: 108px;
+      border-radius: 50%;
+      background: #ffffff;
+      padding: 3px;
+      z-index: 2;
+      box-sizing: border-box;
+    }
+    .modern-avatar-img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .modern-avatar-wrapper:hover .modern-avatar-img {
+      transform: scale(1.08);
+    }
     /* Force hide mobile navigation components on desktop view */
     @media (min-width: 768px) {
       .mobile-bottom-nav,
@@ -3029,16 +3088,19 @@
             <!-- 1. Glowing Hero Greeting Card -->
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 20px; background: linear-gradient(135deg, rgba(61, 90, 241, 0.08) 0%, rgba(168, 85, 247, 0.08) 100%); border: 1.5px solid rgba(61, 90, 241, 0.15); padding: 24px; border-radius: 24px; backdrop-filter: blur(15px); margin-bottom: 24px; box-shadow: 0 10px 30px rgba(61, 90, 241, 0.04); flex-wrap: wrap;">
               <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
-                <div style="position: relative;">
-                  <img src="img/cof-profile.jpg?v=2" alt="Co-Founder Profile" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 4px solid #ffffff; box-shadow: 0 4px 20px rgba(61, 90, 241, 0.3);" />
-                  <span style="position: absolute; bottom: 4px; right: 4px; width: 16px; height: 16px; background: #22c55e; border: 3px solid #ffffff; border-radius: 50%; box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);"></span>
+                <div class="modern-avatar-wrapper">
+                  <div class="modern-avatar-border"></div>
+                  <div class="modern-avatar-inner">
+                    <img src="img/cof-profile.jpg?v=3" alt="Chinmay K V" class="modern-avatar-img" />
+                  </div>
+                  <span style="position: absolute; bottom: 8px; right: 8px; width: 18px; height: 18px; background: #22c55e; border: 3px solid #ffffff; border-radius: 50%; box-shadow: 0 0 12px rgba(34, 197, 94, 0.6); z-index: 10;"></span>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 4px;">
                   <div style="display: flex; align-items: center; gap: 8px;">
-                    <h1 style="margin: 0; font-size: 22px; font-weight: 800; color: #111827;">Welcome back, Maqsood M D!</h1>
-                    <span style="background: linear-gradient(135deg, #ef4444, #f43f5e); color: #ffffff; font-size: 10px; font-weight: 800; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.8px; box-shadow: 0 3px 10px rgba(239, 68, 68, 0.25);">Co-Founder</span>
+                    <h1 style="margin: 0; font-size: 24px; font-weight: 800; color: #111827; letter-spacing: -0.5px;">Welcome back, Chinmay K V!</h1>
+                    <span style="background: linear-gradient(135deg, #3d5af1, #a855f7); color: #ffffff; font-size: 10px; font-weight: 800; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.8px; box-shadow: 0 3px 10px rgba(61, 90, 241, 0.25);">Co-Founder</span>
                   </div>
-                  <p style="margin: 0; font-size: 14px; color: #4b5563; font-weight: 500;">TechBook Operations & Engineering Executive Portal</p>
+                  <p style="margin: 0; font-size: 14.5px; color: #4b5563; font-weight: 600;">TechBook Operations & Engineering Executive Portal</p>
                   <div style="display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: #10b981; font-weight: 700; margin-top: 2px;">
                     <span style="display: inline-block; width: 8px; height: 8px; background: #10b981; border-radius: 50%; animation: blink 1.5s infinite;"></span>
                     All Operational Subsystems Nominal
@@ -3599,8 +3661,8 @@
     <iframe id="pdf-viewer-frame" src="" style="flex:1;width:100%;border:none;background:#525659;"></iframe>
   </div>
 
-  <script type="module" src="js-v2/app.js?v=20260706g"></script>
-  <script type="module" src="js-v2/features/mobile-navigation.js?v=20260706g"></script>
+  <script type="module" src="js-v2/app.js?v=20260706h"></script>
+  <script type="module" src="js-v2/features/mobile-navigation.js?v=20260706h"></script>
 
   <!-- ══ FOUNDER MODAL ══ -->
   <div id="founder-modal"
