@@ -977,23 +977,19 @@ import { $, val } from '../core/helpers.js';
                     <!-- Glowing unread badge -->
                     <span id="bell-badge" style="display: none; position: absolute; top: -4px; right: -4px; background: #ef4444; color: #ffffff; font-size: 10px; font-weight: 800; min-width: 18px; height: 18px; border-radius: 10px; padding: 0 4px; display: flex; align-items: center; justify-content: center; border: 3px solid #ffffff; box-shadow: 0 0 10px rgba(239, 68, 68, 0.6); animation: blink 1.5s infinite;">0</span>
                   </button>
-
-                  <!-- Messages Dropdown Menu -->
-                  <div id="super-admin-msg-dropdown" style="display: none; position: absolute; top: 60px; right: 0; width: 340px; background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 20px; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1); padding: 18px; z-index: 1000; overflow: hidden; animation: superAdminEntrance 0.3s ease;">
-                    <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 12px;">
-                      <h4 style="margin: 0; font-size: 15px; font-weight: 800; color: #0f172a; font-family: 'Poppins', sans-serif;">📩 Co-Founder Messages</h4>
-                      <button onclick="window.markAllFounderMessagesAsRead && window.markAllFounderMessagesAsRead()" style="background: none; border: none; color: #3d5af1; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Poppins', sans-serif;">Mark all read</button>
-                    </div>
-                    <div id="founder-messages-list" style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; font-family: 'Poppins', sans-serif;">
-                      <div style="text-align: center; padding: 20px; color: #94a3b8; font-size: 12.5px;">No messages received</div>
-                    </div>
-                  </div>
                 </div>
 
               </div>
             `;
-            // Initiate live messages listener
+            // Initiate live messages listener — also ensure the portal dropdown exists
             setTimeout(() => {
+              // Ensure the body-level dropdown portal is created so the listener can target #founder-messages-list
+              if (!document.getElementById('super-admin-msg-dropdown')) {
+                window.toggleFounderMessages && window.toggleFounderMessages();
+                // Immediately hide it after creation
+                const dd = document.getElementById('super-admin-msg-dropdown');
+                if (dd) dd.style.display = 'none';
+              }
               if (typeof listenFounderMessages === 'function') listenFounderMessages();
             }, 100);
           } else {
@@ -1945,9 +1941,41 @@ service cloud.firestore {
     };
 
     window.toggleFounderMessages = function() {
-      const dropdown = document.getElementById("super-admin-msg-dropdown");
-      if (!dropdown) return;
-      dropdown.style.display = (dropdown.style.display === "none" || !dropdown.style.display) ? "block" : "none";
+      let dropdown = document.getElementById("super-admin-msg-dropdown");
+      // Create the dropdown as a body-level fixed portal if it doesn't exist yet
+      if (!dropdown) {
+        dropdown = document.createElement('div');
+        dropdown.id = 'super-admin-msg-dropdown';
+        dropdown.style.cssText = 'display:none; position:fixed; width:360px; max-width:92vw; background:#ffffff; border:1.5px solid #e2e8f0; border-radius:20px; box-shadow:0 20px 50px rgba(0,0,0,0.18); padding:18px; z-index:99999; font-family:Poppins,sans-serif;';
+        dropdown.innerHTML = `
+          <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #f1f5f9; padding-bottom:10px; margin-bottom:12px;">
+            <h4 style="margin:0; font-size:15px; font-weight:800; color:#0f172a;">📩 Co-Founder Messages</h4>
+            <button onclick="window.markAllFounderMessagesAsRead && window.markAllFounderMessagesAsRead()" style="background:none; border:none; color:#3d5af1; font-size:11px; font-weight:700; cursor:pointer;">Mark all read</button>
+          </div>
+          <div id="founder-messages-list" style="max-height:300px; overflow-y:auto; display:flex; flex-direction:column; gap:10px;">
+            <div style="text-align:center; padding:20px; color:#94a3b8; font-size:12.5px;">No messages received</div>
+          </div>
+        `;
+        document.body.appendChild(dropdown);
+      }
+
+      const isHidden = dropdown.style.display === 'none' || !dropdown.style.display;
+      if (isHidden) {
+        // Position relative to the bell button
+        const bell = document.getElementById('super-admin-bell');
+        if (bell) {
+          const rect = bell.getBoundingClientRect();
+          dropdown.style.top = (rect.bottom + 8) + 'px';
+          // Align right edge of dropdown with right edge of bell
+          const dropdownWidth = 360;
+          let left = rect.right - dropdownWidth;
+          if (left < 8) left = 8; // Keep it on screen
+          dropdown.style.left = left + 'px';
+        }
+        dropdown.style.display = 'block';
+      } else {
+        dropdown.style.display = 'none';
+      }
     };
 
     window.markFounderMessageAsRead = async function(id) {
@@ -2040,9 +2068,26 @@ service cloud.firestore {
     document.addEventListener("click", (e) => {
       const dropdown = document.getElementById("super-admin-msg-dropdown");
       const bell = document.getElementById("super-admin-bell");
-      if (dropdown && bell && !dropdown.contains(e.target) && !bell.contains(e.target)) {
+      if (dropdown && dropdown.style.display !== 'none' && bell && !dropdown.contains(e.target) && !bell.contains(e.target)) {
         dropdown.style.display = "none";
       }
+    });
+
+    // Reposition dropdown on window scroll/resize so it stays anchored to bell
+    ['scroll', 'resize'].forEach(evt => {
+      window.addEventListener(evt, () => {
+        const dropdown = document.getElementById('super-admin-msg-dropdown');
+        if (dropdown && dropdown.style.display !== 'none') {
+          const bell = document.getElementById('super-admin-bell');
+          if (bell) {
+            const rect = bell.getBoundingClientRect();
+            dropdown.style.top = (rect.bottom + 8) + 'px';
+            let left = rect.right - 360;
+            if (left < 8) left = 8;
+            dropdown.style.left = left + 'px';
+          }
+        }
+      }, { passive: true });
     });
 
     // Expose dashboard loading functions globally
