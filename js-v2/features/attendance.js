@@ -28,10 +28,6 @@ import { $, val } from '../core/helpers.js';
             </div>
           </div>
         `;
-        const welcomeEl = document.getElementById("mobile-welcome-name");
-        if (welcomeEl) {
-          welcomeEl.textContent = `Hello, ${firstName}! 👋`;
-        }
       }
 
       function applyFeatures(features) {
@@ -54,53 +50,39 @@ import { $, val } from '../core/helpers.js';
           }
         }
 
-        // Hide/show mobile navigation items based on feature toggles
-        const mobAttendance = document.getElementById("mob-nav-attendance");
-        if (mobAttendance) {
-          if (features.attendanceEnabled !== false) mobAttendance.style.display = "";
-          else mobAttendance.style.display = "none";
+        // Hide mobile bottom nav buttons based on toggles
+        const mnavAttendance = document.getElementById('mnav-attendance');
+        if (mnavAttendance) {
+          if (features.attendanceEnabled !== false) mnavAttendance.style.display = "";
+          else mnavAttendance.style.display = "none";
+        }
+        const mnavQuiz = document.getElementById('mnav-quiz');
+        if (mnavQuiz) {
+          if (features.quizEnabled !== false) mnavQuiz.style.display = "";
+          else mnavQuiz.style.display = "none";
+        }
+        const mnavAcademics = document.getElementById('mnav-academics');
+        if (mnavAcademics) {
+          const libraryEnabled = (features.notesEnabled !== false || features.qbankEnabled !== false || features.pyqEnabled !== false);
+          if (libraryEnabled) mnavAcademics.style.display = "";
+          else mnavAcademics.style.display = "none";
         }
 
-        const mobQuiz = document.getElementById("mob-nav-quiz");
-        if (mobQuiz) {
-          if (features.quizEnabled !== false) mobQuiz.style.display = "";
-          else mobQuiz.style.display = "none";
+        // Hide bottom sheet items based on toggles
+        const msheetTimetable = document.getElementById('msheet-ia-timetable');
+        if (msheetTimetable) {
+          if (features.iaTimetableEnabled !== false) msheetTimetable.style.display = "";
+          else msheetTimetable.style.display = "none";
         }
-
-        // Hide Library tab if Notes, Q-Bank, and PYQs are all disabled
-        const mobLibrary = document.getElementById("mob-nav-library");
-        const libraryEnabled = (features.notesEnabled !== false) || (features.qbankEnabled !== false) || (features.pyqEnabled !== false);
-        if (mobLibrary) {
-          if (libraryEnabled) mobLibrary.style.display = "";
-          else mobLibrary.style.display = "none";
+        const msheetQuizHistory = document.getElementById('msheet-quiz-history');
+        if (msheetQuizHistory) {
+          if (features.quizHistoryEnabled !== false && features.quizEnabled !== false) msheetQuizHistory.style.display = "";
+          else msheetQuizHistory.style.display = "none";
         }
-
-        // Hide individual subtabs inside the mobile Academics/Library view
-        const mobSubtabNotes = document.getElementById("mob-subtab-notes");
-        if (mobSubtabNotes) {
-          if (features.notesEnabled !== false) mobSubtabNotes.style.display = "";
-          else mobSubtabNotes.style.display = "none";
-        }
-
-        const mobSubtabQbank = document.getElementById("mob-subtab-qbank");
-        if (mobSubtabQbank) {
-          if (features.qbankEnabled !== false) mobSubtabQbank.style.display = "";
-          else mobSubtabQbank.style.display = "none";
-        }
-
-        const mobSubtabPyq = document.getElementById("mob-subtab-pyq");
-        if (mobSubtabPyq) {
-          if (features.pyqEnabled !== false) mobSubtabPyq.style.display = "";
-          else mobSubtabPyq.style.display = "none";
-        }
-
-        // Fallback for active subtab if it gets disabled
-        const activeSubtabBtn = document.querySelector(".mobile-subtab-btn.active");
-        if (activeSubtabBtn && activeSubtabBtn.style.display === "none") {
-          const visibleSubtab = Array.from(document.querySelectorAll(".mobile-subtab-btn")).find(btn => btn.style.display !== "none");
-          if (visibleSubtab) {
-            visibleSubtab.click();
-          }
+        const msheetHistory = document.getElementById('msheet-history');
+        if (msheetHistory) {
+          if (features.historyEnabled !== false) msheetHistory.style.display = "";
+          else msheetHistory.style.display = "none";
         }
       }
 

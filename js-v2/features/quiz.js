@@ -17,15 +17,6 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
       const logoutBtn = document.getElementById('btn-logout');
       const tabContent = document.getElementById('student-tab-content');
 
-      const learnerCard = document.getElementById('mob-learner-card');
-      if (learnerCard) {
-        if (!tab) {
-          learnerCard.style.display = 'flex';
-        } else {
-          learnerCard.style.display = 'none';
-        }
-      }
-
       if (typeof window.trackUserActivity === 'function') {
         const tabNameMap = {
           'attendance': 'Viewing Attendance Page',

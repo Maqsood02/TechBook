@@ -3,16 +3,18 @@
 // Config & Utilities
 import './core/firebase.js';
 import './core/helpers.js';
-import './core/activity_tracker.js?v=20260705e';
+import './core/activity_tracker.js?v=20260706';
 
 // Features & Components
 import './features/auth.js';
-import './features/promos.js?v=20260705g';
-import './features/attendance.js?v=20260705g';
+import './features/admin-panels.js?v=20260706';
+import './features/mobile-navigation.js?v=20260706';
+import './features/promos.js?v=20260706';
+import './features/attendance.js?v=20260706';
 import './features/notes.js';
 import './features/qbank.js';
 import './features/pyq.js';
-import './features/quiz.js?v=20260705g';
+import './features/quiz.js';
 import './features/chatbot.js';
 import './features/manage_students.js';
 
