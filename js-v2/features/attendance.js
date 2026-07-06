@@ -2342,7 +2342,6 @@ service cloud.firestore {
 
       if (!sectionId) {
         if (role === 'co_founder') {
-          window._isCofAccessingSection = false;
           document.querySelectorAll(".admin-section").forEach(sec => {
             sec.classList.remove("active");
             sec.style.display = "none";
@@ -2356,6 +2355,11 @@ service cloud.firestore {
           }
           if (!window._adminHistoryNavLock) {
             window.history.pushState({ role: 'cof', section: null }, '', '#cof');
+          }
+          const adminArea = document.getElementById("admin-area");
+          if (adminArea) {
+            adminArea.classList.add("hidden");
+            adminArea.style.display = "none";
           }
           return;
         }
@@ -2380,9 +2384,13 @@ service cloud.firestore {
       }
 
       if (role === 'co_founder') {
-        window._isCofAccessingSection = true;
         if (typeof window.selectRole === 'function') {
           window.selectRole('admin');
+        }
+        const adminArea = document.getElementById("admin-area");
+        if (adminArea) {
+          adminArea.classList.remove("hidden");
+          adminArea.style.display = "block";
         }
       }
 
