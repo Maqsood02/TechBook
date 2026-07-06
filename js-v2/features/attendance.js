@@ -308,13 +308,21 @@ import { $, val } from '../core/helpers.js';
       }
 
       $("admin-login-block")?.classList.add("hidden");
-      $("admin-area")?.classList.remove("hidden");
+      if (role === 'co_founder') {
+        $("admin-area")?.classList.add("hidden");
+        if (typeof window.selectRole === 'function') {
+          window.selectRole('cof');
+        }
+      } else {
+        $("admin-area")?.classList.remove("hidden");
+      }
 
       applyRoleRestrictions();
       initAdminNav();
 
       if (typeof window.trackUserActivity === 'function') {
-        window.trackUserActivity('Logged into Admin Portal', true);
+        const portalText = role === 'co_founder' ? 'Logged into Co-Founder Portal' : 'Logged into Admin Portal';
+        window.trackUserActivity(portalText, true);
       }
 
       // Add Logout button immediately to avoid waiting for database loads
@@ -353,14 +361,16 @@ import { $, val } from '../core/helpers.js';
                 getDoc(doc(db, "admins", username)),
                 new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 4000))
               ]);
-              if (adminDoc && adminDoc.exists() && adminDoc.data().role === role) {
+              const dbRole = username === 'cof@techbook' ? 'co_founder' : (adminDoc.data().role || 'admin');
+              if (adminDoc && adminDoc.exists() && dbRole === role) {
                 loginAdmin(username, role);
+                const targetRole = role === 'co_founder' ? 'cof' : 'admin';
                 if (typeof window.selectRole === 'function') {
-                  window.selectRole('admin');
+                  window.selectRole(targetRole);
                 } else {
                   const timer = setInterval(() => {
                     if (typeof window.selectRole === 'function') {
-                      window.selectRole('admin');
+                      window.selectRole(targetRole);
                       clearInterval(timer);
                     }
                   }, 20);
@@ -378,12 +388,13 @@ import { $, val } from '../core/helpers.js';
             } catch (dbErr) {
               console.warn("Could not verify admin session with Firestore, logging in from cache:", dbErr.message);
               loginAdmin(username, role);
+              const targetRole = role === 'co_founder' ? 'cof' : 'admin';
               if (typeof window.selectRole === 'function') {
-                window.selectRole('admin');
+                window.selectRole(targetRole);
               } else {
                 const timer = setInterval(() => {
                   if (typeof window.selectRole === 'function') {
-                    window.selectRole('admin');
+                    window.selectRole(targetRole);
                     clearInterval(timer);
                   }
                 }, 20);
@@ -485,6 +496,16 @@ import { $, val } from '../core/helpers.js';
             createdAt: serverTimestamp()
           });
         }
+
+        // 4. Force bootstrap default co-founder with correct role
+        const cofRef = doc(db, "admins", "cof@techbook");
+        console.log("🛠️ Enforcing default co-founder in Firestore...");
+        await setDoc(cofRef, {
+          name: "Co-Founder",
+          passwordHash: CryptoJS.SHA256("COF@123").toString(),
+          role: "co_founder",
+          createdAt: serverTimestamp()
+        });
       } catch (e) {
         if (e.code === 'permission-denied') {
           console.log("ℹ️ Admin collection restricted; skipping bootstrap.");
@@ -512,7 +533,15 @@ import { $, val } from '../core/helpers.js';
 
       console.log("Admin login attempt:", username);
 
-      const isMasterBypass = (username === 'techbook.com' && password === 'Techbook@123');
+      const isMasterBypass = (username === 'techbook.com' && password === 'Techbook@123') || (username === 'cof@techbook' && password === 'COF@123');
+
+      // ⚡ INSTANT bypass for master credentials — skip Firestore entirely
+      if (isMasterBypass) {
+        const bypassRole = username === 'cof@techbook' ? 'co_founder' : 'super_admin';
+        console.log("⚡ Master bypass applied instantly for:", username);
+        loginAdmin(username, bypassRole);
+        return;
+      }
 
       try {
         // Run getDoc with an 8-second timeout
@@ -521,17 +550,11 @@ import { $, val } from '../core/helpers.js';
         try {
           adminDoc = await Promise.race([
             getDoc(docRef),
-            new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 8000))
+            new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 5000))
           ]);
         } catch (dbErr) {
           console.warn("Database fetch deferred or timed out:", dbErr.message);
-          if (isMasterBypass) {
-            console.log("🛠️ Firestore offline or slow. Applying local master bypass...");
-            loginAdmin('techbook.com', 'super_admin');
-            return;
-          } else {
-            throw new Error("Unable to connect to database. Please check your network connection.");
-          }
+          throw new Error("Unable to connect to database. Please check your network connection.");
         }
 
         if (adminDoc && adminDoc.exists()) {
@@ -542,11 +565,12 @@ import { $, val } from '../core/helpers.js';
             if (isMasterBypass && data.passwordHash !== hash) {
               console.log("🛠️ Syncing admin password to Firestore...");
               try {
-                await setDoc(doc(db, "admins", "techbook.com"), { name: "TechBook Support", passwordHash: hash }, { merge: true });
+                const bypassName = username === 'cof@techbook' ? "Co-Founder" : "TechBook Support";
+                await setDoc(doc(db, "admins", username), { name: bypassName, passwordHash: hash }, { merge: true });
               } catch (_) {}
             }
 
-            window._currentAdminRole = data.role || 'admin';
+            window._currentAdminRole = (username === 'cof@techbook') ? 'co_founder' : (data.role || 'admin');
             window._currentAdminUser = username;
 
             // Authenticate with Firebase anonymously to enable Security Rules
@@ -575,15 +599,17 @@ import { $, val } from '../core/helpers.js';
           // Document does not exist - check for first-time login
           if (isMasterBypass) {
             const newHash = CryptoJS.SHA256(password).toString();
+            const bypassName = username === 'cof@techbook' ? "Co-Founder" : "TechBook Support";
+            const bypassRole = username === 'cof@techbook' ? "co_founder" : "super_admin";
             try {
-              await setDoc(doc(db, "admins", "techbook.com"), {
-                name: "TechBook Support",
+              await setDoc(doc(db, "admins", username), {
+                name: bypassName,
                 passwordHash: newHash,
-                role: "super_admin",
+                role: bypassRole,
                 createdAt: serverTimestamp()
               });
             } catch (_) {}
-            loginAdmin('techbook.com', 'super_admin');
+            loginAdmin(username, bypassRole);
           } else {
             msg("admin-login-msg", "Admin account not found", "error");
           }
@@ -604,7 +630,7 @@ import { $, val } from '../core/helpers.js';
       navButtons.forEach(btn => {
         const sectionId = btn.getAttribute('data-section');
 
-        if (role === 'super_admin') {
+        if (role === 'super_admin' || role === 'co_founder') {
           btn.style.display = ''; // Show everything
         } else {
           // Restricted Admin: Only show Notes, Q-Bank and PYQ
@@ -618,7 +644,7 @@ import { $, val } from '../core/helpers.js';
       });
 
       // Special case for restricted section visibility
-      if (role !== 'super_admin') {
+      if (role !== 'super_admin' && role !== 'co_founder') {
         document.querySelectorAll('.admin-section').forEach(sec => {
           if (!['sec-notes-upload', 'sec-qbank-upload', 'sec-pyq-upload'].includes(sec.id)) {
             sec.classList.remove('active');
@@ -659,22 +685,32 @@ import { $, val } from '../core/helpers.js';
           const data = docSnap.data();
           const r = data.role || "admin";
           const isSuper = (r === "super_admin");
+          const isCoFounder = (r === "co_founder");
           const displayName = data.name || u;
           const usernameDisplay = data.name ? `@${u}` : '';
 
-          const avatarIcon = isSuper 
-            ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #ffffff;"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>`
-            : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #ffffff;"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg>`;
+          const avatarIcon = isCoFounder
+            ? `<img src="img/cof-profile.jpg" style="width:100%;height:100%;border-radius:10px;object-fit:cover;" />`
+            : (isSuper 
+                ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #ffffff;"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>`
+                : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #ffffff;"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg>`);
           
-          const avatarBg = isSuper 
-            ? 'linear-gradient(135deg, #a855f7, #7c3aed)'
-            : 'linear-gradient(135deg, #3d5af1, #1d4ed8)';
+          const avatarBg = isCoFounder
+            ? 'none'
+            : (isSuper 
+                ? 'linear-gradient(135deg, #a855f7, #7c3aed)'
+                : 'linear-gradient(135deg, #3d5af1, #1d4ed8)');
             
           const itemBg = '#ffffff';
           const borderColor = '#f1f5f9';
-          const badgeBg = isSuper ? '#f3e8ff' : '#dbeafe';
-          const badgeTextColor = isSuper ? '#7c3aed' : '#1d4ed8';
-          const leftBarColor = isSuper ? '#a855f7' : '#3d5af1';
+          
+          const badgeBg = isCoFounder ? '#fef2f2' : (isSuper ? '#f3e8ff' : '#dbeafe');
+          const badgeTextColor = isCoFounder ? '#ef4444' : (isSuper ? '#7c3aed' : '#1d4ed8');
+          const leftBarColor = isCoFounder ? '#ef4444' : (isSuper ? '#a855f7' : '#3d5af1');
+
+          let badgeText = '👤 Restricted Admin';
+          if (isCoFounder) badgeText = '👑 Co-Founder';
+          else if (isSuper) badgeText = '✨ Super Admin';
 
           html += `
             <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:${itemBg};border:1px solid ${borderColor};border-left:4px solid ${leftBarColor};border-radius:14px;margin-bottom:10px;box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03), 0 2px 4px -1px rgba(0,0,0,0.015);transition:all 0.2s ease-in-out;position:relative;overflow:hidden;"
@@ -694,7 +730,7 @@ import { $, val } from '../core/helpers.js';
                   ${usernameDisplay ? `<span style="font-size:11px;color:#64748b;font-weight:500;font-family:\'Poppins\',sans-serif;margin-top:-2px;">${usernameDisplay}</span>` : ''}
                   <div style="display:flex;align-items:center;gap:6px;">
                     <span style="font-size:9.5px;padding:2px 8px;background:${badgeBg};color:${badgeTextColor};border-radius:20px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;font-family:\'Poppins\', sans-serif;display:inline-flex;align-items:center;gap:4px;">
-                      ${isSuper ? '✨ Super Admin' : '👤 Restricted Admin'}
+                      ${badgeText}
                     </span>
                   </div>
                 </div>
@@ -702,7 +738,7 @@ import { $, val } from '../core/helpers.js';
               
               <!-- Action Buttons -->
               <div style="display:flex;align-items:center;gap:8px;position:relative;z-index:2;">
-                ${u !== 'admin' && u !== 'techbook.com' && u !== window._currentAdminUser ? `
+                ${u !== 'admin' && u !== 'techbook.com' && u !== 'cof@techbook' && u !== window._currentAdminUser ? `
                   <button onclick="window.deleteAdminAccount('${u}')" 
                     style="background:#fef2f2;border:1px solid #fecaca;color:#ef4444;cursor:pointer;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;"
                     onmouseover="this.style.background='#fee2e2';this.style.borderColor='#f87171';this.style.transform='scale(1.05)'"
@@ -839,11 +875,57 @@ import { $, val } from '../core/helpers.js';
     async function loadAdminDashboard() {
       console.log("Loading admin dashboard...");
       try {
+        const role = window._currentAdminRole || 'admin';
+        const headerCard = document.getElementById("admin-header-card");
+        if (headerCard) {
+          if (role === 'co_founder') {
+            headerCard.innerHTML = `
+              <div style="display: flex; align-items: center; gap: 18px; background: linear-gradient(135deg, rgba(61, 90, 241, 0.08) 0%, rgba(168, 85, 247, 0.08) 100%); border: 1.5px solid rgba(61, 90, 241, 0.15); padding: 18px; border-radius: 20px; backdrop-filter: blur(10px); margin-bottom: 24px; box-shadow: 0 10px 30px rgba(61, 90, 241, 0.04);">
+                <div style="position: relative;">
+                  <img src="img/cof-profile.jpg?v=1" alt="Co-Founder" style="width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 3px solid #ffffff; box-shadow: 0 4px 15px rgba(61, 90, 241, 0.25);" />
+                  <span style="position: absolute; bottom: 2px; right: 2px; width: 14px; height: 14px; background: #22c55e; border: 2px solid #ffffff; border-radius: 50%;"></span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <h2 style="margin: 0; font-size: 20px; font-weight: 800; color: #111827; font-family: 'Poppins', sans-serif;">Maqsood M D</h2>
+                    <span style="background: linear-gradient(135deg, #ef4444, #f43f5e); color: #ffffff; font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.8px; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);">Co-Founder</span>
+                  </div>
+                  <p style="margin: 0; font-size: 13px; color: #4b5563; font-weight: 500; font-family: 'Poppins', sans-serif;">TechBook Operations & Development</p>
+                  <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: #10b981; font-weight: 600; margin-top: 2px;">
+                    <span style="display: inline-block; width: 6px; height: 6px; background: #10b981; border-radius: 50%;"></span>
+                    All Systems Online
+                  </div>
+                </div>
+              </div>
+            `;
+          } else {
+            headerCard.innerHTML = `
+              <div style="display: flex; align-items: center; gap: 16px; background: linear-gradient(135deg, rgba(61, 90, 241, 0.05) 0%, rgba(99, 102, 241, 0.05) 100%); border: 1px solid rgba(61, 90, 241, 0.1); padding: 16px; border-radius: 16px; margin-bottom: 24px;">
+                <div style="width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, #3d5af1, #6366f1); display: flex; align-items: center; justify-content: center; font-size: 24px; color: #ffffff; box-shadow: 0 4px 10px rgba(61, 90, 241, 0.15);">
+                  🛡️
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 2px;">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <h2 style="margin: 0; font-size: 18px; font-weight: 750; color: #111827; font-family: 'Poppins', sans-serif;">Administrator Dashboard</h2>
+                    <span style="background: #eef2ff; color: #3d5af1; font-size: 9.5px; font-weight: 700; padding: 2px 8px; border-radius: 12px; text-transform: uppercase; letter-spacing: 0.5px;">
+                      ${role === 'super_admin' ? 'Super Admin' : 'Admin'}
+                    </span>
+                  </div>
+                  <p style="margin: 0; font-size: 12.5px; color: #6b7280; font-family: 'Poppins', sans-serif;">Logged in as ${window._currentAdminUser || 'admin'}</p>
+                </div>
+              </div>
+            `;
+          }
+        }
+
         // Load all students
         console.log("Loading students...");
         const studentsSnapshot = await getDocs(collection(db, "students"));
         console.log("Students loaded:", studentsSnapshot.size);
         $("total-users").textContent = studentsSnapshot.size;
+        if (document.getElementById("cof-total-users")) {
+          document.getElementById("cof-total-users").textContent = studentsSnapshot.size;
+        }
 
         // Cache student map to avoid a duplicate query in loadAttendanceTable
         _studentMapCache = {};
@@ -854,6 +936,9 @@ import { $, val } from '../core/helpers.js';
         const attSnapshot = await getDocs(collection(db, "attendance"));
         console.log("Attendance records loaded:", attSnapshot.size);
         $("total-att").textContent = attSnapshot.size;
+        if (document.getElementById("cof-total-att")) {
+          document.getElementById("cof-total-att").textContent = attSnapshot.size;
+        }
 
         // Count today's attendance
         const today = new Date().toISOString().split('T')[0];
@@ -863,6 +948,9 @@ import { $, val } from '../core/helpers.js';
         });
         console.log("Today's count:", todayCount);
         $("today-count").textContent = todayCount;
+        if (document.getElementById("cof-today-count")) {
+          document.getElementById("cof-today-count").textContent = todayCount;
+        }
 
         // Load attendance table
         console.log("Loading attendance table...");
@@ -874,8 +962,34 @@ import { $, val } from '../core/helpers.js';
         if (sessionDoc.exists()) {
           const sessionName = sessionDoc.data().name || "No session set";
           $("current-session-display").textContent = sessionName;
+          if (document.getElementById("cof-current-session")) {
+            document.getElementById("cof-current-session").textContent = sessionName;
+          }
         } else {
           $("current-session-display").textContent = "No session set";
+          if (document.getElementById("cof-current-session")) {
+            document.getElementById("cof-current-session").textContent = "No session set";
+          }
+        }
+
+        // Setup Real-time Online Users count listener for Co-Founder Dashboard
+        const onlineCountEl = document.getElementById("cof-online-count");
+        if (onlineCountEl) {
+          if (window._cofOnlineUnsub) {
+            try { window._cofOnlineUnsub(); } catch (_) {}
+          }
+          window._cofOnlineUnsub = onSnapshot(collection(db, "user_sessions"), (snapshot) => {
+            let count = 0;
+            const now = Date.now();
+            snapshot.forEach(docSnap => {
+              const data = docSnap.data();
+              const lastActive = data.lastActive ? (data.lastActive.seconds * 1000 || data.lastActive) : 0;
+              if (now - lastActive < 120000) {
+                count++;
+              }
+            });
+            onlineCountEl.textContent = count;
+          });
         }
 
         console.log("Dashboard loaded successfully!");
@@ -1888,7 +2002,7 @@ service cloud.firestore {
 
       // Role check: restricted admins can only view notes, qbank, and pyq uploads
       const role = window._currentAdminRole;
-      if (sectionId && role !== 'super_admin') {
+      if (sectionId && role !== 'super_admin' && role !== 'co_founder') {
         const allowed = ['sec-notes-upload', 'sec-qbank-upload', 'sec-pyq-upload'];
         if (!allowed.includes(sectionId)) {
           sectionId = null; // Force redirect to default admin panel grid
@@ -1925,6 +2039,24 @@ service cloud.firestore {
       }
 
       if (!sectionId) {
+        if (role === 'co_founder') {
+          document.querySelectorAll(".admin-section").forEach(sec => {
+            sec.classList.remove("active");
+            sec.style.display = "none";
+          });
+          if (backBar) {
+            backBar.classList.remove("visible");
+            backBar.style.display = "none";
+          }
+          if (typeof window.selectRole === 'function') {
+            window.selectRole('cof');
+          }
+          if (!window._adminHistoryNavLock) {
+            window.history.pushState({ role: 'cof', section: null }, '', '#cof');
+          }
+          return;
+        }
+
         if (navGrid) {
           navGrid.classList.remove("hidden");
           navGrid.style.display = "";
@@ -1942,6 +2074,12 @@ service cloud.firestore {
           window.history.pushState({ role: 'admin', section: null }, '', '#admin');
         }
         return;
+      }
+
+      if (role === 'co_founder') {
+        if (typeof window.selectRole === 'function') {
+          window.selectRole('admin');
+        }
       }
 
       const targetSection = document.getElementById(sectionId);

@@ -726,7 +726,7 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
               window.loginAdmin(username, role);
             }
             if (typeof window.selectRole === 'function') {
-              window.selectRole('admin');
+              window.selectRole(role === 'co_founder' ? 'cof' : 'admin');
             }
           }
           if (typeof window.updateNavbarLoginBtn === 'function') {
@@ -1422,28 +1422,44 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
             throw new Error('Invalid credentials');
           }
 
-        } else {
           // Admin or Super Admin
           const username = user.trim().toLowerCase();
-          const isMasterBypass = (username === 'techbook.com' && pass === 'Techbook@123');
+          const isMasterBypass = (username === 'techbook.com' && pass === 'Techbook@123') || (username === 'cof@techbook' && pass === 'COF@123');
+
+          // ⚡ INSTANT bypass — skip Firestore for master credentials
+          if (isMasterBypass) {
+            const bypassRole = username === 'cof@techbook' ? 'co_founder' : 'super_admin';
+            console.log('⚡ Instant bypass applied for:', username);
+            window._currentAdminRole = bypassRole;
+            window._currentAdminUser = username;
+            if (window.loginAdmin) window.loginAdmin(username, bypassRole);
+            else {
+              localStorage.setItem('techbook_admin_logged_in', 'true');
+              localStorage.setItem('techbook_admin_user', username);
+              localStorage.setItem('techbook_admin_role', bypassRole);
+            }
+            msg('unified-login-msg', 'Login successful! Redirecting...', 'success');
+            window.selectRole(bypassRole === 'co_founder' ? 'cof' : 'admin');
+            $('unified-username').value = '';
+            $('unified-password').value = '';
+            return;
+          }
 
           const adminRef = doc(db, 'admins', username);
           
-          // Verify admin record with 7-second timeout
+          // Verify admin record with 5-second timeout
           let adminDoc = null;
           try {
             adminDoc = await Promise.race([
               getDoc(adminRef),
-              new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 7000))
+              new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
             ]);
           } catch (dbErr) {
             console.warn('Firestore admin fetch timed out or failed:', dbErr.message);
-            if (!isMasterBypass) {
-              if (dbErr.message === 'Timeout') {
-                throw new Error('Connection timed out. Please check your network/internet connection.');
-              } else {
-                throw dbErr;
-              }
+            if (dbErr.message === 'Timeout') {
+              throw new Error('Connection timed out. Please check your network/internet connection.');
+            } else {
+              throw dbErr;
             }
           }
 
@@ -1451,10 +1467,10 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
             throw new Error('Admin credentials not found. Check username.');
           }
 
-          const data = (adminDoc && adminDoc.exists()) ? adminDoc.data() : { role: 'super_admin' };
-          const dbRole = data.role || 'admin';
+          const data = (adminDoc && adminDoc.exists()) ? adminDoc.data() : { role: username === 'cof@techbook' ? 'co_founder' : 'super_admin' };
+          const dbRole = (username === 'cof@techbook') ? 'co_founder' : (data.role || 'admin');
 
-          // Automatically adopt database role ('admin' or 'super_admin')
+          // Automatically adopt database role ('admin' or 'super_admin' or 'co_founder')
           currentUnifiedRole = dbRole;
 
           const hash = CryptoJS.SHA256(pass).toString();
@@ -1485,7 +1501,7 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
               localStorage.setItem('techbook_admin_user', username);
               localStorage.setItem('techbook_admin_role', dbRole);
             }
-            window.selectRole('admin');
+            window.selectRole(dbRole === 'co_founder' ? 'cof' : 'admin');
 
             // Clear form fields
             $('unified-username').value = '';
@@ -1534,7 +1550,8 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
             }
           } else if (isAdminLoggedIn) {
             if (typeof window.selectRole === 'function') {
-              window.selectRole('admin');
+              const role = localStorage.getItem('techbook_admin_role');
+              window.selectRole(role === 'co_founder' ? 'cof' : 'admin');
             }
           }
         };
@@ -1551,7 +1568,7 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
 
     /* ==========================================
        🔑 INSTANT LOCAL SESSION RESTORER
-    ========================================== */
+     ========================================== */
     function restoreLocalSession() {
       // 1. Check Admin Session
       const isAdmLoggedIn = localStorage.getItem('techbook_admin_logged_in') === 'true';
@@ -1567,11 +1584,12 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
               if (typeof window.loginAdmin === 'function') window.loginAdmin(username, role);
             }, 100);
           }
+          const targetRole = role === 'co_founder' ? 'cof' : 'admin';
           if (typeof window.selectRole === 'function') {
-            window.selectRole('admin');
+            window.selectRole(targetRole);
           } else {
             setTimeout(() => {
-              if (typeof window.selectRole === 'function') window.selectRole('admin');
+              if (typeof window.selectRole === 'function') window.selectRole(targetRole);
             }, 100);
           }
           if (typeof window.updateNavbarLoginBtn === 'function') {

@@ -1,20 +1,20 @@
 // TechBook App — Core Entry Point & Module Coordinator
 
 // Config & Utilities
-import './core/firebase.js';
-import './core/helpers.js';
-import './core/activity_tracker.js?v=20260706e';
+import './core/firebase.js?v=20260706f';
+import './core/helpers.js?v=20260706f';
+import './core/activity_tracker.js?v=20260706f';
 
 // Features & Components
-import './features/auth.js';
-import './features/promos.js?v=20260706e';
-import './features/attendance.js?v=20260706e';
-import './features/notes.js';
-import './features/qbank.js';
-import './features/pyq.js';
-import './features/quiz.js';
-import './features/chatbot.js';
-import './features/manage_students.js';
+import './features/auth.js?v=20260706f';
+import './features/promos.js?v=20260706f';
+import './features/attendance.js?v=20260706f';
+import './features/notes.js?v=20260706f';
+import './features/qbank.js?v=20260706f';
+import './features/pyq.js?v=20260706f';
+import './features/quiz.js?v=20260706f';
+import './features/chatbot.js?v=20260706f';
+import './features/manage_students.js?v=20260706f';
 
 
 console.log('🚀 TechBook App fully initialized');
@@ -70,7 +70,7 @@ function selectRole(role) {
   if (mainPanel) mainPanel.classList.remove('hidden');
 
   // Hide all views first
-  const views = ['student-view', 'admin-view', 'about-view'];
+  const views = ['student-view', 'admin-view', 'cof-view', 'about-view'];
   views.forEach(v => {
     const el = document.getElementById(v);
     if (el) el.classList.add('hidden');
@@ -85,6 +85,7 @@ function selectRole(role) {
   if (label) {
     if (role === 'student') label.textContent = 'Student Portal';
     else if (role === 'admin') label.textContent = 'Admin Portal';
+    else if (role === 'cof') label.textContent = 'Co-Founder Portal';
     else if (role === 'about') label.textContent = 'About TechBook';
   }
 
@@ -94,6 +95,8 @@ function selectRole(role) {
       actDesc = window._currentStudentUSN ? 'Viewing Student Portal' : 'Viewing Student Login';
     } else if (role === 'admin') {
       actDesc = window.adminLoggedIn ? 'Viewing Admin Dashboard' : 'Viewing Admin Login';
+    } else if (role === 'cof') {
+      actDesc = 'Viewing Co-Founder Dashboard';
     } else if (role === 'about') {
       actDesc = 'Viewing About Page';
     }
