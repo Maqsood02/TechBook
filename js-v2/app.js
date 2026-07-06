@@ -1,20 +1,20 @@
 // TechBook App — Core Entry Point & Module Coordinator
 
 // Config & Utilities
-import './core/firebase.js?v=20260706i';
-import './core/helpers.js?v=20260706i';
-import './core/activity_tracker.js?v=20260706i';
+import './core/firebase.js?v=20260706j';
+import './core/helpers.js?v=20260706j';
+import './core/activity_tracker.js?v=20260706j';
 
 // Features & Components
-import './features/auth.js?v=20260706i';
-import './features/promos.js?v=20260706i';
-import './features/attendance.js?v=20260706i';
-import './features/notes.js?v=20260706i';
-import './features/qbank.js?v=20260706i';
-import './features/pyq.js?v=20260706i';
-import './features/quiz.js?v=20260706i';
-import './features/chatbot.js?v=20260706i';
-import './features/manage_students.js?v=20260706i';
+import './features/auth.js?v=20260706j';
+import './features/promos.js?v=20260706j';
+import './features/attendance.js?v=20260706j';
+import './features/notes.js?v=20260706j';
+import './features/qbank.js?v=20260706j';
+import './features/pyq.js?v=20260706j';
+import './features/quiz.js?v=20260706j';
+import './features/chatbot.js?v=20260706j';
+import './features/manage_students.js?v=20260706j';
 
 
 console.log('🚀 TechBook App fully initialized');
@@ -157,7 +157,7 @@ function selectRole(role) {
           Logout
         </button>
       `;
-    } else if (role === 'admin' && window.adminLoggedIn) {
+    } else if ((role === 'admin' || role === 'cof') && window.adminLoggedIn) {
       navbarActions.innerHTML = `
         <button onclick="window.adminLogout && window.adminLogout()" 
           style="display:flex;align-items:center;gap:6px;padding:8px 14px;background:#f9fafb;border:1px solid rgba(57,255,180,0.25);border-radius:10px;color:#3d5af1;font-weight:700;font-size:13px;cursor:pointer;transition:all 0.2s;"

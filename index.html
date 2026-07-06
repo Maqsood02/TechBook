@@ -3160,66 +3160,42 @@
 
             </div>
 
-            <!-- 3. Actions Title -->
+            <!-- 3. Co-Founder Actions Title -->
             <div style="font-size: 11px; color: rgba(139, 168, 204, 0.8); text-transform: uppercase; letter-spacing: 2.5px; font-weight: 700; margin-bottom: 16px; padding-left: 4px;">
-              🚀 Executive Action Portal
+              🚀 Co-Founder Control Center
             </div>
 
             <!-- 4. Modern Interactive Tiles Grid -->
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 30px;">
               
-              <!-- Tile 1: Analytics -->
-              <div onclick="switchAdminSection('sec-stats')" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; padding: 22px; border-radius: 22px; cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 15px rgba(37, 99, 235, 0.15);" 
-                   onmouseover="this.style.transform='translateY(-5px)';this.style.boxShadow='0 12px 25px rgba(37, 99, 235, 0.35)';" 
-                   onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 15px rgba(37, 99, 235, 0.15)';">
-                <div style="font-size: 32px; margin-bottom: 12px;">📊</div>
-                <h3 style="margin: 0; font-size: 17px; font-weight: 800; font-family: 'Poppins', sans-serif;">System Analytics</h3>
-                <p style="margin: 6px 0 0; font-size: 12px; opacity: 0.85; line-height: 1.5;">View real-time statistics, classroom active codes, and overall attendance summaries.</p>
+              <!-- Tile 1: Message Super Admin / Founder -->
+              <div style="background: white; padding: 22px; border-radius: 22px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); border: 1px solid rgba(0,0,0,0.05); grid-column: 1 / -1;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+                  <div style="font-size: 24px;">✉️</div>
+                  <h3 style="margin: 0; font-size: 17px; font-weight: 800; font-family: 'Poppins', sans-serif; color: #111827;">Direct Message to Super Admin / Founder</h3>
+                </div>
+                <textarea placeholder="Type your message for Super Admin / Maqsood M D here..." style="width: 100%; height: 100px; padding: 12px; border: 1px solid #d1d5db; border-radius: 12px; font-family: 'Poppins', sans-serif; font-size: 13px; margin-bottom: 12px; resize: none; box-sizing: border-box;"></textarea>
+                <div style="display: flex; justify-content: flex-end;">
+                  <button onclick="alert('Message sent successfully to Super Admin & Founder Maqsood M D!')" style="background: linear-gradient(135deg, #3d5af1, #6366f1); color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: 'Poppins', sans-serif;">Send Message</button>
+                </div>
               </div>
 
-              <!-- Tile 2: Live Monitor -->
-              <div onclick="switchAdminSection('sec-live-monitor')" style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 22px; border-radius: 22px; cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.15);" 
+              <!-- Tile 2: Approvals -->
+              <div onclick="alert('Approvals section coming soon!')" style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 22px; border-radius: 22px; cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.15);" 
                    onmouseover="this.style.transform='translateY(-5px)';this.style.boxShadow='0 12px 25px rgba(16, 185, 129, 0.35)';" 
                    onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 15px rgba(16, 185, 129, 0.15)';">
-                <div style="font-size: 32px; margin-bottom: 12px;">🟢</div>
-                <h3 style="margin: 0; font-size: 17px; font-weight: 800; font-family: 'Poppins', sans-serif;">Live User Monitor</h3>
-                <p style="margin: 6px 0 0; font-size: 12px; opacity: 0.85; line-height: 1.5;">Watch real-time user online logs, actions feed, and track page transition events.</p>
+                <div style="font-size: 32px; margin-bottom: 12px;">✅</div>
+                <h3 style="margin: 0; font-size: 17px; font-weight: 800; font-family: 'Poppins', sans-serif;">Approvals</h3>
+                <p style="margin: 6px 0 0; font-size: 12px; opacity: 0.85; line-height: 1.5;">Review and approve pending system changes or content uploads.</p>
               </div>
 
-              <!-- Tile 3: Manage Admins -->
-              <div onclick="switchAdminSection('sec-admins')" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 22px; border-radius: 22px; cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.15);" 
+              <!-- Tile 3: New Feature Launching -->
+              <div onclick="alert('New Feature Launching wizard coming soon!')" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 22px; border-radius: 22px; cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.15);" 
                    onmouseover="this.style.transform='translateY(-5px)';this.style.boxShadow='0 12px 25px rgba(245, 158, 11, 0.35)';" 
                    onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 15px rgba(245, 158, 11, 0.15)';">
-                <div style="font-size: 32px; margin-bottom: 12px;">👮</div>
-                <h3 style="margin: 0; font-size: 17px; font-weight: 800; font-family: 'Poppins', sans-serif;">Manage Admins</h3>
-                <p style="margin: 6px 0 0; font-size: 12px; opacity: 0.85; line-height: 1.5;">Review administrative accounts, modify privilege roles, and add support users.</p>
-              </div>
-
-              <!-- Tile 4: Quiz Center -->
-              <div onclick="switchAdminSection('sec-quiz-admin')" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; padding: 22px; border-radius: 22px; cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 15px rgba(139, 92, 246, 0.15);" 
-                   onmouseover="this.style.transform='translateY(-5px)';this.style.boxShadow='0 12px 25px rgba(139, 92, 246, 0.35)';" 
-                   onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 15px rgba(139, 92, 246, 0.15)';">
-                <div style="font-size: 32px; margin-bottom: 12px;">🧠</div>
-                <h3 style="margin: 0; font-size: 17px; font-weight: 800; font-family: 'Poppins', sans-serif;">Quiz Control Center</h3>
-                <p style="margin: 6px 0 0; font-size: 12px; opacity: 0.85; line-height: 1.5;">Create quizzes, unlock student attempts, monitor logs, and view leaderboard ranks.</p>
-              </div>
-
-              <!-- Tile 5: Settings & Features -->
-              <div onclick="switchAdminSection('sec-session')" style="background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; padding: 22px; border-radius: 22px; cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 15px rgba(99, 102, 241, 0.15);" 
-                   onmouseover="this.style.transform='translateY(-5px)';this.style.boxShadow='0 12px 25px rgba(99, 102, 241, 0.35)';" 
-                   onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 15px rgba(99, 102, 241, 0.15)';">
-                <div style="font-size: 32px; margin-bottom: 12px;">⚙️</div>
-                <h3 style="margin: 0; font-size: 17px; font-weight: 800; font-family: 'Poppins', sans-serif;">Control settings</h3>
-                <p style="margin: 6px 0 0; font-size: 12px; opacity: 0.85; line-height: 1.5;">Manage operational terms, toggle app features, and export databases.</p>
-              </div>
-
-              <!-- Tile 6: Material Uploads -->
-              <div onclick="switchAdminSection('sec-notes-upload')" style="background: linear-gradient(135deg, #ec4899, #db2777); color: white; padding: 22px; border-radius: 22px; cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 15px rgba(236, 72, 153, 0.15);" 
-                   onmouseover="this.style.transform='translateY(-5px)';this.style.boxShadow='0 12px 25px rgba(236, 72, 153, 0.35)';" 
-                   onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 15px rgba(236, 72, 153, 0.15)';">
-                <div style="font-size: 32px; margin-bottom: 12px;">📚</div>
-                <h3 style="margin: 0; font-size: 17px; font-weight: 800; font-family: 'Poppins', sans-serif;">Upload Center</h3>
-                <p style="margin: 6px 0 0; font-size: 12px; opacity: 0.85; line-height: 1.5;">Upload academic syllabus notes, Q-Banks, PYQ papers, and active schedules.</p>
+                <div style="font-size: 32px; margin-bottom: 12px;">🚀</div>
+                <h3 style="margin: 0; font-size: 17px; font-weight: 800; font-family: 'Poppins', sans-serif;">New Feature Launching</h3>
+                <p style="margin: 6px 0 0; font-size: 12px; opacity: 0.85; line-height: 1.5;">Plan, orchestrate, and deploy new modules to the student portal.</p>
               </div>
 
             </div>
@@ -3664,8 +3640,8 @@
     <iframe id="pdf-viewer-frame" src="" style="flex:1;width:100%;border:none;background:#525659;"></iframe>
   </div>
 
-  <script type="module" src="js-v2/app.js?v=20260706i"></script>
-  <script type="module" src="js-v2/features/mobile-navigation.js?v=20260706i"></script>
+  <script type="module" src="js-v2/app.js?v=20260706j"></script>
+  <script type="module" src="js-v2/features/mobile-navigation.js?v=20260706j"></script>
 
   <!-- ══ FOUNDER MODAL ══ -->
   <div id="founder-modal"
