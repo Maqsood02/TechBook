@@ -7,8 +7,6 @@ import './core/activity_tracker.js?v=20260706';
 
 // Features & Components
 import './features/auth.js';
-import './features/admin-panels.js?v=20260706';
-import './features/mobile-navigation.js?v=20260706';
 import './features/promos.js?v=20260706';
 import './features/attendance.js?v=20260706';
 import './features/notes.js';
