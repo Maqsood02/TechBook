@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initMobileLayout() {
-  // Observe student-area and admin-area class lists to detect login/logout state
+  // Observe student-area, admin-area, and landing-page class lists to detect layout changes
   const observer = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
       if (mutation.attributeName === 'class') {
@@ -29,9 +29,11 @@ function initMobileLayout() {
 
   const studentArea = document.getElementById('student-area');
   const adminArea = document.getElementById('admin-area');
+  const landingPage = document.getElementById('landing-page');
 
   if (studentArea) observer.observe(studentArea, { attributes: true });
   if (adminArea) observer.observe(adminArea, { attributes: true });
+  if (landingPage) observer.observe(landingPage, { attributes: true });
 
   // Run initial visibility check
   updateMobileNavVisibility();
@@ -41,14 +43,18 @@ function initMobileLayout() {
 }
 
 function updateMobileNavVisibility() {
+  const landingPage = document.getElementById('landing-page');
   const studentArea = document.getElementById('student-area');
   const adminArea = document.getElementById('admin-area');
   
   const studentNav = document.getElementById('student-mobile-nav');
   const adminNav = document.getElementById('admin-mobile-nav');
   
-  const isStudentLoggedIn = studentArea && !studentArea.classList.contains('hidden');
-  const isAdminLoggedIn = adminArea && !adminArea.classList.contains('hidden');
+  const isLandingPageActive = landingPage && !landingPage.classList.contains('hidden');
+  
+  // They are only in active dashboard app view if the landing page is hidden AND they are logged in
+  const isStudentLoggedIn = !isLandingPageActive && studentArea && !studentArea.classList.contains('hidden');
+  const isAdminLoggedIn = !isLandingPageActive && adminArea && !adminArea.classList.contains('hidden');
 
   if (isStudentLoggedIn || isAdminLoggedIn) {
     document.body.classList.add('mobile-app-mode');

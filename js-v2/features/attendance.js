@@ -2200,9 +2200,8 @@ service cloud.firestore {
 
       const q = query(
         collection(db, "founder_messages"),
-        where("senderRole", "==", "super_admin"),
         orderBy("createdAt", "desc"),
-        limit(20)
+        limit(100)
       );
 
       _cofRepliesUnsub = onSnapshot(q, (snapshot) => {
@@ -2211,8 +2210,10 @@ service cloud.firestore {
 
         snapshot.forEach(docSnap => {
           const data = docSnap.data();
-          replies.push({ id: docSnap.id, ...data });
-          if (!data.read) unreadCount++;
+          if (data.senderRole === "super_admin") {
+            replies.push({ id: docSnap.id, ...data });
+            if (!data.read) unreadCount++;
+          }
         });
 
         // Update badge
@@ -2265,9 +2266,8 @@ service cloud.firestore {
       
       const q = query(
         collection(db, "founder_messages"),
-        where("senderRole", "==", "co_founder"),
         orderBy("createdAt", "desc"),
-        limit(20)
+        limit(100)
       );
       
       _founderMsgUnsub = onSnapshot(q, (snapshot) => {
@@ -2276,8 +2276,10 @@ service cloud.firestore {
         
         snapshot.forEach(docSnap => {
           const data = docSnap.data();
-          messages.push({ id: docSnap.id, ...data });
-          if (!data.read) unreadCount++;
+          if (data.senderRole === "co_founder") {
+            messages.push({ id: docSnap.id, ...data });
+            if (!data.read) unreadCount++;
+          }
         });
         
         // Update badge
