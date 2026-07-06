@@ -903,25 +903,36 @@ import { $, val } from '../core/helpers.js';
             `;
           } else if (role === 'super_admin') {
             headerCard.innerHTML = `
-              <div style="display: flex; align-items: center; justify-content: space-between; gap: 20px; background: linear-gradient(135deg, rgba(61, 90, 241, 0.08) 0%, rgba(168, 85, 247, 0.08) 100%); border: 1.5px solid rgba(61, 90, 241, 0.15); padding: 20px 30px; border-radius: 24px; backdrop-filter: blur(10px); margin-bottom: 24px; box-shadow: 0 10px 30px rgba(61, 90, 241, 0.04);">
+              <div style="position: relative; display: flex; align-items: center; justify-content: space-between; gap: 24px; background: #ffffff; border: 1px solid rgba(226, 232, 240, 0.8); padding: 28px 36px; border-radius: 28px; margin-bottom: 28px; box-shadow: 0 20px 40px -10px rgba(61, 90, 241, 0.15), 0 0 30px rgba(168, 85, 247, 0.05) inset; overflow: hidden;">
+                <!-- Decorative background shapes -->
+                <div style="position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; background: radial-gradient(circle, rgba(168, 85, 247, 0.15) 0%, transparent 70%); border-radius: 50%; pointer-events: none;"></div>
+                <div style="position: absolute; bottom: -80px; left: 100px; width: 250px; height: 250px; background: radial-gradient(circle, rgba(61, 90, 241, 0.1) 0%, transparent 70%); border-radius: 50%; pointer-events: none;"></div>
                 
-                <div style="display: flex; align-items: center; gap: 20px; flex: 1;">
-                  <div style="position: relative; width: 120px; height: 120px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(45deg, #f59e0b, #ef4444, #3d5af1, #a855f7); background-size: 400% 400%; animation: spin-gradient 8s linear infinite reverse; box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);"></div>
-                    <div style="position: relative; width: 110px; height: 110px; border-radius: 50%; background: #ffffff; padding: 3px; z-index: 2; box-sizing: border-box; overflow: hidden;">
-                      <img src="img/developer-photo.jpg" onerror="this.src='img/cof-profile.jpg?v=3'" alt="Maqsood M D" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; transform: scale(1.05); transform-origin: center;" />
+                <div style="display: flex; align-items: center; gap: 28px; flex: 1; z-index: 1;">
+                  <!-- Avatar Container -->
+                  <div style="position: relative; width: 140px; height: 140px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);" onmouseover="this.style.transform='scale(1.05) rotate(-2deg)';" onmouseout="this.style.transform='none';">
+                    <!-- Spinning glowing border -->
+                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(45deg, #f59e0b, #ef4444, #ec4899, #8b5cf6, #3b82f6); background-size: 300% 300%; animation: spin-gradient 6s linear infinite reverse; box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);"></div>
+                    <div style="position: absolute; top: -2px; left: -2px; width: calc(100% + 4px); height: calc(100% + 4px); border-radius: 50%; background: inherit; filter: blur(10px); opacity: 0.5; z-index: -1;"></div>
+                    
+                    <!-- Inner avatar -->
+                    <div style="position: relative; width: 128px; height: 128px; border-radius: 50%; background: #ffffff; padding: 4px; z-index: 2; box-sizing: border-box; overflow: hidden;">
+                      <img src="img/developer-photo.jpg" onerror="this.src='img/cof-profile.jpg?v=3'" alt="Maqsood M D" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; transform: scale(1.08); transform-origin: center; transition: transform 0.5s ease;" onmouseover="this.style.transform='scale(1.15)';" onmouseout="this.style.transform='scale(1.08)';" />
                     </div>
-                    <span style="position: absolute; bottom: 8px; right: 8px; width: 22px; height: 22px; background: #22c55e; border: 3.5px solid #ffffff; border-radius: 50%; z-index: 10; box-shadow: 0 0 10px rgba(34, 197, 94, 0.6);"></span>
+                    <!-- Online status indicator -->
+                    <span style="position: absolute; bottom: 8px; right: 8px; width: 24px; height: 24px; background: #22c55e; border: 4px solid #ffffff; border-radius: 50%; z-index: 10; box-shadow: 0 0 15px rgba(34, 197, 94, 0.8);"></span>
                   </div>
-                  <div style="display: flex; flex-direction: column; gap: 6px;">
-                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                      <h2 style="margin: 0; font-size: 26px; font-weight: 800; color: #111827; font-family: 'Poppins', sans-serif; letter-spacing: -0.5px;">Maqsood M D</h2>
-                      <span style="background: linear-gradient(135deg, #f59e0b, #ef4444); color: #ffffff; font-size: 10px; font-weight: 800; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.25);">DEVELOPER & FOUNDER</span>
+                  
+                  <!-- Text Info -->
+                  <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+                      <h2 style="margin: 0; font-size: 32px; font-weight: 900; background: linear-gradient(90deg, #0f172a, #334155); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-family: 'Poppins', sans-serif; letter-spacing: -0.8px;">Maqsood M D</h2>
+                      <span style="background: linear-gradient(135deg, #f59e0b, #ef4444); color: #ffffff; font-size: 11px; font-weight: 800; padding: 6px 14px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1.2px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35); text-shadow: 0 1px 2px rgba(0,0,0,0.2);">DEVELOPER & FOUNDER</span>
                     </div>
-                    <p style="margin: 0; font-size: 14.5px; color: #4b5563; font-weight: 600; font-family: 'Poppins', sans-serif;">Super Administrator Dashboard</p>
-                    <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #10b981; font-weight: 700; margin-top: 4px;">
-                      <span style="display: inline-block; width: 8px; height: 8px; background: #10b981; border-radius: 50%; animation: blink 1.5s infinite;"></span>
-                      All Systems Online & Secure
+                    <p style="margin: 0; font-size: 16px; color: #475569; font-weight: 600; font-family: 'Poppins', sans-serif; letter-spacing: 0.2px;">Super Administrator Dashboard</p>
+                    <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #059669; font-weight: 700; margin-top: 6px; background: rgba(16, 185, 129, 0.1); padding: 6px 12px; border-radius: 12px; width: fit-content; border: 1px solid rgba(16, 185, 129, 0.2);">
+                      <span style="display: inline-block; width: 8px; height: 8px; background: #10b981; border-radius: 50%; animation: blink 1.5s infinite; box-shadow: 0 0 8px #10b981;"></span>
+                      All Core Systems Online & Secure
                     </div>
                   </div>
                 </div>
