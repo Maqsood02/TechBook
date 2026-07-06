@@ -732,6 +732,67 @@ app.post('/api/notify-quiz-result', async (req, res) => {
   }
 });
 
+/**
+ * POST /api/notify-founder-message
+ * Sends an email notification to the Super Admin (Founder) when Co-Founder sends a message.
+ */
+app.post('/api/notify-founder-message', async (req, res) => {
+  const { senderName, message } = req.body;
+
+  if (!message) {
+    return res.status(400).json({ success: false, error: 'Message content is required.' });
+  }
+
+  try {
+    const toEmail = process.env.SMTP_EMAIL || 'techbook.ac.in@gmail.com';
+    const dateStr = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' });
+    
+    const html = `
+      <div style="font-family: 'Poppins', Arial, sans-serif; background-color: #f8fafc; padding: 32px; color: #0f172a;">
+        <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
+          <div style="background: linear-gradient(135deg, #3d5af1, #a855f7); padding: 30px; text-align: center; color: #ffffff;">
+            <span style="font-size: 40px; display: block; margin-bottom: 10px;">✉️</span>
+            <h2 style="margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.5px;">New Message from Co-Founder</h2>
+          </div>
+          <div style="padding: 30px;">
+            <p style="font-size: 15px; color: #475569; margin-bottom: 20px; line-height: 1.6;">
+              Hello <strong>Super Admin / Maqsood M D</strong>,
+            </p>
+            <p style="font-size: 15px; color: #475569; margin-bottom: 24px; line-height: 1.6;">
+              You have received a direct message from Co-Founder <strong>${senderName || 'Chinmay K V'}</strong>:
+            </p>
+            
+            <div style="background-color: #f1f5f9; border-left: 4px solid #3d5af1; padding: 20px; border-radius: 12px; margin-bottom: 24px;">
+              <p style="margin: 0; font-size: 14px; color: #1e293b; line-height: 1.5; font-style: italic; white-space: pre-wrap;">"${message}"</p>
+            </div>
+            
+            <p style="font-size: 12px; color: #94a3b8; margin-top: 30px;">
+              Sent on: ${dateStr} <br>
+              This is an automated notification from TechBook Operations.
+            </p>
+          </div>
+          <div style="background-color: #f8fafc; padding: 20px; text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px solid #e2e8f0;">
+            © ${new Date().getFullYear()} TechBook App. All Rights Reserved.
+          </div>
+        </div>
+      </div>
+    `;
+
+    await sendEmail({
+      to: toEmail,
+      subject: `✉️ New Message from Co-Founder: ${senderName || 'Chinmay K V'}`,
+      html
+    });
+
+    console.log(`✅ Founder message notification email sent to ${toEmail}`);
+    res.json({ success: true, message: 'Notification email sent successfully.' });
+
+  } catch (err) {
+    console.error('Founder message notification error:', err.message);
+    res.status(500).json({ success: false, error: 'Failed to send email notification.' });
+  }
+});
+
 // ─── Serve index.html for all unmatched routes ───
 app.get('/*splat', (req, res) => {
   res.sendFile(path.join(process.cwd(), 'index.html'));

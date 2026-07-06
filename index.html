@@ -3179,9 +3179,9 @@
                   <div style="font-size: 24px;">✉️</div>
                   <h3 style="margin: 0; font-size: 17px; font-weight: 800; font-family: 'Poppins', sans-serif; color: #111827;">Direct Message to Super Admin / Founder</h3>
                 </div>
-                <textarea placeholder="Type your message for Super Admin / Maqsood M D here..." style="width: 100%; height: 100px; padding: 12px; border: 1px solid #d1d5db; border-radius: 12px; font-family: 'Poppins', sans-serif; font-size: 13px; margin-bottom: 12px; resize: none; box-sizing: border-box;"></textarea>
+                <textarea id="cof-direct-msg-text" placeholder="Type your message for Super Admin / Maqsood M D here..." style="width: 100%; height: 100px; padding: 12px; border: 1px solid #d1d5db; border-radius: 12px; font-family: 'Poppins', sans-serif; font-size: 13px; margin-bottom: 12px; resize: none; box-sizing: border-box;"></textarea>
                 <div style="display: flex; justify-content: flex-end;">
-                  <button onclick="alert('Message sent successfully to Super Admin & Founder Maqsood M D!')" style="background: linear-gradient(135deg, #3d5af1, #6366f1); color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: 'Poppins', sans-serif;">Send Message</button>
+                  <button id="cof-send-msg-btn" onclick="window.sendFounderDirectMessage && window.sendFounderDirectMessage()" style="background: linear-gradient(135deg, #3d5af1, #6366f1); color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: 'Poppins', sans-serif;">Send Message</button>
                 </div>
               </div>
 
@@ -3645,8 +3645,8 @@
     <iframe id="pdf-viewer-frame" src="" style="flex:1;width:100%;border:none;background:#525659;"></iframe>
   </div>
 
-  <script type="module" src="js-v2/app.js?v=20260706r"></script>
-  <script type="module" src="js-v2/features/mobile-navigation.js?v=20260706r"></script>
+  <script type="module" src="js-v2/app.js?v=20260706s"></script>
+  <script type="module" src="js-v2/features/mobile-navigation.js?v=20260706s"></script>
 
   <!-- ══ FOUNDER MODAL ══ -->
   <div id="founder-modal"

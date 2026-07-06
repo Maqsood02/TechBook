@@ -967,8 +967,32 @@ import { $, val } from '../core/helpers.js';
                   </div>
                 </div>
 
+                <!-- Notification Bell Container -->
+                <div style="position: relative; z-index: 10;">
+                  <button id="super-admin-bell" onclick="window.toggleFounderMessages && window.toggleFounderMessages()" style="position: relative; background: #f8fafc; border: 1.5px solid #e2e8f0; width: 50px; height: 50px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 22px; cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); outline: none;" onmouseover="this.style.transform='scale(1.08) rotate(5deg)';this.style.background='#eff6ff';this.style.borderColor='#3b82f6';" onmouseout="this.style.transform='none';this.style.background='#f8fafc';this.style.borderColor='#e2e8f0';">
+                    🔔
+                    <!-- Glowing unread badge -->
+                    <span id="bell-badge" style="display: none; position: absolute; top: -4px; right: -4px; background: #ef4444; color: #ffffff; font-size: 10px; font-weight: 800; min-width: 18px; height: 18px; border-radius: 10px; padding: 0 4px; display: flex; align-items: center; justify-content: center; border: 3px solid #ffffff; box-shadow: 0 0 10px rgba(239, 68, 68, 0.6); animation: blink 1.5s infinite;">0</span>
+                  </button>
+
+                  <!-- Messages Dropdown Menu -->
+                  <div id="super-admin-msg-dropdown" style="display: none; position: absolute; top: 60px; right: 0; width: 340px; background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 20px; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1); padding: 18px; z-index: 1000; overflow: hidden; animation: superAdminEntrance 0.3s ease;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 12px;">
+                      <h4 style="margin: 0; font-size: 15px; font-weight: 800; color: #0f172a; font-family: 'Poppins', sans-serif;">📩 Co-Founder Messages</h4>
+                      <button onclick="window.markAllFounderMessagesAsRead && window.markAllFounderMessagesAsRead()" style="background: none; border: none; color: #3d5af1; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Poppins', sans-serif;">Mark all read</button>
+                    </div>
+                    <div id="founder-messages-list" style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; font-family: 'Poppins', sans-serif;">
+                      <div style="text-align: center; padding: 20px; color: #94a3b8; font-size: 12.5px;">No messages received</div>
+                    </div>
+                  </div>
+                </div>
+
               </div>
             `;
+            // Initiate live messages listener
+            setTimeout(() => {
+              if (typeof listenFounderMessages === 'function') listenFounderMessages();
+            }, 100);
           } else {
             headerCard.innerHTML = `
               <div style="display: flex; align-items: center; gap: 16px; background: linear-gradient(135deg, rgba(61, 90, 241, 0.05) 0%, rgba(99, 102, 241, 0.05) 100%); border: 1px solid rgba(61, 90, 241, 0.1); padding: 16px; border-radius: 16px; margin-bottom: 24px;">
@@ -1857,6 +1881,164 @@ service cloud.firestore {
         } else {
           msg("code-msg", "Error: " + e.message, "error");
         }
+      }
+    });
+
+    // ─── CO-FOUNDER DIRECT MESSAGING & REAL-TIME NOTIFICATIONS ───
+    let _founderMsgUnsub = null;
+
+    window.sendFounderDirectMessage = async function() {
+      const textEl = document.getElementById("cof-direct-msg-text");
+      const btn = document.getElementById("cof-send-msg-btn");
+      if (!textEl || !btn) return;
+
+      const message = textEl.value.trim();
+      if (!message) {
+        alert("Please enter a message before sending.");
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = "⏳ Sending...";
+
+      try {
+        const senderName = localStorage.getItem('techbook_admin_user') || 'Chinmay K V';
+        
+        // 1. Write to Firestore `founder_messages`
+        await addDoc(collection(db, "founder_messages"), {
+          senderName,
+          senderRole: "co_founder",
+          message,
+          createdAt: new Date().toISOString(),
+          read: false
+        });
+
+        // 2. Call backend API to email Founder
+        const response = await fetch(`${window.API_BASE_URL || 'https://tech-book-two.vercel.app'}/api/notify-founder-message`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ senderName, message })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          alert("✓ Message sent successfully to Super Admin & Founder Maqsood M D!");
+          textEl.value = "";
+        } else {
+          console.warn("Email alert failed, message saved to dashboard:", data.error);
+          alert("✓ Message saved on dashboard! (Email delivery alert failed: " + data.error + ")");
+          textEl.value = "";
+        }
+
+      } catch (err) {
+        console.error("Error sending direct message:", err);
+        alert("❌ Error sending message: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Send Message";
+      }
+    };
+
+    window.toggleFounderMessages = function() {
+      const dropdown = document.getElementById("super-admin-msg-dropdown");
+      if (!dropdown) return;
+      dropdown.style.display = (dropdown.style.display === "none" || !dropdown.style.display) ? "block" : "none";
+    };
+
+    window.markFounderMessageAsRead = async function(id) {
+      try {
+        await setDoc(doc(db, "founder_messages", id), { read: true }, { merge: true });
+      } catch (err) {
+        console.error("Failed to mark message as read:", err);
+      }
+    };
+
+    window.markAllFounderMessagesAsRead = async function() {
+      try {
+        const q = query(collection(db, "founder_messages"), where("read", "==", false));
+        const snap = await getDocs(q);
+        const promises = [];
+        snap.forEach(docSnap => {
+          promises.push(setDoc(doc(db, "founder_messages", docSnap.id), { read: true }, { merge: true }));
+        });
+        await Promise.all(promises);
+      } catch (err) {
+        console.error("Failed to mark all messages as read:", err);
+      }
+    };
+
+    function listenFounderMessages() {
+      if (_founderMsgUnsub) {
+        try { _founderMsgUnsub(); } catch (_) {}
+      }
+      
+      const q = query(
+        collection(db, "founder_messages"),
+        orderBy("createdAt", "desc"),
+        limit(20)
+      );
+      
+      _founderMsgUnsub = onSnapshot(q, (snapshot) => {
+        const messages = [];
+        let unreadCount = 0;
+        
+        snapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          messages.push({ id: docSnap.id, ...data });
+          if (!data.read) unreadCount++;
+        });
+        
+        // Update badge
+        const badge = document.getElementById("bell-badge");
+        if (badge) {
+          if (unreadCount > 0) {
+            badge.style.display = "flex";
+            badge.textContent = unreadCount;
+          } else {
+            badge.style.display = "none";
+          }
+        }
+        
+        // Render messages
+        const listEl = document.getElementById("founder-messages-list");
+        if (listEl) {
+          if (messages.length === 0) {
+            listEl.innerHTML = `<div style="text-align: center; padding: 20px; color: #94a3b8; font-size: 12.5px;">No messages received</div>`;
+          } else {
+            listEl.innerHTML = messages.map(m => {
+              let dateStr = "";
+              try {
+                dateStr = new Date(m.createdAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+              } catch (_) {
+                dateStr = m.createdAt || "";
+              }
+              
+              return `
+                <div style="padding: 10px 12px; border-radius: 12px; background: ${m.read ? '#f8fafc' : 'rgba(61,90,241,0.04)'}; border: 1px solid ${m.read ? '#f1f5f9' : 'rgba(61,90,241,0.1)'}; transition: all 0.2s; position: relative;">
+                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                    <span style="font-weight: 700; font-size: 12.0px; color: #1e293b;">${m.senderName}</span>
+                    <span style="font-size: 9.5px; color: #94a3b8;">${dateStr}</span>
+                  </div>
+                  <p style="margin: 0; font-size: 12px; color: #475569; line-height: 1.4; word-break: break-word; text-align: left; padding-right: 12px;">${m.message}</p>
+                  ${!m.read ? `
+                    <button onclick="event.stopPropagation(); window.markFounderMessageAsRead('${m.id}')" style="position: absolute; top: 12px; right: 12px; width: 8px; height: 8px; border-radius: 50%; background: #3d5af1; border: none; cursor: pointer; padding: 0;" title="Mark as read"></button>
+                  ` : ''}
+                </div>
+              `;
+            }).join('');
+          }
+        }
+      });
+    }
+
+    // Close dropdown on click outside
+    document.addEventListener("click", (e) => {
+      const dropdown = document.getElementById("super-admin-msg-dropdown");
+      const bell = document.getElementById("super-admin-bell");
+      if (dropdown && bell && !dropdown.contains(e.target) && !bell.contains(e.target)) {
+        dropdown.style.display = "none";
       }
     });
 
