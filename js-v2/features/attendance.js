@@ -930,6 +930,42 @@ import { $, val } from '../core/helpers.js';
                 }
               </style>
               <div style="position: relative; display: flex; align-items: center; justify-content: space-between; gap: 24px; background: #ffffff; border: 1px solid rgba(226, 232, 240, 0.8); padding: 28px 36px; border-radius: 28px; margin-bottom: 28px; box-shadow: 0 20px 40px -10px rgba(61, 90, 241, 0.15), 0 0 30px rgba(168, 85, 247, 0.03) inset; overflow: visible; animation: superAdminEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0;">
+                <style>
+                  @media (max-width: 600px) {
+                    .sa-profile-card-inner {
+                      flex-direction: column !important;
+                      align-items: center !important;
+                      text-align: center !important;
+                      gap: 16px !important;
+                    }
+                    .sa-profile-card-inner .sa-text-info {
+                      align-items: center !important;
+                    }
+                    .sa-profile-card-inner .sa-text-info > div:first-child {
+                      justify-content: center !important;
+                    }
+                    .sa-profile-card-inner .sa-text-info h2 {
+                      font-size: 24px !important;
+                      text-align: center !important;
+                    }
+                    .sa-profile-card-inner .sa-avatar-wrap {
+                      width: 110px !important;
+                      height: 110px !important;
+                    }
+                    .sa-profile-card-inner .sa-avatar-inner {
+                      width: 98px !important;
+                      height: 98px !important;
+                    }
+                    .sa-profile-card-inner .sa-status-badge {
+                      justify-content: center !important;
+                    }
+                    .sa-bell-wrap {
+                      position: absolute !important;
+                      top: 16px !important;
+                      right: 16px !important;
+                    }
+                  }
+                </style>
                 
                 <!-- Background clip container for shine and shapes -->
                 <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 28px; overflow: hidden; pointer-events: none; z-index: 0;">
@@ -941,15 +977,15 @@ import { $, val } from '../core/helpers.js';
                   <div style="position: absolute; bottom: -80px; left: 100px; width: 270px; height: 270px; background: radial-gradient(circle, rgba(61, 90, 241, 0.12) 0%, transparent 70%); border-radius: 50%; animation: orbit-2 15s ease-in-out infinite alternate;"></div>
                 </div>
                 
-                <div style="display: flex; align-items: center; gap: 28px; flex: 1; z-index: 1;">
+                <div class="sa-profile-card-inner" style="display: flex; align-items: center; gap: 28px; flex: 1; z-index: 1;">
                   <!-- Avatar Container -->
-                  <div style="position: relative; width: 140px; height: 140px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); border-radius: 50%; animation: pulse-ring 3s infinite;" onmouseover="this.style.transform='scale(1.04) rotate(-1.5deg)';" onmouseout="this.style.transform='none';">
+                  <div class="sa-avatar-wrap" style="position: relative; width: 140px; height: 140px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); border-radius: 50%; animation: pulse-ring 3s infinite;" onmouseover="this.style.transform='scale(1.04) rotate(-1.5deg)';" onmouseout="this.style.transform='none';">
                     <!-- Spinning glowing border -->
                     <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(45deg, #f59e0b, #ef4444, #ec4899, #8b5cf6, #3b82f6); background-size: 300% 300%; animation: spin-gradient 6s linear infinite reverse;"></div>
                     <div style="position: absolute; top: -2px; left: -2px; width: calc(100% + 4px); height: calc(100% + 4px); border-radius: 50%; background: inherit; filter: blur(10px); opacity: 0.5; z-index: -1;"></div>
                     
                     <!-- Inner avatar -->
-                    <div style="position: relative; width: 128px; height: 128px; border-radius: 50%; background: #ffffff; padding: 4px; z-index: 2; box-sizing: border-box; overflow: hidden;">
+                    <div class="sa-avatar-inner" style="position: relative; width: 128px; height: 128px; border-radius: 50%; background: #ffffff; padding: 4px; z-index: 2; box-sizing: border-box; overflow: hidden;">
                       <img src="img/developer-photo.jpg" onerror="this.src='img/cof-profile.jpg?v=3'" alt="Maqsood M D" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; transform: scale(1.08); transform-origin: center; transition: transform 0.5s ease;" onmouseover="this.style.transform='scale(1.15)';" onmouseout="this.style.transform='scale(1.08)';" />
                     </div>
                     <!-- Online status indicator -->
@@ -957,13 +993,13 @@ import { $, val } from '../core/helpers.js';
                   </div>
                   
                   <!-- Text Info -->
-                  <div style="display: flex; flex-direction: column; gap: 8px;">
+                  <div class="sa-text-info" style="display: flex; flex-direction: column; gap: 8px;">
                     <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
-                      <h2 style="margin: 0; font-size: 32px; font-weight: 900; background: linear-gradient(90deg, #0f172a, #334155); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-family: 'Poppins', sans-serif; letter-spacing: -0.8px;">Maqsood M D</h2>
-                      <span style="background: linear-gradient(135deg, #f59e0b, #ef4444); color: #ffffff; font-size: 11px; font-weight: 800; padding: 6px 14px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1.2px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35); text-shadow: 0 1px 2px rgba(0,0,0,0.2);">DEVELOPER & FOUNDER</span>
+                      <h2 style="margin: 0; font-size: 32px; font-weight: 900; background: linear-gradient(90deg, #0f172a, #334155); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-family: 'Poppins', sans-serif; letter-spacing: -0.8px; white-space: nowrap;">Maqsood M D</h2>
+                      <span style="background: linear-gradient(135deg, #f59e0b, #ef4444); color: #ffffff; font-size: 11px; font-weight: 800; padding: 6px 14px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1.2px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35); text-shadow: 0 1px 2px rgba(0,0,0,0.2); white-space: nowrap;">DEVELOPER & FOUNDER</span>
                     </div>
                     <p style="margin: 0; font-size: 16px; color: #475569; font-weight: 600; font-family: 'Poppins', sans-serif; letter-spacing: 0.2px;">Super Administrator Dashboard</p>
-                    <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #059669; font-weight: 700; margin-top: 6px; background: rgba(16, 185, 129, 0.1); padding: 6px 12px; border-radius: 12px; width: fit-content; border: 1px solid rgba(16, 185, 129, 0.2);">
+                    <div class="sa-status-badge" style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #059669; font-weight: 700; margin-top: 6px; background: rgba(16, 185, 129, 0.1); padding: 6px 12px; border-radius: 12px; width: fit-content; border: 1px solid rgba(16, 185, 129, 0.2);">
                       <span style="display: inline-block; width: 8px; height: 8px; background: #10b981; border-radius: 50%; animation: blink 1.5s infinite; box-shadow: 0 0 8px #10b981;"></span>
                       All Core Systems Online & Secure
                     </div>
@@ -971,7 +1007,7 @@ import { $, val } from '../core/helpers.js';
                 </div>
 
                 <!-- Notification Bell Container -->
-                <div style="position: relative; z-index: 10;">
+                <div class="sa-bell-wrap" style="position: relative; z-index: 10;">
                   <button id="super-admin-bell" onclick="window.toggleFounderMessages && window.toggleFounderMessages()" style="position: relative; background: #f8fafc; border: 1.5px solid #e2e8f0; width: 50px; height: 50px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 22px; cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); outline: none;" onmouseover="this.style.transform='scale(1.08) rotate(5deg)';this.style.background='#eff6ff';this.style.borderColor='#3b82f6';" onmouseout="this.style.transform='none';this.style.background='#f8fafc';this.style.borderColor='#e2e8f0';">
                     🔔
                     <!-- Glowing unread badge -->
