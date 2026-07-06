@@ -1,4 +1,4 @@
-import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
 import {
   getAuth,
   createUserWithEmailAndPassword,
@@ -53,7 +53,7 @@ const firebaseConfig = {
   measurementId: "G-QBH17TSDJZ"
 };
 
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 let db;
 try {
@@ -64,6 +64,7 @@ try {
     })
   });
 } catch (e) {
+  console.warn("Firestore already initialized. Reusing existing instance.");
   db = getFirestore(app);
 }
 const storage = getStorage(app);
