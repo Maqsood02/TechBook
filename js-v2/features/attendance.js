@@ -929,40 +929,53 @@ import { $, val } from '../core/helpers.js';
                   100% { box-shadow: 0 8px 25px rgba(239, 68, 68, 0.25), 0 0 0 0px rgba(139, 92, 246, 0); }
                 }
               </style>
-              <div style="position: relative; display: flex; align-items: center; justify-content: space-between; gap: 24px; background: #ffffff; border: 1px solid rgba(226, 232, 240, 0.8); padding: 28px 36px; border-radius: 28px; margin-bottom: 28px; box-shadow: 0 20px 40px -10px rgba(61, 90, 241, 0.15), 0 0 30px rgba(168, 85, 247, 0.03) inset; overflow: visible; animation: superAdminEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0;">
+              <div class="sa-profile-card" style="position: relative; display: flex; align-items: center; justify-content: space-between; gap: 24px; background: #ffffff; border: 1px solid rgba(226, 232, 240, 0.8); padding: 28px 36px; border-radius: 28px; margin-bottom: 28px; box-shadow: 0 20px 40px -10px rgba(61, 90, 241, 0.15), 0 0 30px rgba(168, 85, 247, 0.03) inset; overflow: visible; animation: superAdminEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0;">
                 <style>
                   @media (max-width: 600px) {
+                    .sa-profile-card {
+                      padding: 20px 16px 24px !important;
+                      flex-direction: column !important;
+                    }
                     .sa-profile-card-inner {
                       flex-direction: column !important;
                       align-items: center !important;
                       text-align: center !important;
-                      gap: 16px !important;
+                      gap: 14px !important;
                     }
                     .sa-profile-card-inner .sa-text-info {
                       align-items: center !important;
                     }
                     .sa-profile-card-inner .sa-text-info > div:first-child {
-                      justify-content: center !important;
+                      flex-direction: column !important;
+                      align-items: center !important;
+                      gap: 8px !important;
                     }
                     .sa-profile-card-inner .sa-text-info h2 {
-                      font-size: 24px !important;
+                      font-size: 22px !important;
                       text-align: center !important;
+                      white-space: normal !important;
                     }
                     .sa-profile-card-inner .sa-avatar-wrap {
-                      width: 110px !important;
-                      height: 110px !important;
+                      width: 100px !important;
+                      height: 100px !important;
                     }
                     .sa-profile-card-inner .sa-avatar-inner {
-                      width: 98px !important;
-                      height: 98px !important;
+                      width: 88px !important;
+                      height: 88px !important;
                     }
                     .sa-profile-card-inner .sa-status-badge {
                       justify-content: center !important;
                     }
-                    .sa-bell-wrap {
+                    .sa-profile-card .sa-bell-wrap {
                       position: absolute !important;
-                      top: 16px !important;
-                      right: 16px !important;
+                      top: 14px !important;
+                      right: 14px !important;
+                    }
+                    .sa-profile-card .sa-bell-wrap button {
+                      width: 40px !important;
+                      height: 40px !important;
+                      font-size: 18px !important;
+                      border-radius: 12px !important;
                     }
                   }
                 </style>

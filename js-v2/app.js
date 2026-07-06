@@ -1,21 +1,21 @@
 // TechBook App — Core Entry Point & Module Coordinator
 
 // Config & Utilities
-import './core/firebase.js?v=20260706u';
-import './core/helpers.js?v=20260706u';
-import './core/activity_tracker.js?v=20260706u';
+import './core/firebase.js?v=20260706v';
+import './core/helpers.js?v=20260706v';
+import './core/activity_tracker.js?v=20260706v';
 
 // Features & Components
-import './features/auth.js?v=20260706u';
-import './features/promos.js?v=20260706u';
-import './features/attendance.js?v=20260706u';
-import './features/notes.js?v=20260706u';
-import './features/qbank.js?v=20260706u';
-import './features/pyq.js?v=20260706u';
-import './features/quiz.js?v=20260706u';
-import './features/chatbot.js?v=20260706u';
-import './features/manage_students.js?v=20260706u';
-import './features/launches.js?v=20260706u';
+import './features/auth.js?v=20260706v';
+import './features/promos.js?v=20260706v';
+import './features/attendance.js?v=20260706v';
+import './features/notes.js?v=20260706v';
+import './features/qbank.js?v=20260706v';
+import './features/pyq.js?v=20260706v';
+import './features/quiz.js?v=20260706v';
+import './features/chatbot.js?v=20260706v';
+import './features/manage_students.js?v=20260706v';
+import './features/launches.js?v=20260706v';
 
 
 console.log('🚀 TechBook App fully initialized');
