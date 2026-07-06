@@ -129,6 +129,12 @@ function selectRole(role) {
   } else if (role === 'admin') {
     const isAdmLoggedIn = localStorage.getItem('techbook_admin_logged_in') === 'true';
     if (isAdmLoggedIn) {
+      const storedRole = localStorage.getItem('techbook_admin_role');
+      if (storedRole === 'co_founder') {
+        // Redirect Co-founder to their dedicated portal page!
+        selectRole('cof');
+        return;
+      }
       document.getElementById('admin-login-block')?.classList.add('hidden');
       document.getElementById('admin-area')?.classList.remove('hidden');
     } else {
@@ -144,6 +150,20 @@ function selectRole(role) {
           }
         }, 100);
       }
+    }
+  } else if (role === 'cof') {
+    const isAdmLoggedIn = localStorage.getItem('techbook_admin_logged_in') === 'true';
+    if (isAdmLoggedIn) {
+      const storedRole = localStorage.getItem('techbook_admin_role');
+      if (storedRole === 'super_admin' || storedRole === 'admin') {
+        // Redirect Admin/Super Admin back to their admin portal!
+        selectRole('admin');
+        return;
+      }
+    } else {
+      // If not logged in at all, redirect to admin login view
+      selectRole('admin');
+      return;
     }
   }
 
@@ -231,6 +251,8 @@ window.addEventListener('popstate', (event) => {
       window.switchAdminSection(state.section || null);
       window._adminHistoryNavLock = false;
     }
+  } else if (state.role === 'cof') {
+    selectRole('cof');
   } else if (state.role === 'about') {
     selectRole('about');
   }
@@ -281,6 +303,13 @@ function handleInitialRoute() {
         }, 150);
       }
     }
+
+  } else if (hash.startsWith('#cof')) {
+    window._historyNavLock = true;
+    selectRole('cof');
+    window._historyNavLock = false;
+
+    window.history.replaceState({ role: 'cof' }, '', '#cof');
 
   } else if (hash === '#about') {
     window._historyNavLock = true;

@@ -929,14 +929,17 @@ import { $, val } from '../core/helpers.js';
                   100% { box-shadow: 0 8px 25px rgba(239, 68, 68, 0.25), 0 0 0 0px rgba(139, 92, 246, 0); }
                 }
               </style>
-              <div style="position: relative; display: flex; align-items: center; justify-content: space-between; gap: 24px; background: #ffffff; border: 1px solid rgba(226, 232, 240, 0.8); padding: 28px 36px; border-radius: 28px; margin-bottom: 28px; box-shadow: 0 20px 40px -10px rgba(61, 90, 241, 0.15), 0 0 30px rgba(168, 85, 247, 0.03) inset; overflow: hidden; animation: superAdminEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0;">
+              <div style="position: relative; display: flex; align-items: center; justify-content: space-between; gap: 24px; background: #ffffff; border: 1px solid rgba(226, 232, 240, 0.8); padding: 28px 36px; border-radius: 28px; margin-bottom: 28px; box-shadow: 0 20px 40px -10px rgba(61, 90, 241, 0.15), 0 0 30px rgba(168, 85, 247, 0.03) inset; overflow: visible; animation: superAdminEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0;">
                 
-                <!-- Sleek card shine overlay sweeping every 8s -->
-                <div style="position: absolute; top: 0; left: -150%; width: 60%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent); transform: skewX(-20deg); animation: card-shimmer 7s cubic-bezier(0.3, 1, 0.3, 1) infinite; pointer-events: none; z-index: 2;"></div>
+                <!-- Background clip container for shine and shapes -->
+                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 28px; overflow: hidden; pointer-events: none; z-index: 0;">
+                  <!-- Sleek card shine overlay sweeping every 8s -->
+                  <div style="position: absolute; top: 0; left: -150%; width: 60%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent); transform: skewX(-20deg); animation: card-shimmer 7s cubic-bezier(0.3, 1, 0.3, 1) infinite; z-index: 2;"></div>
 
-                <!-- Decorative slowly orbiting background shapes -->
-                <div style="position: absolute; top: -50px; right: -50px; width: 220px; height: 220px; background: radial-gradient(circle, rgba(168, 85, 247, 0.2) 0%, transparent 70%); border-radius: 50%; pointer-events: none; animation: orbit-1 12s ease-in-out infinite alternate;"></div>
-                <div style="position: absolute; bottom: -80px; left: 100px; width: 270px; height: 270px; background: radial-gradient(circle, rgba(61, 90, 241, 0.12) 0%, transparent 70%); border-radius: 50%; pointer-events: none; animation: orbit-2 15s ease-in-out infinite alternate;"></div>
+                  <!-- Decorative slowly orbiting background shapes -->
+                  <div style="position: absolute; top: -50px; right: -50px; width: 220px; height: 220px; background: radial-gradient(circle, rgba(168, 85, 247, 0.2) 0%, transparent 70%); border-radius: 50%; animation: orbit-1 12s ease-in-out infinite alternate;"></div>
+                  <div style="position: absolute; bottom: -80px; left: 100px; width: 270px; height: 270px; background: radial-gradient(circle, rgba(61, 90, 241, 0.12) 0%, transparent 70%); border-radius: 50%; animation: orbit-2 15s ease-in-out infinite alternate;"></div>
+                </div>
                 
                 <div style="display: flex; align-items: center; gap: 28px; flex: 1; z-index: 1;">
                   <!-- Avatar Container -->
