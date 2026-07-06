@@ -49,41 +49,6 @@ import { $, val } from '../core/helpers.js';
             else btn.classList.add("hidden");
           }
         }
-
-        // Hide mobile bottom nav buttons based on toggles
-        const mnavAttendance = document.getElementById('mnav-attendance');
-        if (mnavAttendance) {
-          if (features.attendanceEnabled !== false) mnavAttendance.style.display = "";
-          else mnavAttendance.style.display = "none";
-        }
-        const mnavQuiz = document.getElementById('mnav-quiz');
-        if (mnavQuiz) {
-          if (features.quizEnabled !== false) mnavQuiz.style.display = "";
-          else mnavQuiz.style.display = "none";
-        }
-        const mnavAcademics = document.getElementById('mnav-academics');
-        if (mnavAcademics) {
-          const libraryEnabled = (features.notesEnabled !== false || features.qbankEnabled !== false || features.pyqEnabled !== false);
-          if (libraryEnabled) mnavAcademics.style.display = "";
-          else mnavAcademics.style.display = "none";
-        }
-
-        // Hide bottom sheet items based on toggles
-        const msheetTimetable = document.getElementById('msheet-ia-timetable');
-        if (msheetTimetable) {
-          if (features.iaTimetableEnabled !== false) msheetTimetable.style.display = "";
-          else msheetTimetable.style.display = "none";
-        }
-        const msheetQuizHistory = document.getElementById('msheet-quiz-history');
-        if (msheetQuizHistory) {
-          if (features.quizHistoryEnabled !== false && features.quizEnabled !== false) msheetQuizHistory.style.display = "";
-          else msheetQuizHistory.style.display = "none";
-        }
-        const msheetHistory = document.getElementById('msheet-history');
-        if (msheetHistory) {
-          if (features.historyEnabled !== false) msheetHistory.style.display = "";
-          else msheetHistory.style.display = "none";
-        }
       }
 
       function renderStudentNavbarActions() {

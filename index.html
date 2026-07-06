@@ -13,7 +13,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <link rel="stylesheet" href="assets/css/style.css?v=20260705f" />
+  <link rel="stylesheet" href="assets/css/style.css?v=20260706a" />
   <style>
     /* Force hide mobile navigation components on desktop view */
     @media (min-width: 768px) {
@@ -430,67 +430,17 @@
 
             <!-- Logged In Area -->
             <div id="student-area" class="hidden">
-              
-              <!-- Mobile-only App Header (Visible only on screens <= 767px) -->
-              <div id="mobile-app-header" class="mobile-app-header hidden">
-                <div class="mobile-header-top">
-                  <button id="mobile-header-left-btn" class="mobile-header-btn" onclick="handleMobileHeaderLeftClick()">
-                    <!-- Hamburger Menu SVG -->
-                    <svg id="svg-header-menu" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                      <line x1="3" y1="12" x2="21" y2="12"></line>
-                      <line x1="3" y1="6" x2="21" y2="6"></line>
-                      <line x1="3" y1="18" x2="21" y2="18"></line>
-                    </svg>
-                    <!-- Back Arrow SVG -->
-                    <svg id="svg-header-back" class="hidden" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                      <line x1="19" y1="12" x2="5" y2="12"></line>
-                      <polyline points="12 19 5 12 12 5"></polyline>
-                    </svg>
-                  </button>
-                  <div class="mobile-header-center">
-                    <div id="mobile-header-title-main" class="mobile-title-brand">Tech <span style="color: #3d5af1;">Book</span></div>
-                    <div id="mobile-header-subtitle" class="mobile-subtitle-text">— It makes you learn easy —</div>
-                  </div>
-                  <button class="mobile-header-btn" onclick="alert('No new notifications')">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                      <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                    </svg>
-                  </button>
-                </div>
-                
-                <div id="mobile-welcome-card" class="mobile-welcome-card">
-                  <div class="mobile-welcome-text">
-                    <div class="welcome-hello">Hello, Learner! 👋</div>
-                    <div class="welcome-prompt">What would you like to learn today?</div>
-                  </div>
-                  <div class="mobile-welcome-image">
-                    <svg width="56" height="56" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M32 8L56 18L32 28L8 18L32 8Z" fill="#3d5af1"/>
-                      <path d="M16 22V34C16 40 24 44 32 44C40 44 48 40 48 34V22" stroke="#3d5af1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-                      <path d="M48 24V38" stroke="#a855f7" stroke-width="3" stroke-linecap="round"/>
-                      <circle cx="48" cy="39" r="2.5" fill="#a855f7"/>
-                      <path d="M12 48H52C54.2091 48 56 49.7909 56 52C56 54.2091 54.2091 56 52 56H12C9.79086 56 8 54.2091 8 52C8 49.7909 9.79086 48 12 48Z" fill="#a855f7"/>
-                      <path d="M12 40H52C54.2091 40 56 41.7909 56 44C56 46.2091 54.2091 48 52 48H12C9.79086 48 8 46.2091 8 44C8 41.7909 9.79086 40 12 40Z" fill="#3d5af1"/>
-                    </svg>
-                  </div>
-                </div>
-              </div>
-
               <!-- Top bar: session banner -->
-              <div id="student-dashboard-banner" style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
                 <div id="session-banner" class="hidden"
                   style="flex:1;background:linear-gradient(135deg,#3d5af1 0%,#6366f1 60%,#a855f7 100%);padding:12px 14px;border-radius:12px;text-align:center;">
                   <div style="font-size:11px;opacity:0.9;margin-bottom:3px;">Current Session</div>
                   <div id="student-session-name" style="font-size:16px;font-weight:700;"></div>
                 </div>
               </div>
-              
-              <!-- Wrap dashboard elements in a toggleable container -->
-              <div id="student-dashboard-main">
-                <div class="user-card">
-                  <div id="student-info"></div>
-                </div>
+              <div class="user-card">
+                <div id="student-info"></div>
+              </div>
 
               <!-- Student Nav Grid -->
               <div style="margin:0 0 6px;">
@@ -3121,15 +3071,15 @@
             <span class="mobile-nav-icon">🏠</span>
             <span class="mobile-nav-label">Home</span>
           </button>
-          <button id="mnav-attendance" class="mobile-nav-item" onclick="handleMobileNavClick('attendance', this)">
+          <button class="mobile-nav-item" onclick="handleMobileNavClick('attendance', this)">
             <span class="mobile-nav-icon">📋</span>
             <span class="mobile-nav-label">Attendance</span>
           </button>
-          <button id="mnav-quiz" class="mobile-nav-item" onclick="handleMobileNavClick('quiz', this)">
+          <button class="mobile-nav-item" onclick="handleMobileNavClick('quiz', this)">
             <span class="mobile-nav-icon">🧠</span>
             <span class="mobile-nav-label">Quizzes</span>
           </button>
-          <button id="mnav-academics" class="mobile-nav-item" onclick="handleMobileNavClick('academics', this)">
+          <button class="mobile-nav-item" onclick="handleMobileNavClick('academics', this)">
             <span class="mobile-nav-icon">📚</span>
             <span class="mobile-nav-label">Library</span>
           </button>
@@ -3170,15 +3120,15 @@
             <div class="sheet-handle"></div>
             <h3 class="sheet-title">Menu & Settings</h3>
             <div class="sheet-menu-list">
-              <button id="msheet-ia-timetable" class="sheet-menu-item" onclick="switchStudentTab('ia-timetable'); closeMobileMoreSheet();">
+              <button class="sheet-menu-item" onclick="switchStudentTab('ia-timetable'); closeMobileMoreSheet();">
                 <span class="sheet-menu-icon">📆</span>
                 <span class="sheet-menu-label">IA Timetable</span>
               </button>
-              <button id="msheet-quiz-history" class="sheet-menu-item" onclick="switchStudentTab('quiz-history'); closeMobileMoreSheet();">
+              <button class="sheet-menu-item" onclick="switchStudentTab('quiz-history'); closeMobileMoreSheet();">
                 <span class="sheet-menu-icon">📊</span>
                 <span class="sheet-menu-label">Quiz History</span>
               </button>
-              <button id="msheet-history" class="sheet-menu-item" onclick="switchStudentTab('history'); closeMobileMoreSheet();">
+              <button class="sheet-menu-item" onclick="switchStudentTab('history'); closeMobileMoreSheet();">
                 <span class="sheet-menu-icon">🗃️</span>
                 <span class="sheet-menu-label">Attendance History</span>
               </button>
@@ -3504,8 +3454,8 @@
     <iframe id="pdf-viewer-frame" src="" style="flex:1;width:100%;border:none;background:#525659;"></iframe>
   </div>
 
-  <script type="module" src="js-v2/app.js?v=20260706"></script>
-  <script type="module" src="js-v2/features/mobile-navigation.js?v=20260706"></script>
+  <script type="module" src="js-v2/app.js?v=20260706a"></script>
+  <script type="module" src="js-v2/features/mobile-navigation.js?v=20260706a"></script>
 
   <!-- ══ FOUNDER MODAL ══ -->
   <div id="founder-modal"

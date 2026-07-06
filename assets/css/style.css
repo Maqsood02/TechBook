@@ -4863,11 +4863,13 @@
 
       /* 8. Landing Page Mobile Optimization */
       .landing-navbar {
-        height: 56px !important;
+        height: auto !important;
+        min-height: 56px !important;
         background: #ffffff !important;
         box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
         position: sticky !important;
         top: 0 !important;
+        padding-top: calc(env(safe-area-inset-top, 0px) + 12px) !important;
       }
       .navbar-container {
         padding: 6px 16px !important;
@@ -4885,7 +4887,8 @@
         display: flex !important;
       }
       .navbar-menu {
-        top: 56px !important;
+        position: absolute !important;
+        top: 100% !important;
       }
 
       /* Hero Section Mobile Polish */
@@ -4929,173 +4932,5 @@
       }
       .laptop-base {
         height: 8px !important;
-      }
-
-      /* Hide the default main-navbar for students in mobile app mode */
-      body.mobile-app-mode.student-mode #main-navbar {
-        display: none !important;
-      }
-
-      /* Adjust content padding when default navbar is hidden */
-      body.mobile-app-mode.student-mode #content {
-        padding: 0 0 88px 0 !important;
-      }
-
-      /* Hide user profile details (welcome text, name, usn) on mobile user-card */
-      body.mobile-app-mode.student-mode .user-card-banner,
-      body.mobile-app-mode.student-mode .user-card .welcome,
-      body.mobile-app-mode.student-mode .user-card .avatar,
-      body.mobile-app-mode.student-mode .user-card .name,
-      body.mobile-app-mode.student-mode .user-card .usn,
-      body.mobile-app-mode.student-mode .user-card hr {
-        display: none !important;
-      }
-      body.mobile-app-mode.student-mode .user-card {
-        background: transparent !important;
-        border: none !important;
-        box-shadow: none !important;
-        padding: 0 !important;
-        margin: 0 0 16px 0 !important;
-      }
-      body.mobile-app-mode.student-mode .user-card .profile-details {
-        margin: 0 !important;
-        padding: 0 !important;
-        display: grid !important;
-        grid-template-columns: repeat(4, 1fr) !important;
-        gap: 8px !important;
-      }
-      body.mobile-app-mode.student-mode .user-card .profile-details .detail-pill {
-        background: #ffffff !important;
-        border: 1px solid #e5e7eb !important;
-        border-radius: 16px !important;
-        padding: 10px 4px !important;
-        text-align: center !important;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.03) !important;
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        justify-content: center !important;
-        transition: none !important;
-        transform: none !important;
-      }
-      body.mobile-app-mode.student-mode .user-card .profile-details .detail-pill:hover {
-        transform: none !important;
-        background: #ffffff !important;
-        border-color: #e5e7eb !important;
-      }
-
-      /* Mobile App Header Styles */
-      .mobile-app-header {
-        background: linear-gradient(135deg, #020b24 0%, #061539 100%);
-        padding: 16px 16px 24px 16px;
-        color: #ffffff;
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-        margin-bottom: 16px;
-        border-bottom-left-radius: 28px;
-        border-bottom-right-radius: 28px;
-        box-shadow: 0 8px 30px rgba(2, 11, 36, 0.15);
-      }
-      
-      .mobile-app-header.hidden {
-        display: none !important;
-      }
-      
-      .mobile-header-top {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        width: 100%;
-      }
-      
-      .mobile-header-btn {
-        background: rgba(255, 255, 255, 0.08) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-radius: 12px !important;
-        width: 42px !important;
-        height: 42px !important;
-        min-height: 42px !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        cursor: pointer !important;
-        padding: 0 !important;
-        transition: all 0.2s;
-      }
-      
-      .mobile-header-btn:active {
-        transform: scale(0.92);
-        background: rgba(255, 255, 255, 0.15) !important;
-      }
-      
-      .mobile-header-btn svg {
-        display: block;
-      }
-      
-      .mobile-header-center {
-        text-align: center;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-      }
-      
-      .mobile-title-brand {
-        font-size: 22px;
-        font-weight: 700;
-        letter-spacing: 0.5px;
-        color: #ffffff;
-        font-family: 'Poppins', sans-serif;
-      }
-      
-      .mobile-subtitle-text {
-        font-size: 9px;
-        color: rgba(255, 255, 255, 0.6);
-        letter-spacing: 0.5px;
-        margin-top: 2px;
-        text-transform: uppercase;
-        font-weight: 500;
-      }
-      
-      .mobile-welcome-card {
-        background: #ffffff;
-        border-radius: 20px;
-        padding: 16px 20px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        margin-top: 4px;
-        animation: fadeInUp 0.4s ease-out;
-      }
-      
-      .mobile-welcome-text {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        flex: 1;
-        text-align: left;
-      }
-      
-      .welcome-hello {
-        font-size: 17px;
-        font-weight: 700;
-        color: #0f172a;
-      }
-      
-      .welcome-prompt {
-        font-size: 13px;
-        color: #64748b;
-        font-weight: 500;
-        line-height: 1.4;
-      }
-      
-      .mobile-welcome-image {
-        flex-shrink: 0;
-        margin-left: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
       }
     }

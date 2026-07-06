@@ -8,7 +8,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   // ─── 1. Register Service Worker for PWA ───
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js?v=20260706')
+    navigator.serviceWorker.register('/sw.js?v=20260706a')
       .then(reg => console.log('✅ PWA Service Worker Registered', reg.scope))
       .catch(err => console.error('❌ Service Worker Registration Failed', err));
   }
@@ -52,28 +52,14 @@ function updateMobileNavVisibility() {
 
   if (isStudentLoggedIn || isAdminLoggedIn) {
     document.body.classList.add('mobile-app-mode');
-    if (isStudentLoggedIn) {
-      document.body.classList.add('student-mode');
-      document.body.classList.remove('admin-mode');
-    } else {
-      document.body.classList.add('admin-mode');
-      document.body.classList.remove('student-mode');
-    }
   } else {
     document.body.classList.remove('mobile-app-mode');
-    document.body.classList.remove('student-mode');
-    document.body.classList.remove('admin-mode');
   }
   
   if (isStudentLoggedIn) {
     if (studentNav) studentNav.classList.remove('hidden');
     if (adminNav) adminNav.classList.add('hidden');
     syncMobileNavActiveState('home');
-    
-    // Initialize student mobile app header in Home state
-    if (typeof window.updateMobileAppHeader === 'function') {
-      window.updateMobileAppHeader(null);
-    }
   } else if (isAdminLoggedIn) {
     if (adminNav) adminNav.classList.remove('hidden');
     if (studentNav) studentNav.classList.add('hidden');
@@ -81,10 +67,6 @@ function updateMobileNavVisibility() {
   } else {
     if (studentNav) studentNav.classList.add('hidden');
     if (adminNav) adminNav.classList.add('hidden');
-    
-    // Hide mobile app header when logged out
-    const header = document.getElementById('mobile-app-header');
-    if (header) header.classList.add('hidden');
   }
 }
 
@@ -221,46 +203,32 @@ function wrapTabSwitchers() {
 
 function handleStudentTabStateChange(tab) {
   const subtabs = document.getElementById('mobile-academics-tabs');
-  const dashboardMain = document.getElementById('student-dashboard-main');
-  const dashboardBanner = document.getElementById('student-dashboard-banner');
-  
-  // Update mobile app header dynamically
-  if (typeof window.updateMobileAppHeader === 'function') {
-    window.updateMobileAppHeader(tab);
-  }
   
   if (!tab) {
     syncMobileNavActiveState('home');
     if (subtabs) subtabs.classList.add('hidden');
-    if (dashboardMain) dashboardMain.style.display = '';
-    if (dashboardBanner) dashboardBanner.style.display = '';
-  } else {
-    if (dashboardMain) dashboardMain.style.display = 'none';
-    if (dashboardBanner) dashboardBanner.style.display = 'none';
+  } else if (tab === 'attendance') {
+    syncMobileNavActiveState('attendance');
+    if (subtabs) subtabs.classList.add('hidden');
+  } else if (tab === 'quiz') {
+    syncMobileNavActiveState('quiz');
+    if (subtabs) subtabs.classList.add('hidden');
+  } else if (['notes', 'qbank', 'pyq'].includes(tab)) {
+    syncMobileNavActiveState('academics');
+    if (subtabs) subtabs.classList.remove('hidden');
     
-    if (tab === 'attendance') {
-      syncMobileNavActiveState('attendance');
-      if (subtabs) subtabs.classList.add('hidden');
-    } else if (tab === 'quiz') {
-      syncMobileNavActiveState('quiz');
-      if (subtabs) subtabs.classList.add('hidden');
-    } else if (['notes', 'qbank', 'pyq'].includes(tab)) {
-      syncMobileNavActiveState('academics');
-      if (subtabs) subtabs.classList.remove('hidden');
-      
-      // Highlight correct subtab pill
-      document.querySelectorAll('.mobile-subtab-btn').forEach(btn => {
-        const btnTab = btn.getAttribute('data-subtab');
-        if (btnTab === tab) {
-          btn.classList.add('active');
-        } else {
-          btn.classList.remove('active');
-        }
-      });
-    } else {
-      //timetables, history etc
-      if (subtabs) subtabs.classList.add('hidden');
-    }
+    // Highlight correct subtab pill
+    document.querySelectorAll('.mobile-subtab-btn').forEach(btn => {
+      const btnTab = btn.getAttribute('data-subtab');
+      if (btnTab === tab) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+  } else {
+    //timetables, history etc
+    if (subtabs) subtabs.classList.add('hidden');
   }
 }
 
@@ -320,78 +288,3 @@ window.triggerAdminLogout = function() {
     window.adminLogout();
   }
 };
-
-// ─── 10. Dynamic Mobile App Header Controller ───
-window.updateMobileAppHeader = function(tab) {
-  const header = document.getElementById('mobile-app-header');
-  const welcomeCard = document.getElementById('mobile-welcome-card');
-  const menuIcon = document.getElementById('svg-header-menu');
-  const backIcon = document.getElementById('svg-header-back');
-  const titleMain = document.getElementById('mobile-header-title-main');
-  const subtitle = document.getElementById('mobile-header-subtitle');
-  
-  if (!header) return;
-  
-  // Only show header on mobile screens
-  if (window.innerWidth >= 768) {
-    header.classList.add('hidden');
-    return;
-  }
-  
-  header.classList.remove('hidden');
-  
-  if (!tab || tab === 'home') {
-    if (welcomeCard) welcomeCard.style.display = 'flex';
-    if (menuIcon) menuIcon.classList.remove('hidden');
-    if (backIcon) backIcon.classList.add('hidden');
-    if (titleMain) titleMain.innerHTML = 'Tech <span style="color: #4f8ef7;">Book</span>';
-    if (subtitle) subtitle.style.display = 'block';
-  } else {
-    if (welcomeCard) welcomeCard.style.display = 'none';
-    if (menuIcon) menuIcon.classList.add('hidden');
-    if (backIcon) backIcon.classList.remove('hidden');
-    if (subtitle) subtitle.style.display = 'none';
-    
-    const tabNames = {
-      'attendance': 'Attendance Tracker',
-      'quiz': 'Quizzes',
-      'quiz-history': 'Quiz History',
-      'history': 'Attendance History',
-      'notes': 'Study Notes',
-      'qbank': 'Question Bank',
-      'pyq': 'Previous Papers',
-      'ia-timetable': 'IA Timetable'
-    };
-    if (titleMain) titleMain.innerHTML = tabNames[tab] || 'Tech Book';
-  }
-};
-
-window.handleMobileHeaderLeftClick = function() {
-  const backIcon = document.getElementById('svg-header-back');
-  if (backIcon && !backIcon.classList.contains('hidden')) {
-    if (typeof window.switchStudentTab === 'function') {
-      window.switchStudentTab(null);
-    }
-  } else {
-    if (typeof window.openMobileMoreSheet === 'function') {
-      window.openMobileMoreSheet();
-    }
-  }
-};
-
-window.addEventListener('resize', () => {
-  const studentArea = document.getElementById('student-area');
-  const isStudentLoggedIn = studentArea && !studentArea.classList.contains('hidden');
-  if (isStudentLoggedIn) {
-    let activeTab = null;
-    const tabContent = document.getElementById('student-tab-content');
-    if (tabContent && tabContent.style.display !== 'none') {
-      const activeTabSec = ['attendance', 'quiz', 'quiz-history', 'history', 'notes', 'qbank', 'pyq', 'ia-timetable'].find(t => {
-        const c = document.getElementById('stab-content-' + t);
-        return c && c.style.display !== 'none';
-      });
-      activeTab = activeTabSec || null;
-    }
-    window.updateMobileAppHeader(activeTab);
-  }
-});
