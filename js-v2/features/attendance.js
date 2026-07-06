@@ -903,7 +903,18 @@ import { $, val } from '../core/helpers.js';
             `;
           } else if (role === 'super_admin') {
             headerCard.innerHTML = `
-              <div style="position: relative; display: flex; align-items: center; justify-content: space-between; gap: 24px; background: #ffffff; border: 1px solid rgba(226, 232, 240, 0.8); padding: 28px 36px; border-radius: 28px; margin-bottom: 28px; box-shadow: 0 20px 40px -10px rgba(61, 90, 241, 0.15), 0 0 30px rgba(168, 85, 247, 0.05) inset; overflow: hidden;">
+              <style>
+                @keyframes superAdminEntrance {
+                  0% { opacity: 0; transform: translateY(30px) scale(0.95); }
+                  100% { opacity: 1; transform: translateY(0) scale(1); }
+                }
+                @keyframes superAdminFloat {
+                  0% { transform: translateY(0px); }
+                  50% { transform: translateY(-6px); }
+                  100% { transform: translateY(0px); }
+                }
+              </style>
+              <div style="position: relative; display: flex; align-items: center; justify-content: space-between; gap: 24px; background: #ffffff; border: 1px solid rgba(226, 232, 240, 0.8); padding: 28px 36px; border-radius: 28px; margin-bottom: 28px; box-shadow: 0 20px 40px -10px rgba(61, 90, 241, 0.15), 0 0 30px rgba(168, 85, 247, 0.05) inset; overflow: hidden; animation: superAdminEntrance 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, superAdminFloat 6s ease-in-out infinite alternate; opacity: 0;">
                 <!-- Decorative background shapes -->
                 <div style="position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; background: radial-gradient(circle, rgba(168, 85, 247, 0.15) 0%, transparent 70%); border-radius: 50%; pointer-events: none;"></div>
                 <div style="position: absolute; bottom: -80px; left: 100px; width: 250px; height: 250px; background: radial-gradient(circle, rgba(61, 90, 241, 0.1) 0%, transparent 70%); border-radius: 50%; pointer-events: none;"></div>

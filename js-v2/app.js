@@ -1,20 +1,20 @@
 // TechBook App — Core Entry Point & Module Coordinator
 
 // Config & Utilities
-import './core/firebase.js?v=20260706p';
-import './core/helpers.js?v=20260706p';
-import './core/activity_tracker.js?v=20260706p';
+import './core/firebase.js?v=20260706q';
+import './core/helpers.js?v=20260706q';
+import './core/activity_tracker.js?v=20260706q';
 
 // Features & Components
-import './features/auth.js?v=20260706p';
-import './features/promos.js?v=20260706p';
-import './features/attendance.js?v=20260706p';
-import './features/notes.js?v=20260706p';
-import './features/qbank.js?v=20260706p';
-import './features/pyq.js?v=20260706p';
-import './features/quiz.js?v=20260706p';
-import './features/chatbot.js?v=20260706p';
-import './features/manage_students.js?v=20260706p';
+import './features/auth.js?v=20260706q';
+import './features/promos.js?v=20260706q';
+import './features/attendance.js?v=20260706q';
+import './features/notes.js?v=20260706q';
+import './features/qbank.js?v=20260706q';
+import './features/pyq.js?v=20260706q';
+import './features/quiz.js?v=20260706q';
+import './features/chatbot.js?v=20260706q';
+import './features/manage_students.js?v=20260706q';
 
 
 console.log('🚀 TechBook App fully initialized');
@@ -84,7 +84,10 @@ function selectRole(role) {
   const label = document.getElementById('navbar-role-label');
   if (label) {
     if (role === 'student') label.textContent = 'Student Portal';
-    else if (role === 'admin') label.textContent = 'Admin Portal';
+    else if (role === 'admin') {
+      const storedRole = localStorage.getItem('techbook_admin_role');
+      label.textContent = storedRole === 'super_admin' ? 'Super Admin Portal' : 'Admin Portal';
+    }
     else if (role === 'cof') label.textContent = 'Co-Founder Portal';
     else if (role === 'about') label.textContent = 'About TechBook';
   }
