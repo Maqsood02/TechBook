@@ -1,20 +1,20 @@
 // TechBook App — Core Entry Point & Module Coordinator
 
 // Config & Utilities
-import './core/firebase.js?v=20260706n';
-import './core/helpers.js?v=20260706n';
-import './core/activity_tracker.js?v=20260706n';
+import './core/firebase.js?v=20260706o';
+import './core/helpers.js?v=20260706o';
+import './core/activity_tracker.js?v=20260706o';
 
 // Features & Components
-import './features/auth.js?v=20260706n';
-import './features/promos.js?v=20260706n';
-import './features/attendance.js?v=20260706n';
-import './features/notes.js?v=20260706n';
-import './features/qbank.js?v=20260706n';
-import './features/pyq.js?v=20260706n';
-import './features/quiz.js?v=20260706n';
-import './features/chatbot.js?v=20260706n';
-import './features/manage_students.js?v=20260706n';
+import './features/auth.js?v=20260706o';
+import './features/promos.js?v=20260706o';
+import './features/attendance.js?v=20260706o';
+import './features/notes.js?v=20260706o';
+import './features/qbank.js?v=20260706o';
+import './features/pyq.js?v=20260706o';
+import './features/quiz.js?v=20260706o';
+import './features/chatbot.js?v=20260706o';
+import './features/manage_students.js?v=20260706o';
 
 
 console.log('🚀 TechBook App fully initialized');
@@ -352,3 +352,53 @@ function switchLandingTab(tabId) {
 window.switchLandingTab = switchLandingTab;
 
 
+import { db } from './core/firebase.js?v=20260706n';
+import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', _initCoFounderMessaging);
+} else {
+  _initCoFounderMessaging();
+}
+
+function _initCoFounderMessaging() {
+  const sendBtn = document.getElementById('cof-send-btn');
+  const msgInput = document.getElementById('cof-message-input');
+
+  if (sendBtn && msgInput) {
+    sendBtn.addEventListener('click', async () => {
+      const text = msgInput.value.trim();
+      if (!text) {
+        alert("Please type a message before sending.");
+        return;
+      }
+      
+      sendBtn.disabled = true;
+      sendBtn.textContent = 'Sending...';
+      
+      try {
+        await addDoc(collection(db, 'super_admin_messages'), {
+          text: text,
+          sender: 'Chinmay K V',
+          role: 'Co-Founder',
+          timestamp: serverTimestamp(),
+          read: false
+        });
+        
+        msgInput.value = '';
+        alert("Message sent successfully to Super Admin (Maqsood M D)!");
+        
+        // Also optionally open mailto link for direct email reflection
+        const mailtoLink = `mailto:techbook.ac.in@gmail.com?subject=Co-Founder%20Direct%20Message&body=${encodeURIComponent(text)}`;
+        window.open(mailtoLink, '_blank');
+        
+      } catch (err) {
+        console.error("Error sending message:", err);
+        alert("Failed to send message. Please try again.");
+      } finally {
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Send Message';
+      }
+    });
+  }
+}
