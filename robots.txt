@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+Allow: /index.html
+Allow: /assets/
+Allow: /img/
+
+# Avoid indexing source code, scratch directories, and system paths
+Disallow: /js-v2/
+Disallow: /scratch/
+Disallow: /email-templates/
+Disallow: /node_modules/
+Disallow: /api/
+
+# Host and Sitemap
+Host: techbook.ac.in
+Sitemap: https://techbook.ac.in/sitemap.xml

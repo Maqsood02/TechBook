@@ -58,7 +58,7 @@ const auth = getAuth(app);
 let db;
 try {
   db = initializeFirestore(app, {
-    experimentalAutoDetectLongPolling: true,
+    forceLongPolling: true,
     localCache: persistentLocalCache({
       tabManager: persistentMultipleTabManager()
     })
