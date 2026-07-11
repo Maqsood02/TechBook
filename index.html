@@ -739,10 +739,7 @@
                     <span class="btn-emoji">🗂️</span><span class="btn-label">Prev Year Questions</span>
                   </button>
 
-                  <button class="admin-nav-btn hidden" onclick="switchStudentTab('ia-timetable')" id="stab-ia-timetable"
-                    style="border-color:#f0abfc;background:linear-gradient(135deg,#fdf4ff,#fae8ff);">
-                    <span class="btn-emoji">📆</span><span class="btn-label">IA Timetable</span>
-                  </button>
+
                 </div>
               </div>
               <!-- ── iOS 26 GLASS FOOTER ── -->
@@ -1380,10 +1377,7 @@
                   style="border-color:#fde68a;background:linear-gradient(135deg,#fffbeb,#fefce8);">
                   <span class="nav-icon">📜</span>Upload PYQ Papers
                 </button>
-                <button class="admin-nav-btn" data-section="sec-ia-timetable"
-                  style="border-color:#d8b4fe;background:linear-gradient(135deg,#fdf4ff,#faf5ff);">
-                  <span class="nav-icon">📆</span>Upload IA Timetable
-                </button>
+
                 <button class="admin-nav-btn super-admin-only" data-section="sec-admins"
                   style="border-color:#fbbf24;background:linear-gradient(135deg,#fffbeb,#fef3c7);">
                   <span class="nav-icon">👮</span>Manage Admins
@@ -1999,16 +1993,7 @@
                       </label>
                     </div>
 
-                    <div class="switch-container">
-                      <div class="switch-label">
-                        <span class="switch-icon">📆</span>
-                        <span>IA Timetable</span>
-                      </div>
-                      <label class="switch">
-                        <input type="checkbox" id="feat-ia-timetable" checked>
-                        <span class="slider"></span>
-                      </label>
-                    </div>
+
 
                     <button class="btn btn-success" id="btn-save-features" style="margin-top:10px;">
                       💾 Save Feature Settings
@@ -3553,10 +3538,7 @@
             <div class="sheet-handle"></div>
             <h3 class="sheet-title">Menu & Settings</h3>
             <div class="sheet-menu-list">
-              <button class="sheet-menu-item" onclick="switchStudentTab('ia-timetable'); closeMobileMoreSheet();">
-                <span class="sheet-menu-icon">📆</span>
-                <span class="sheet-menu-label">IA Timetable</span>
-              </button>
+
               <button class="sheet-menu-item" onclick="switchStudentTab('quiz-history'); closeMobileMoreSheet();">
                 <span class="sheet-menu-icon">📊</span>
                 <span class="sheet-menu-label">Quiz History</span>
@@ -3625,9 +3607,7 @@
               <button class="sheet-menu-item" onclick="switchAdminSection('sec-pyq-upload'); closeAdminMoreSheet();">
                 <span class="sheet-menu-icon">🗂️</span><span class="sheet-menu-label">Upload PYQ Papers</span>
               </button>
-              <button class="sheet-menu-item" onclick="switchAdminSection('sec-ia-timetable'); closeAdminMoreSheet();">
-                <span class="sheet-menu-icon">📆</span><span class="sheet-menu-label">Upload IA Timetable</span>
-              </button>
+
               <button class="sheet-menu-item" onclick="switchAdminSection('sec-live-monitor'); closeAdminMoreSheet();">
                 <span class="sheet-menu-icon">🖥️</span><span class="sheet-menu-label">Live Monitor</span>
               </button>

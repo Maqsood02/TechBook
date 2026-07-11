@@ -1362,7 +1362,9 @@ service cloud.firestore {
           $("feat-notes").checked = data.notesEnabled !== false;
           $("feat-pyq").checked = data.pyqEnabled !== false;
           $("feat-qbank").checked = data.qbankEnabled !== false;
-          $("feat-ia-timetable").checked = data.iaTimetableEnabled !== false;
+          if ($("feat-ia-timetable")) {
+            $("feat-ia-timetable").checked = data.iaTimetableEnabled !== false;
+          }
         }
       } catch (e) {
         console.error("Error loading features:", e);
@@ -1382,7 +1384,7 @@ service cloud.firestore {
         notesEnabled: $("feat-notes").checked,
         pyqEnabled: $("feat-pyq").checked,
         qbankEnabled: $("feat-qbank").checked,
-        iaTimetableEnabled: $("feat-ia-timetable").checked,
+        iaTimetableEnabled: $("feat-ia-timetable") ? $("feat-ia-timetable").checked : false,
         updatedBy: window._currentAdminUser || 'admin',
         updatedAt: serverTimestamp()
       };
