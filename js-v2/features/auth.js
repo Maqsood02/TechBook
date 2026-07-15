@@ -1365,28 +1365,8 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
           if (usn.includes('@')) {
             usn = usn.split('@')[0].toUpperCase();
           }
-          
-          // Verify student record first (role authorization check) with 7-second timeout
-          let studentDoc = null;
-          try {
-            studentDoc = await Promise.race([
-              getDoc(doc(db, 'students', usn)),
-              new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 7000))
-            ]);
-          } catch (dbErr) {
-            console.warn('Firestore student fetch timed out or failed:', dbErr.message);
-            if (dbErr.message === 'Timeout') {
-              throw new Error('Connection timed out. Please check your network/internet connection.');
-            } else {
-              throw dbErr;
-            }
-          }
 
-          if (!studentDoc.exists()) {
-            throw new Error('This USN is not registered. Please create an account or verify role.');
-          }
-
-          // Try Firebase Auth
+          // 1. Try Firebase Auth first so the user is authenticated and authorized to query Firestore
           try {
             await signInWithEmailAndPassword(auth, `${usn.toLowerCase()}@techbook.ac.in`, pass);
             console.log('✓ Firebase Auth login successful');
@@ -1399,6 +1379,28 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
             } else {
               throw authError;
             }
+          }
+
+          // 2. Verify student record (role authorization check) with 7-second timeout
+          let studentDoc = null;
+          try {
+            studentDoc = await Promise.race([
+              getDoc(doc(db, 'students', usn)),
+              new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 7000))
+            ]);
+          } catch (dbErr) {
+            console.warn('Firestore student fetch timed out or failed:', dbErr.message);
+            await signOut(auth); // Clear auth if doc cannot be fetched
+            if (dbErr.message === 'Timeout') {
+              throw new Error('Connection timed out. Please check your network/internet connection.');
+            } else {
+              throw dbErr;
+            }
+          }
+
+          if (!studentDoc.exists()) {
+            await signOut(auth);
+            throw new Error('This USN is not registered in the student database. Please contact admin.');
           }
 
           msg('unified-login-msg', 'Login successful! Redirecting...', 'success');
