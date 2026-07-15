@@ -99,6 +99,7 @@
   </style>
   <script>
     window.API_BASE_URL = 'https://tech-book-two.vercel.app';
+    window.AI_PROXY = ''; // Paste your Cloudflare Worker URL here (e.g. 'https://techbook-ai-proxy.YOUR.workers.dev')
   </script>
 </head>
 
@@ -468,7 +469,8 @@
         </footer>
 
         <!-- ═══ Premium Floating App Download Banner ═══ -->
-        <div id="landing-floating-download" class="hidden" style="display:none; position:fixed; bottom:24px; right:24px; z-index:9999; font-family:'Poppins', sans-serif;">
+        <div id="landing-floating-download" class="hidden" style="display:none; position:fixed; bottom:24px; left:24px; z-index:9999; font-family:'Poppins', sans-serif;">
+
           <style>
             @keyframes floatBannerIn {
               0% { opacity:0; transform: translateY(40px) scale(0.9); }
@@ -4995,5 +4997,17 @@
     window.hideVerifyModal = hideVerifyModal;
   </script>
 
+  <!-- ElevenLabs Conversational AI Widget -->
+  <style>
+    elevenlabs-convai {
+      --elevenlabs-convai-widget-width: 340px;
+      --elevenlabs-convai-widget-height: 480px;
+    }
+  </style>
+  <elevenlabs-convai agent-id="agent_3701kxfgmve7fqh93pqd44j6qzdv"></elevenlabs-convai>
+  <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
+
+
+
 </body>
-</html>
+</html>

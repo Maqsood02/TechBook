@@ -9,7 +9,8 @@ import {
   reauthenticateWithCredential, 
   EmailAuthProvider, 
   sendPasswordResetEmail, 
-  confirmPasswordReset 
+  confirmPasswordReset,
+  updateEmail
 } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
 import { doc, setDoc, getDoc, addDoc, collection, query, where, getDocs, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 import { $, val, API_BASE_URL } from '../core/helpers.js';
@@ -513,19 +514,9 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
     $("btn-reset-pass")?.addEventListener("click", async () => {
       const usn = val("forgot-usn").toUpperCase();
       const name = val("forgot-name");
-      const newPass = val("forgot-new-pass");
-      const confirmPass = val("forgot-confirm-pass");
 
-      if (!usn || !name || !newPass || !confirmPass) {
-        return msg("forgot-msg", "Please fill all fields", "error");
-      }
-
-      if (newPass !== confirmPass) {
-        return msg("forgot-msg", "Passwords do not match", "error");
-      }
-
-      if (newPass.length < 6) {
-        return msg("forgot-msg", "Password must be at least 6 characters", "error");
+      if (!usn || !name) {
+        return msg("forgot-msg", "Please enter USN and Name", "error");
       }
 
       try {
@@ -547,29 +538,30 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
           return msg("forgot-msg", "❌ Verification failed. Name doesn't match", "error");
         }
 
-        // Update password hash in student record
-        const passwordHash = CryptoJS.SHA256(newPass).toString();
+        // Create reset request
+        await setDoc(doc(db, "password_reset_requests", usn), {
+          usn,
+          name,
+          section: studentData.section || 'N/A',
+          requestedAt: new Date().toISOString(),
+          status: 'pending'
+        });
 
-        await setDoc(doc(db, "students", usn), {
-          passwordHash: passwordHash,
-          lastPasswordReset: new Date().toISOString()
-        }, { merge: true });
+        console.log("✓ Password reset request submitted for:", usn);
 
-        console.log("✓ Password reset successful for:", usn);
-
-        msg("forgot-msg", "✓ Password reset successful! You can now login with your new password.", "success");
+        msg("forgot-msg", "✓ Request submitted! Admin will verify and send a reset link to your email.", "success");
 
         setTimeout(() => {
           $("back-to-login").click();
           // Clear form
           $("forgot-usn").value = "";
           $("forgot-name").value = "";
-          $("forgot-new-pass").value = "";
-          $("forgot-confirm-pass").value = "";
-        }, 2500);
+          if ($("forgot-new-pass")) $("forgot-new-pass").value = "";
+          if ($("forgot-confirm-pass")) $("forgot-confirm-pass").value = "";
+        }, 3000);
 
       } catch (e) {
-        console.error("Password reset error:", e);
+        console.error("Password reset request error:", e);
         msg("forgot-msg", "❌ Error: " + e.message, "error");
       }
     });
@@ -713,21 +705,31 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
     onAuthStateChanged(auth, async (user) => {
       console.log("Auth state changed:", user ? "Logged in" : "Logged out");
 
-      if (user) {
-        // If it's an anonymous login, it means it's an Admin auth session!
-        if (user.isAnonymous) {
-          console.log("Firebase anonymous user logged in (Admin session).");
-          // Restore admin session if saved locally
-          const isAdmLoggedIn = localStorage.getItem('techbook_admin_logged_in') === 'true';
-          if (isAdmLoggedIn) {
-            const username = localStorage.getItem('techbook_admin_user');
-            const role = localStorage.getItem('techbook_admin_role');
-            if (typeof window.loginAdmin === 'function') {
-              window.loginAdmin(username, role);
-            }
-            if (typeof window.selectRole === 'function') {
-              window.selectRole(role === 'co_founder' ? 'cof' : 'admin');
-            }
+      if (user && user.email) {
+        const email = user.email.toLowerCase();
+        const username = email.split('@')[0];
+        const resolvedUsername = (username === 'cof.techbook') ? 'cof@techbook' : username;
+
+        // Try to fetch admin document to check admin status
+        let isAdminUser = false;
+        let dbRole = null;
+        try {
+          const adminSnap = await getDoc(doc(db, "admins", resolvedUsername));
+          if (adminSnap.exists()) {
+            isAdminUser = true;
+            dbRole = adminSnap.data().role || 'admin';
+          }
+        } catch (e) {
+          console.warn("Could not check admin status in database:", e.message);
+        }
+
+        if (isAdminUser) {
+          console.log("Firebase Auth: Admin logged in:", resolvedUsername);
+          if (typeof window.loginAdmin === 'function') {
+            window.loginAdmin(resolvedUsername, dbRole);
+          }
+          if (typeof window.selectRole === 'function') {
+            window.selectRole(dbRole === 'co_founder' ? 'cof' : 'admin');
           }
           if (typeof window.updateNavbarLoginBtn === 'function') {
             window.updateNavbarLoginBtn();
@@ -735,54 +737,61 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
           return;
         }
 
-        // Otherwise, it's a student login with email!
-        if (user.email) {
-          const usn = user.email.split('@')[0].toUpperCase();
-          console.log("Loading student data for USN:", usn);
-          await loadStudentDashboard(usn);
-          if (typeof window.selectRole === 'function') {
-            window.selectRole('student');
-          } else {
-            const timer = setInterval(() => {
-              if (typeof window.selectRole === 'function') {
-                window.selectRole('student');
-                clearInterval(timer);
-              }
-            }, 20);
-          }
+        // Student flow:
+        const usn = resolvedUsername.toUpperCase();
+        console.log("Firebase Auth: Student logged in:", usn);
+        await loadStudentDashboard(usn);
+        
+        // Save student session locally for routing consistency
+        localStorage.setItem('techbook_student_logged_in', 'true');
+        localStorage.setItem('techbook_student_usn', usn);
 
-          // ── Check if email is verified — show modal if not ──
-          try {
-            const studentSnap = await getDoc(doc(db, 'students', usn));
-            if (studentSnap.exists()) {
-              const studentData = studentSnap.data();
-              if (!studentData.email_verified) {
-                if (typeof window.showVerifyModal === 'function') {
-                  window.showVerifyModal(usn, studentData.name || usn);
-                }
+        if (typeof window.selectRole === 'function') {
+          window.selectRole('student');
+        } else {
+          const timer = setInterval(() => {
+            if (typeof window.selectRole === 'function') {
+              window.selectRole('student');
+              clearInterval(timer);
+            }
+          }, 20);
+        }
+
+        // Check if email is verified
+        try {
+          const studentSnap = await getDoc(doc(db, 'students', usn));
+          if (studentSnap.exists()) {
+            const studentData = studentSnap.data();
+            if (!studentData.email_verified) {
+              if (typeof window.showVerifyModal === 'function') {
+                window.showVerifyModal(usn, studentData.name || usn);
               }
             }
-          } catch (snapErr) {
-            console.warn('Could not check email verification status:', snapErr.message);
           }
+        } catch (snapErr) {
+          console.warn('Could not check email verification status:', snapErr.message);
         }
       } else {
-        // If admin session is active (e.g. Firebase Auth blocked), skip student UI reset
-        const adminActive = localStorage.getItem('techbook_admin_logged_in') === 'true' || window.adminLoggedIn;
-        if (adminActive) {
-          console.log("Auth state: no Firebase user, but admin session is active — skipping UI reset.");
-          if (typeof window.updateNavbarLoginBtn === 'function') window.updateNavbarLoginBtn();
-          return;
+        // Logged out or no active Firebase user
+        try {
+          localStorage.removeItem('techbook_admin_logged_in');
+          localStorage.removeItem('techbook_admin_user');
+          localStorage.removeItem('techbook_admin_role');
+          localStorage.removeItem('techbook_student_logged_in');
+          localStorage.removeItem('techbook_student_usn');
+          localStorage.removeItem('techbook_student_data');
+        } catch (e) {
+          console.warn("Could not clear session on logout:", e);
         }
 
         // Hide modal if open
         if (typeof window.hideVerifyModal === 'function') window.hideVerifyModal();
 
-        // Show login form
+        // Show login forms
         $("student-area")?.classList.add("hidden");
         $("student-auth")?.classList.remove("hidden");
-        $("login-form")?.classList.remove("hidden");
-        $("register-form")?.classList.add("hidden");
+        $("admin-area")?.classList.add("hidden");
+        $("admin-login-block")?.classList.remove("hidden");
 
         // Reset the unified login view to standard login panel
         if (typeof switchUnifiedPanel === 'function') {
@@ -819,7 +828,7 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
       const newPass = val("new-pass");
       const confirm = val("confirm-pass");
 
-      if (!window._currentAdminUser) {
+      if (!auth.currentUser) {
         return msg("change-pass-msg", "You must be logged in to change password", "error");
       }
 
@@ -827,33 +836,28 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
         return msg("change-pass-msg", "Please fill all fields", "error");
       }
 
-      const currentHash = CryptoJS.SHA256(current).toString();
-
       try {
-        const adminRef = doc(db, "admins", window._currentAdminUser);
-        const adminSnap = await getDoc(adminRef);
-
-        if (adminSnap.exists() && adminSnap.data().passwordHash === currentHash) {
-          if (newPass.length < 6) {
-            return msg("change-pass-msg", "New password must be at least 6 characters", "error");
-          }
-          if (newPass !== confirm) {
-            return msg("change-pass-msg", "Passwords do not match", "error");
-          }
-
-          const newHash = CryptoJS.SHA256(newPass).toString();
-          await setDoc(adminRef, { passwordHash: newHash }, { merge: true });
-
-          msg("change-pass-msg", "✓ Password updated successfully!", "success");
-          $("current-pass").value = "";
-          $("new-pass").value = "";
-          $("confirm-pass").value = "";
-        } else {
-          msg("change-pass-msg", "Current password is incorrect", "error");
+        if (newPass.length < 6) {
+          return msg("change-pass-msg", "New password must be at least 6 characters", "error");
         }
+        if (newPass !== confirm) {
+          return msg("change-pass-msg", "Passwords do not match", "error");
+        }
+
+        // Reauthenticate or update password directly
+        await updatePassword(auth.currentUser, newPass);
+
+        msg("change-pass-msg", "✓ Password updated successfully!", "success");
+        $("current-pass").value = "";
+        $("new-pass").value = "";
+        $("confirm-pass").value = "";
       } catch (e) {
         console.error("Password change error:", e);
-        msg("change-pass-msg", "Error: " + e.message, "error");
+        if (e.code === 'auth/requires-recent-login') {
+          msg("change-pass-msg", "Error: Please log out and log back in to perform this sensitive action.", "error");
+        } else {
+          msg("change-pass-msg", "Error: " + e.message, "error");
+        }
       }
     });
 
@@ -864,8 +868,7 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
       const newUsername = val("new-username").trim().toLowerCase();
       const password = val("change-username-pass");
 
-      if (!window._currentAdminUser) {
-        alert("Error: You are not logged in as admin. Active session user: " + window._currentAdminUser);
+      if (!auth.currentUser) {
         return msg("change-username-msg", "You must be logged in to change username", "error");
       }
 
@@ -874,7 +877,7 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
         return msg("change-username-msg", "Please fill all fields", "error");
       }
 
-      // Check if username has invalid characters (allow letters, numbers, underscores, dots, hyphens, and @)
+      // Check if username has invalid characters
       if (!/^[a-z0-9_@.-]+$/.test(newUsername)) {
         alert("Error: Username can only contain lowercase letters, numbers, underscores, dots, hyphens, and @");
         return msg("change-username-msg", "Username can only contain lowercase letters, numbers, underscores, dots, hyphens, and @", "error");
@@ -885,22 +888,9 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
         return msg("change-username-msg", "New username must be different from current username", "error");
       }
 
-      const passHash = CryptoJS.SHA256(password).toString();
-
       try {
-        const currentAdminRef = doc(db, "admins", window._currentAdminUser);
-        const currentAdminSnap = await getDoc(currentAdminRef);
-
-        if (!currentAdminSnap.exists()) {
-          alert("Error: Current admin record '" + window._currentAdminUser + "' not found in database.");
-          return msg("change-username-msg", "Current admin record not found", "error");
-        }
-
-        if (currentAdminSnap.data().passwordHash !== passHash) {
-          alert("Error: Current password is incorrect.");
-          return msg("change-username-msg", "Incorrect password", "error");
-        }
-
+        const newEmail = `${newUsername}@techbook.ac.in`;
+        
         const newAdminRef = doc(db, "admins", newUsername);
         const newAdminSnap = await getDoc(newAdminRef);
 
@@ -909,10 +899,23 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
           return msg("change-username-msg", "Username is already taken", "error");
         }
 
+        const currentAdminRef = doc(db, "admins", window._currentAdminUser);
+        const currentAdminSnap = await getDoc(currentAdminRef);
+
+        if (!currentAdminSnap.exists()) {
+          alert("Error: Current admin record '" + window._currentAdminUser + "' not found in database.");
+          return msg("change-username-msg", "Current admin record not found", "error");
+        }
+
+        // Update email in Firebase Auth
+        await updateEmail(auth.currentUser, newEmail);
+        console.log("✓ Firebase Auth email updated to:", newEmail);
+
         // Copy old admin data to new doc path
         const oldData = currentAdminSnap.data();
         await setDoc(newAdminRef, {
-          ...oldData,
+          name: oldData.name || "Admin",
+          role: oldData.role || "admin",
           updatedAt: serverTimestamp()
         });
 
@@ -933,8 +936,13 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
 
       } catch (e) {
         console.error("Username change error:", e);
-        alert("Database error: " + e.message);
-        msg("change-username-msg", "Error: " + e.message, "error");
+        if (e.code === 'auth/requires-recent-login') {
+          alert("Error: Please log out and log back in to perform this sensitive action.");
+          msg("change-username-msg", "Error: Please log out and log back in first.", "error");
+        } else {
+          alert("Database error: " + e.message);
+          msg("change-username-msg", "Error: " + e.message, "error");
+        }
       }
     });
 
@@ -1353,7 +1361,10 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
 
       try {
         if (currentUnifiedRole === 'student') {
-          const usn = user.toUpperCase();
+          let usn = user.trim().toUpperCase();
+          if (usn.includes('@')) {
+            usn = usn.split('@')[0].toUpperCase();
+          }
           
           // Verify student record first (role authorization check) with 7-second timeout
           let studentDoc = null;
@@ -1375,131 +1386,100 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
             throw new Error('This USN is not registered. Please create an account or verify role.');
           }
 
-          // Proceed with login
-          const passwordHash = CryptoJS.SHA256(pass).toString();
-          const studentData = studentDoc.data();
-          let loginSuccess = false;
-
-          // Check direct hash fallback
-          if (studentData.passwordHash === passwordHash) {
-            loginSuccess = true;
-            console.log('✓ Password matches Firestore record');
-          }
-
           // Try Firebase Auth
           try {
             await signInWithEmailAndPassword(auth, `${usn.toLowerCase()}@techbook.ac.in`, pass);
-            loginSuccess = true;
             console.log('✓ Firebase Auth login successful');
           } catch (authError) {
             console.log('Firebase Auth failed:', authError.code);
-            if (!loginSuccess) {
-              if (authError.code === 'auth/wrong-password' || authError.code === 'auth/invalid-credential') {
-                throw new Error('Incorrect password');
-              } else if (authError.code === 'auth/user-not-found') {
-                throw new Error('This USN is not registered.');
-              } else {
-                throw authError;
-              }
+            if (authError.code === 'auth/wrong-password' || authError.code === 'auth/invalid-credential') {
+              throw new Error('Incorrect password');
+            } else if (authError.code === 'auth/user-not-found') {
+              throw new Error('This USN is not registered.');
             } else {
-              // Create auth user dynamically if hash matches but Auth doesn't exist yet
-              try {
-                await createUserWithEmailAndPassword(auth, `${usn.toLowerCase()}@techbook.ac.in`, pass);
-              } catch (_) {}
+              throw authError;
+            }
+          }
+
+          msg('unified-login-msg', 'Login successful! Redirecting...', 'success');
+          window._currentStudentUSN = usn;
+          if (window.loadStudentDashboard) {
+            await window.loadStudentDashboard(usn);
+          }
+          window.selectRole('student');
+          $('unified-username').value = '';
+          $('unified-password').value = '';
+
+        } else {
+          // ── ADMIN / CO-FOUNDER LOGIN ──
+          let username = user.trim().toLowerCase();
+          if (username.includes('@')) {
+            username = username.split('@')[0].toLowerCase();
+          }
+          
+          const isMasterBypass = (username === 'techbook.com' && pass === 'Techbook@123') || (username === 'cof@techbook' && pass === 'COF@123');
+          const email = (username === 'cof@techbook') ? 'cof.techbook@techbook.ac.in' : `${username}@techbook.ac.in`;
+
+          let loginSuccess = false;
+          try {
+            await signInWithEmailAndPassword(auth, email, pass);
+            loginSuccess = true;
+            console.log('✓ Admin Firebase Auth login successful');
+          } catch (authErr) {
+            console.warn('Admin Auth failed:', authErr.code);
+            
+            // Auto bootstrap master credentials if not created yet in Firebase Auth
+            if ((authErr.code === 'auth/user-not-found' || authErr.code === 'auth/invalid-credential') && isMasterBypass) {
+              console.log('🛠️ Registering master admin account in Firebase Auth...');
+              await createUserWithEmailAndPassword(auth, email, pass);
+              loginSuccess = true;
+            } else if (authErr.code === 'auth/wrong-password' || authErr.code === 'auth/invalid-credential') {
+              throw new Error('Incorrect password');
+            } else if (authErr.code === 'auth/user-not-found') {
+              throw new Error('Admin credentials not found.');
+            } else {
+              throw authErr;
             }
           }
 
           if (loginSuccess) {
-            msg('unified-login-msg', 'Login successful! Redirecting...', 'success');
-            window._currentStudentUSN = usn;
-            if (window.loadStudentDashboard) {
-              await window.loadStudentDashboard(usn);
+            // Verify or bootstrap Firestore admin record
+            const adminRef = doc(db, 'admins', username);
+            let adminDoc = await getDoc(adminRef);
+
+            if (!adminDoc.exists() && isMasterBypass) {
+              const bypassName = username === 'cof@techbook' ? "Chinmay K V" : "TechBook Support";
+              const bypassRole = username === 'cof@techbook' ? "co_founder" : "super_admin";
+              await setDoc(adminRef, {
+                name: bypassName,
+                role: bypassRole,
+                createdAt: new Date().toISOString()
+              });
+              adminDoc = await getDoc(adminRef);
             }
-            window.selectRole('student');
-            $('unified-username').value = '';
-            $('unified-password').value = '';
-          } else {
-            throw new Error('Invalid credentials');
-          }
 
-        } else {
-          // ── ADMIN / CO-FOUNDER LOGIN ──
-          const username = user.trim().toLowerCase();
-          const isMasterBypass = (username === 'techbook.com' && pass === 'Techbook@123') || (username === 'cof@techbook' && pass === 'COF@123');
+            if (!adminDoc.exists()) {
+              await signOut(auth); // Clean up auth state if DB profile doesn't exist
+              throw new Error('Forbidden: Registered admin profile not found in database.');
+            }
 
-          // ⚡ INSTANT bypass — skip Firestore for master credentials
-          if (isMasterBypass) {
-            const bypassRole = username === 'cof@techbook' ? 'co_founder' : 'super_admin';
-            console.log('⚡ Instant bypass applied for:', username);
-            // Set flags FIRST so auth state guard won't interfere
+            const data = adminDoc.data();
+            const dbRole = username === 'cof@techbook' ? 'co_founder' : (data.role || 'admin');
+
+            msg('unified-login-msg', 'Login successful! Redirecting...', 'success');
             window.adminLoggedIn = true;
-            window._currentAdminRole = bypassRole;
-            window._currentAdminUser = username;
-            localStorage.setItem('techbook_admin_logged_in', 'true');
-            localStorage.setItem('techbook_admin_user', username);
-            localStorage.setItem('techbook_admin_role', bypassRole);
-            localStorage.removeItem('techbook_student_logged_in');
-            if (window.loginAdmin) window.loginAdmin(username, bypassRole);
-            msg('unified-login-msg', 'Login successful! Redirecting...', 'success');
-            window.selectRole(bypassRole === 'co_founder' ? 'cof' : 'admin');
-            $('unified-username').value = '';
-            $('unified-password').value = '';
-            return;
-          }
-
-          const adminRef = doc(db, 'admins', username);
-          
-          // Verify admin record with 5-second timeout
-          let adminDoc = null;
-          try {
-            adminDoc = await Promise.race([
-              getDoc(adminRef),
-              new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
-            ]);
-          } catch (dbErr) {
-            console.warn('Firestore admin fetch timed out or failed:', dbErr.message);
-            if (dbErr.message === 'Timeout') {
-              throw new Error('Connection timed out. Please check your network/internet connection.');
-            } else {
-              throw dbErr;
-            }
-          }
-
-          if (!adminDoc || !adminDoc.exists()) {
-            throw new Error('Admin credentials not found. Check username.');
-          }
-
-          const data = adminDoc.data();
-          const dbRole = (username === 'cof@techbook') ? 'co_founder' : (data.role || 'admin');
-
-          const hash = CryptoJS.SHA256(pass).toString();
-          if (data.passwordHash === hash) {
             window._currentAdminRole = dbRole;
             window._currentAdminUser = username;
 
-            try {
-              const authCred = await signInAnonymously(auth);
-              await setDoc(doc(db, 'admins_uids', authCred.user.uid), {
-                username: username,
-                role: dbRole,
-                loginSecret: 'techbook_admin_v1',
-                timestamp: serverTimestamp()
-              });
-            } catch (authErr) {
-              console.warn('Admin Auth sync failed (non-critical):', authErr.message);
-            }
-
-            msg('unified-login-msg', 'Login successful! Redirecting...', 'success');
-            window.adminLoggedIn = true;
             localStorage.setItem('techbook_admin_logged_in', 'true');
             localStorage.setItem('techbook_admin_user', username);
             localStorage.setItem('techbook_admin_role', dbRole);
+
             if (window.loginAdmin) window.loginAdmin(username, dbRole);
             window.selectRole(dbRole === 'co_founder' ? 'cof' : 'admin');
+            
             $('unified-username').value = '';
             $('unified-password').value = '';
-          } else {
-            throw new Error('Incorrect password');
           }
         }
 

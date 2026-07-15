@@ -349,60 +349,20 @@ import { $, val } from '../core/helpers.js';
       try {
         const isAdmLoggedIn = localStorage.getItem('techbook_admin_logged_in') === 'true';
         if (isAdmLoggedIn) {
-          const username = localStorage.getItem('techbook_admin_user');
-          const role = localStorage.getItem('techbook_admin_role');
-          
-          const loginBlock = $("admin-login-block");
-          const adminArea = $("admin-area");
-          if (loginBlock && adminArea) {
-            try {
-              // DATABASE ROLE VERIFICATION with 4s timeout
-              const adminDoc = await Promise.race([
-                getDoc(doc(db, "admins", username)),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 4000))
-              ]);
-              const dbRole = username === 'cof@techbook' ? 'co_founder' : (adminDoc.data().role || 'admin');
-              if (adminDoc && adminDoc.exists() && dbRole === role) {
-                loginAdmin(username, role);
-                const targetRole = role === 'co_founder' ? 'cof' : 'admin';
-                if (typeof window.selectRole === 'function') {
-                  window.selectRole(targetRole);
-                } else {
-                  const timer = setInterval(() => {
-                    if (typeof window.selectRole === 'function') {
-                      window.selectRole(targetRole);
-                      clearInterval(timer);
-                    }
-                  }, 20);
-                }
-              } else {
-                console.warn("🔐 Admin session failed database verification check. Logging out.");
-                localStorage.removeItem('techbook_admin_logged_in');
-                localStorage.removeItem('techbook_admin_user');
-                localStorage.removeItem('techbook_admin_role');
-                window.adminLoggedIn = false;
-                window._currentAdminRole = null;
-                window._currentAdminUser = null;
-                if (window.showLandingPage) window.showLandingPage();
-              }
-            } catch (dbErr) {
-              console.warn("Could not verify admin session with Firestore, logging in from cache:", dbErr.message);
-              loginAdmin(username, role);
-              const targetRole = role === 'co_founder' ? 'cof' : 'admin';
-              if (typeof window.selectRole === 'function') {
-                window.selectRole(targetRole);
-              } else {
-                const timer = setInterval(() => {
-                  if (typeof window.selectRole === 'function') {
-                    window.selectRole(targetRole);
-                    clearInterval(timer);
-                  }
-                }, 20);
-              }
+          // Verify with Firebase Auth state. If no user is logged in after 4 seconds, clear cache.
+          setTimeout(() => {
+            const user = auth.currentUser;
+            if (!user) {
+              console.warn("🔐 Admin session failed Firebase Auth verification. Logging out.");
+              localStorage.removeItem('techbook_admin_logged_in');
+              localStorage.removeItem('techbook_admin_user');
+              localStorage.removeItem('techbook_admin_role');
+              window.adminLoggedIn = false;
+              window._currentAdminRole = null;
+              window._currentAdminUser = null;
+              if (window.showLandingPage) window.showLandingPage();
             }
-          } else {
-            setTimeout(restoreAdminSession, 50);
-          }
+          }, 4000);
         }
       } catch (e) {
         console.error("Error restoring admin session:", e);
@@ -410,7 +370,7 @@ import { $, val } from '../core/helpers.js';
     }
     restoreAdminSession();
 
-    window.adminLogout = function () {
+    window.adminLogout = async function () {
       if (!confirm("Are you sure you want to log out from the Admin Dashboard?")) return;
 
       if (typeof window.trackUserActivity === 'function') {
@@ -427,6 +387,12 @@ import { $, val } from '../core/helpers.js';
         localStorage.removeItem('techbook_admin_role');
       } catch (e) {
         console.warn("Could not clear admin session from localStorage:", e);
+      }
+
+      try {
+        await signOut(auth);
+      } catch (authErr) {
+        console.warn("Firebase Auth signOut failed:", authErr.message);
       }
 
       // Reset UI state
@@ -806,20 +772,31 @@ import { $, val } from '../core/helpers.js';
       }
 
       try {
-        const adminRef = doc(db, "admins", userVal);
-        const adminSnap = await getDoc(adminRef);
-
-        if (adminSnap.exists()) {
-          return msg("admin-manage-msg", "Username is already taken", "error");
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+          throw new Error('No active admin session found.');
         }
 
-        const passHash = CryptoJS.SHA256(passVal).toString();
-        await setDoc(adminRef, {
-          name: nameVal,
-          passwordHash: passHash,
-          role: roleVal,
-          createdAt: serverTimestamp()
+        const token = await currentUser.getIdToken();
+
+        const response = await fetch('/api/create-admin', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            name: nameVal,
+            username: userVal,
+            password: passVal,
+            role: roleVal
+          })
         });
+
+        const resData = await response.json();
+        if (!response.ok || !resData.success) {
+          throw new Error(resData.error || 'Server error creating admin.');
+        }
 
         msg("admin-manage-msg", "✓ Admin account created successfully!", "success");
         if (nameInput) nameInput.value = "";

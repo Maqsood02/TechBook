@@ -649,23 +649,43 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
     window.loadAIKey = loadAIKey;
 
     async function callAnthropicAI(prompt, maxTok) {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true'
-        },
-        body: JSON.stringify({
+      // Use the Cloudflare Worker AI Proxy URL if defined in window.AI_PROXY
+      const proxyUrl = window.AI_PROXY;
+      
+      const endpoint = proxyUrl || 'https://api.anthropic.com/v1/messages';
+      const headers = { 'Content-Type': 'application/json' };
+      let body;
+
+      if (proxyUrl) {
+        body = JSON.stringify({
+          system: 'You are TechBook Bot, a helpful academic assistant.',
+          messages: [{ role: 'user', content: prompt }]
+        });
+      } else {
+        headers['anthropic-version'] = '2023-06-01';
+        headers['anthropic-dangerous-direct-browser-access'] = 'true';
+        body = JSON.stringify({
           model: 'claude-sonnet-4-20250514',
           max_tokens: maxTok || 4000,
           messages: [{ role: 'user', content: prompt }]
-        })
+        });
+      }
+
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: headers,
+        body: body
       });
+      
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error?.message || 'Anthropic API error ' + res.status);
+      if (!res.ok) throw new Error(data.error?.message || 'AI Proxy/API error ' + res.status);
+      
+      if (proxyUrl) {
+        return data.reply || '';
+      }
       return data.content?.[0]?.text || '';
     }
+
 
     async function callAI(apiKey, prompt) {
       // If no external key, use Anthropic API directly
@@ -746,6 +766,8 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
       console.warn('OpenRouter failed, falling back to Anthropic:', lastErr);
       return callAnthropicAI(prompt);
     }
+    window.callAI = callAI;
+
 
     document.getElementById('btn-generate-quiz')?.addEventListener('click', async () => {
       const subject = document.getElementById('qz-subject')?.value.trim();
