@@ -344,7 +344,7 @@ app.use(express.json());
 
 // Security Headers Middleware
 app.use((req, res, next) => {
-  res.setHeader("Content-Security-Policy", "default-src 'self' https://*.googleapis.com https://*.gstatic.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; frame-src 'self'; img-src 'self' data: https:; media-src 'self' https:; connect-src 'self' https://*.googleapis.com https://tech-book-two.vercel.app http://localhost:3000;");
+  res.setHeader("Content-Security-Policy", "default-src 'self' https://*.googleapis.com https://*.gstatic.com https://cdnjs.cloudflare.com; script-src 'self' 'unsafe-inline' https://*.googleapis.com https://*.gstatic.com https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; frame-src 'self'; img-src 'self' data: https:; media-src 'self' https:; connect-src 'self' https://*.googleapis.com https://tech-book-two.vercel.app http://localhost:3000 http://localhost:5001 https://*.vercel.app https://*.elevenlabs.io wss://*.elevenlabs.io;");
   res.setHeader("X-Frame-Options", "DENY");
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
