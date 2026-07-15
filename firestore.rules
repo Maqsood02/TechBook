@@ -103,7 +103,8 @@ service cloud.firestore {
     }
 
     match /user_sessions/{sessionId} {
-      allow read, write: if isAdmin();
+      allow read: if isAdmin();
+      allow write: if isAdmin() || (signedIn() && sessionId.lower() == request.auth.token.email.split('@')[0].lower());
     }
 
     match /user_activities/{activityId} {
