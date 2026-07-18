@@ -1992,10 +1992,12 @@ service cloud.firestore {
         });
 
         // 2. Call backend API to email Founder
+        const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
         const response = await fetch(`${window.API_BASE_URL || 'https://tech-book-two.vercel.app'}/api/notify-founder-message`, {
           method: "POST",
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
           },
           body: JSON.stringify({ senderName, message })
         });

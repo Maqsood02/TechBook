@@ -965,9 +965,13 @@ Strict rules:
           const year = document.getElementById('qz-year')?.value || '';
           const sem = document.getElementById('qz-sem')?.value || '';
           if (dept || year || sem) {
+            const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
             fetch(`${API_BASE_URL}/api/notify-quiz`, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
               body: JSON.stringify({
                 quizName: `${_generatedQuiz.subject} - ${_generatedQuiz.topic}`,
                 subject: _generatedQuiz.subject,

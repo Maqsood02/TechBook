@@ -1,4 +1,4 @@
-import { db } from '../core/firebase.js';
+import { auth, db } from '../core/firebase.js';
 import { doc, setDoc, getDoc, addDoc, collection, query, where, getDocs, orderBy, deleteDoc, writeBatch, serverTimestamp, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 import { $, val, API_BASE_URL } from '../core/helpers.js';
 
@@ -71,9 +71,13 @@ window.adminSaveLaunch = async function() {
       if (shouldNotify) {
         if (msgEl) msgEl.innerHTML += '<br><span style="color:#6366f1;">📨 Sending notification emails to all verified students...</span>';
         
+        const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
         fetch(`${API_BASE_URL || 'https://tech-book-two.vercel.app'}/api/notify-launch`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
           body: JSON.stringify({
             launchName: name,
             launchUrl: url

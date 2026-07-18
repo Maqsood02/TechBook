@@ -1,4 +1,4 @@
-import { db, storage } from '../core/firebase.js';
+import { auth, db, storage } from '../core/firebase.js';
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-storage.js";
 import { doc, setDoc, getDoc, addDoc, collection, query, where, getDocs, orderBy, deleteDoc, writeBatch, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 import { $, base64ToBlob, API_BASE_URL } from '../core/helpers.js';
@@ -73,9 +73,13 @@ import { $, base64ToBlob, API_BASE_URL } from '../core/helpers.js';
 
                 // Send email notifications to all verified students
                 if (msgEl) msgEl.innerHTML += '<br><span style="color:#6366f1;">📨 Sending emails to verified students...</span>';
+                const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
                 fetch(`${API_BASE_URL}/api/notify-promo`, {
                   method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
+                  headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                  },
                   body: JSON.stringify({
                     title: title,
                     description: desc,
@@ -145,9 +149,13 @@ import { $, base64ToBlob, API_BASE_URL } from '../core/helpers.js';
 
                 // Send email notifications to all verified students
                 if (msgEl) msgEl.innerHTML += '<br><span style="color:#6366f1;">📨 Sending emails to verified students...</span>';
+                const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
                 fetch(`${API_BASE_URL}/api/notify-promo`, {
                   method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
+                  headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                  },
                   body: JSON.stringify({
                     title: title,
                     description: desc,
@@ -259,9 +267,13 @@ import { $, base64ToBlob, API_BASE_URL } from '../core/helpers.js';
 
           // Send email notifications to all verified students
           if (msgEl) msgEl.innerHTML += '<br><span style="color:#6366f1;">📨 Sending emails to verified students...</span>';
+          const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
           fetch(`${API_BASE_URL}/api/notify-promo`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
             body: JSON.stringify({
               title: title,
               description: desc,

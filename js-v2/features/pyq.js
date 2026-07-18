@@ -896,9 +896,13 @@ let lastPyqFetchTime = 0;
         // ── Send email notifications to eligible students ──
         try {
           const dept = document.getElementById('pyq-dept')?.value || '';
+          const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
           fetch(`${API_BASE_URL}/api/notify-upload`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
             body: JSON.stringify({
               contentType: 'PYQ',
               subject,
