@@ -961,7 +961,14 @@ let lastPyqFetchTime = 0;
         if (pageToken) {
           url += `&pageToken=${pageToken}`;
         }
-        const res = await fetch(url);
+        const headers = {};
+        if (auth && auth.currentUser) {
+          try {
+            const token = await auth.currentUser.getIdToken();
+            headers['Authorization'] = `Bearer ${token}`;
+          } catch (_) {}
+        }
+        const res = await fetch(url, { headers });
         if (!res.ok) throw new Error(`REST fetch failed with status ${res.status}`);
         const data = await res.json();
         if (data.documents) {

@@ -5002,6 +5002,15 @@
     elevenlabs-convai {
       --elevenlabs-convai-widget-width: 340px;
       --elevenlabs-convai-widget-height: 480px;
+      z-index: 999 !important;
+    }
+    @media (max-width: 600px) {
+      elevenlabs-convai {
+        bottom: 10px !important;
+        right: 10px !important;
+        transform: scale(0.85);
+        transform-origin: bottom right;
+      }
     }
   </style>
   <elevenlabs-convai agent-id="agent_3701kxfgmve7fqh93pqd44j6qzdv"></elevenlabs-convai>

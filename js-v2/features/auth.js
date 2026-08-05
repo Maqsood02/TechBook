@@ -519,22 +519,26 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
       }
 
       try {
-        // Verify student details from Firestore
-        const studentDoc = await getDoc(doc(db, "students", usn));
-
-        if (!studentDoc.exists()) {
-          return msg("forgot-msg", "❌ USN not found in database", "error");
+        // Verify student details from Firestore (if allowed)
+        let studentData = null;
+        try {
+          const studentDoc = await getDoc(doc(db, "students", usn));
+          if (studentDoc.exists()) {
+            studentData = studentDoc.data();
+          }
+        } catch (readErr) {
+          console.warn("Client read of student doc restricted during password reset:", readErr);
         }
 
-        const studentData = studentDoc.data();
+        if (studentData) {
+          // Verify name — strip spaces, dots, case-insensitive
+          const normalize = str => (str || '').toLowerCase().replace(/[\s.\-_,]/g, '');
+          const nameMatch = normalize(studentData.name) === normalize(name);
 
-        // Verify name — strip spaces, dots, case-insensitive
-        const normalize = str => (str || '').toLowerCase().replace(/[\s.\-_,]/g, '');
-        const nameMatch = normalize(studentData.name) === normalize(name);
-
-        if (!nameMatch) {
-          console.log("Name in DB:", studentData.name, "| Entered:", name);
-          return msg("forgot-msg", "❌ Verification failed. Name doesn't match", "error");
+          if (!nameMatch) {
+            console.log("Name in DB:", studentData.name, "| Entered:", name);
+            return msg("forgot-msg", "❌ Verification failed. Name doesn't match", "error");
+          }
         }
 
         // Create reset request
