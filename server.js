@@ -336,6 +336,32 @@ function firestoreDeleteOTP(usn) {
       resolve({ status: 500, success: false, error: e.message });
     }
   });
+function firestoreCheckStudentExists(usn) {
+  return new Promise(async (resolve) => {
+    if (!FIREBASE_PROJECT_ID || !FIREBASE_API_KEY) return resolve(false);
+    try {
+      const token = await getFirebaseIdToken();
+      const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/students/${usn}?key=${FIREBASE_API_KEY}`;
+      const urlObj = new URL(url);
+      const options = {
+        hostname: urlObj.hostname,
+        path: urlObj.pathname + urlObj.search,
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${token}` }
+      };
+      const req = https.request(options, (res) => {
+        let data = '';
+        res.on('data', chunk => data += chunk);
+        res.on('end', () => {
+          resolve(res.statusCode === 200);
+        });
+      });
+      req.on('error', () => resolve(false));
+      req.end();
+    } catch (e) {
+      resolve(false);
+    }
+  });
 }
 
 // ─── Middleware ───
@@ -526,6 +552,11 @@ app.post('/api/send-otp', otpLimiter, async (req, res) => {
   const emailLower = email.trim().toLowerCase();
 
   try {
+    const isAlreadyReg = await firestoreCheckStudentExists(usnUpper);
+    if (isAlreadyReg) {
+      return res.status(400).json({ success: false, error: 'This USN is already registered. Please login instead.' });
+    }
+
     const otp = generateOTP();
     const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes from now
 

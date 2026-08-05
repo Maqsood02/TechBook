@@ -302,8 +302,7 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
           return msg("register-msg", "❌ This email address is already registered to another account.", "error");
         }
       } catch (checkErr) {
-        console.error("Verification error:", checkErr);
-        return msg("register-msg", "❌ Verification failed. Please check your network connection.", "error");
+        console.warn("Client pre-verification skipped (handled by backend):", checkErr);
       }
 
       // ── Send OTP for email verification ──
