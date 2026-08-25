@@ -112,6 +112,7 @@ let lastNotesFetchTime = 0;
       const subject = document.getElementById('adm-subject').value.trim();
       const titleInput = document.getElementById('adm-title').value.trim();
       const desc = document.getElementById('adm-desc').value.trim();
+      const scheme = document.getElementById('adm-scheme')?.value || '2022';
       const year = document.getElementById('adm-year').value;
       const sem = document.getElementById('adm-sem').value;
       const dept = document.getElementById('adm-dept').value;
@@ -177,7 +178,7 @@ let lastNotesFetchTime = 0;
 
           for (let si = 0; si < sections.length; si++) {
             const metaRef = await addDoc(collection(db, 'techbook_notes'), {
-              subject, title: currentTitle, desc, year, sem, dept, section: sections[si],
+              subject, title: currentTitle, desc, year, sem, dept, section: sections[si], scheme,
               fileName: currentFile.name,
               fileSize: currentFile.size,
               totalChunks: chunks.length,
@@ -443,10 +444,11 @@ let lastNotesFetchTime = 0;
         '<div style="display:flex;align-items:center;gap:10px;background:#f7f8fc;border:1px solid #e5e7eb;border-radius:12px;padding:12px 14px;margin-bottom:8px;flex-wrap:wrap;border-left:3px solid ' + col.text + ';">' +
         '<div style="flex:1;min-width:0;">' +
         '<div style="font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:5px;">' + esc(n.title) + '</div>' +
-        '<div style="font-size:11px;color:var(--text-secondary);margin-bottom:6px;">Year ' + esc(n.year) + ' \u00b7 Sem ' + esc(n.sem) + (n.fileSize ? ' \u00b7 ' + (n.fileSize / 1024).toFixed(0) + ' KB' : '') + '</div>' +
-        '<span style="padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;background:' + col.bg + ';border:1px solid ' + col.border + ';color:' + col.text + ';">' + ((n.section || 'all') === 'all' ? 'All Sections' : 'Section ' + n.section) + '</span></div>' +
+        '<div style="font-size:11px;color:var(--text-secondary);margin-bottom:6px;">Year ' + esc(n.year) + ' \u00b7 Sem ' + esc(n.sem) + (n.scheme ? ' \u00b7 ' + esc(n.scheme) + ' Scheme' : '') + (n.fileSize ? ' \u00b7 ' + (n.fileSize / 1024).toFixed(0) + ' KB' : '') + '</div>' +
+        '<span style="padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;background:' + col.bg + ';border:1px solid ' + col.border + ';color:' + col.text + ';">' + ((n.section || 'all') === 'all' ? 'All Sections' : 'Section ' + n.section) + '</span>' +
+        (n.scheme ? '<span style="margin-left:4px;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;background:#eff2fe;border:1px solid #c7d2fe;color:#3d5af1;">' + esc(n.scheme) + ' Scheme</span>' : '') + '</div>' +
         '<div style="display:flex;gap:6px;flex-shrink:0;">' +
-        '<button onclick="admViewNote(\'' + n.id + '\')" id="view-adm-' + n.id + '" style="padding:7px 12px;background:' + col.bg + ';border:1.5px solid ' + col.border + ';border-radius:9px;color:' + col.text + ';font-weight:700;font-size:12px;cursor:pointer;">👁️ View</button>' +
+        '<button onclick="admViewNote(\'' + n.id + '\')" id="view-adm-' + n.id + '" style="padding:7px 12px;background:' + col.bg + ';border:1.5px solid ' + col.border + ';border-radius:99px;color:' + col.text + ';font-weight:700;font-size:12px;cursor:pointer;">👁️ View</button>' +
         '<button onclick="admEditNoteTitle(\'' + n.id + '\',\'' + n.title.replace(/'/g, "\\'") + '\',' + colorIdx + ')" style="padding:7px 12px;background:' + col.bg + ';border:1.5px solid ' + col.border + ';border-radius:9px;color:' + col.text + ';font-weight:700;font-size:12px;cursor:pointer;">✏️ Edit</button>' +
         '<button onclick="admDeleteNote(\'' + n.id + '\',\'' + n.title.replace(/'/g, "\\'") + '\')" style="padding:7px 12px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:9px;color:#f87171;font-weight:700;font-size:12px;cursor:pointer;">🗑️ Delete</button>' +
         '</div></div>';
@@ -622,16 +624,24 @@ let lastNotesFetchTime = 0;
               const year = String(d.year || d.academicYear || '');
               const sem = String(d.sem || d.semester || '');
               const sec = String(d.section || d.branch || '');
+              const scheme = String(window._currentStudentScheme || d.scheme || localStorage.getItem('techbook_student_scheme') || '');
               const yEl = document.getElementById('sn-year');
               const sEl = document.getElementById('sn-sem');
               const cEl = document.getElementById('sn-sec');
+              const scEl = document.getElementById('sn-scheme');
               if (yEl && year) yEl.value = year;
               if (sEl && sem) sEl.value = sem;
               if (cEl && sec && sec.length === 1) cEl.value = sec.toUpperCase();
+              if (scEl && scheme) scEl.value = scheme;
               const banner = document.getElementById('sn-autofill-banner');
               const label = document.getElementById('sn-autofill-label');
-              if (banner && label && (year || sem || sec)) {
-                label.textContent = [year ? 'Year ' + year : '', sem ? 'Sem ' + sem : '', sec ? 'Section ' + sec : ''].filter(Boolean).join(' · ');
+              if (banner && label && (year || sem || sec || scheme)) {
+                label.textContent = [
+                  year ? 'Year ' + year : '',
+                  sem ? 'Sem ' + sem : '',
+                  sec ? 'Section ' + sec : '',
+                  scheme ? scheme + ' Scheme' : ''
+                ].filter(Boolean).join(' · ');
                 banner.style.display = '';
               }
             }
@@ -662,9 +672,11 @@ let lastNotesFetchTime = 0;
       const year = document.getElementById('sn-year')?.value || '';
       const sem = document.getElementById('sn-sem')?.value || '';
       const sec = document.getElementById('sn-sec')?.value || '';
+      const scheme = document.getElementById('sn-scheme')?.value || '';
       const filtered = allStudentNotes.filter(n => {
         if (year && n.year !== year) return false;
         if (sem && n.sem !== sem) return false;
+        if (scheme && n.scheme && n.scheme !== 'All' && n.scheme !== 'all' && n.scheme !== scheme) return false;
         if (sec) {
           // n.section can be 'all', 'A', 'B', or 'A,B,C' (comma-separated)
           const noteSecs = (n.section || 'all').split(',').map(s => s.trim());
@@ -676,7 +688,7 @@ let lastNotesFetchTime = 0;
     };
 
     window.studentClearNoteFilters = () => {
-      ['sn-year', 'sn-sem', 'sn-sec'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+      ['sn-year', 'sn-sem', 'sn-sec', 'sn-scheme'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
       const banner = document.getElementById('sn-autofill-banner');
       if (banner) banner.style.display = 'none';
       // Go back to subject screen if on detail screen
@@ -762,10 +774,12 @@ let lastNotesFetchTime = 0;
       const year = document.getElementById('sn-year')?.value || '';
       const sem = document.getElementById('sn-sem')?.value || '';
       const sec = document.getElementById('sn-sec')?.value || '';
+      const scheme = document.getElementById('sn-scheme')?.value || '';
       const notes = allStudentNotes.filter(n => {
         if ((n.subject || 'General') !== subj) return false;
         if (year && n.year !== year) return false;
         if (sem && n.sem !== sem) return false;
+        if (scheme && n.scheme && n.scheme !== 'All' && n.scheme !== 'all' && n.scheme !== scheme) return false;
         const nSec = (n.section || 'all').toLowerCase().trim();
         if (nSec === 'all') return true;
         if (!sec) return true;
@@ -804,6 +818,7 @@ let lastNotesFetchTime = 0;
           <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;">
             <span style="padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;background:${col.bg};border:1px solid ${col.border};color:${col.text};">Year ${esc(n.year)}</span>
             <span style="padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;background:${col.bg};border:1px solid ${col.border};color:${col.text};">Sem ${esc(n.sem)}</span>
+            ${n.scheme ? `<span style="padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;background:#eff2fe;border:1px solid #c7d2fe;color:#3d5af1;">${esc(n.scheme)} Scheme</span>` : ''}
             <span style="padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;background:#f7f8fc;border:1px solid rgba(0,0,0,0.03);color:var(--text-secondary);">${(n.section || 'all') === 'all' ? 'All Sections' : n.section.split(',').map(s => 'Sec ' + s.trim()).join(' & ')}</span>
             ${n.fileSize ? `<span style="padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;background:#f7f8fc;border:1px solid rgba(0,0,0,0.03);color:var(--text-secondary);">${(n.fileSize / 1024).toFixed(1)} KB</span>` : ''}
           </div>
@@ -821,7 +836,6 @@ let lastNotesFetchTime = 0;
                 background:linear-gradient(135deg,#3d5af1,#6366f1);border:none;
                 border-radius:10px;color:#f5f6fa;font-weight:700;font-size:13px;cursor:pointer;">
               ⬇️ Download
-            </button>
           </div>
         </div>
       </div>`;

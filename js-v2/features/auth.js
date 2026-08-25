@@ -267,10 +267,11 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
       const dept = val("reg-dept");
       const year = val("reg-year");
       const sem = val("reg-sem");
+      const scheme = val("reg-scheme") || "2022";
       const pass = val("reg-pass");
       const pass2 = val("reg-pass2");
       const personalEmail = val("reg-email") ? val("reg-email").trim().toLowerCase() : '';
-      console.log("Register values:", { name, usn, course, dept, year, sem, personalEmail });
+      console.log("Register values:", { name, usn, course, dept, year, sem, scheme, personalEmail });
 
       if (!name || !usn || !course || !dept || !year || !sem || !pass || !pass2) {
         return msg("register-msg", "Please fill all fields", "error");
@@ -469,6 +470,7 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
             dept,
             year,
             sem,
+            scheme,
             email: personalEmail,
             email_verified: true,
             createdAt: new Date().toISOString()
@@ -479,6 +481,7 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
             <div><span>USN:</span> ${usn}</div>
             <div><span>Course:</span> ${course}</div>
             <div><span>Department:</span> ${dept}</div>
+            <div><span>Scheme:</span> ${scheme} Scheme</div>
             <div><span>Year:</span> ${year}</div>
             <div><span>Semester:</span> ${sem}</div>
             <div><span>Email:</span> ${personalEmail} ✓</div>

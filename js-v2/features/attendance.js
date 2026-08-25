@@ -163,6 +163,20 @@ import { $, val } from '../core/helpers.js';
         // Load attendance history
         loadStudentHistory(usn);
 
+        // Check student syllabus scheme
+        const studentScheme = data.scheme || localStorage.getItem('techbook_student_scheme');
+        if (studentScheme) {
+          window._currentStudentScheme = studentScheme;
+          try { localStorage.setItem('techbook_student_scheme', studentScheme); } catch (_) {}
+        } else {
+          // One-time attractive popup for existing/new students without scheme
+          setTimeout(() => {
+            if (typeof window.openSchemeSelectorModal === 'function') {
+              window.openSchemeSelectorModal(false);
+            }
+          }, 800);
+        }
+
         // Real-time settings listener
         if (window._featureUnsubscribe) window._featureUnsubscribe();
         window._featureUnsubscribe = onSnapshot(doc(db, "settings", "features"), (snapshot) => {
@@ -2816,3 +2830,92 @@ service cloud.firestore {
         }, 3000);
       }
     });
+
+    /* ========================================================
+       🎓 SYLLABUS SCHEME SELECTOR MODAL HANDLERS
+    ======================================================== */
+    window.openSchemeSelectorModal = function(isStrict = false) {
+      window._schemeModalStrict = isStrict;
+      const modal = document.getElementById('scheme-selector-modal');
+      const closeBtn = document.getElementById('btn-close-scheme-modal');
+      if (closeBtn) closeBtn.style.display = isStrict ? 'none' : 'flex';
+
+      const currentScheme = window._currentStudentScheme || localStorage.getItem('techbook_student_scheme') || '2022';
+      document.querySelectorAll('.scheme-option-card').forEach(card => {
+        if (card.getAttribute('data-scheme') === currentScheme) {
+          card.classList.add('active');
+          const radio = card.querySelector('input[type="radio"]');
+          if (radio) radio.checked = true;
+        } else {
+          card.classList.remove('active');
+        }
+      });
+
+      if (modal) modal.style.display = 'flex';
+    };
+
+    window.closeSchemeSelectorModal = function() {
+      const modal = document.getElementById('scheme-selector-modal');
+      if (modal) modal.style.display = 'none';
+    };
+
+    window.selectSchemeOption = function(schemeValue, element) {
+      document.querySelectorAll('.scheme-option-card').forEach(card => card.classList.remove('active'));
+      if (element) {
+        element.classList.add('active');
+        const radio = element.querySelector('input[type="radio"]');
+        if (radio) radio.checked = true;
+      }
+    };
+
+    window.saveStudentSchemeSelection = async function() {
+      const activeCard = document.querySelector('.scheme-option-card.active');
+      const selectedScheme = activeCard ? activeCard.getAttribute('data-scheme') : '2022';
+
+      const btn = document.getElementById('btn-save-scheme');
+      if (btn) { btn.disabled = true; btn.innerHTML = '⏳ Saving…'; }
+
+      window._currentStudentScheme = selectedScheme;
+      try {
+        localStorage.setItem('techbook_student_scheme', selectedScheme);
+        localStorage.setItem('techbook_student_scheme_prompted', 'true');
+      } catch (_) {}
+
+      // Save to Firestore if student logged in
+      const usn = window._currentStudentUSN || localStorage.getItem('techbook_student_usn');
+      if (usn && db) {
+        try {
+          await setDoc(doc(db, "students", usn), { scheme: selectedScheme }, { merge: true });
+        } catch (e) {
+          console.warn("Could not persist scheme to Firestore:", e);
+        }
+      }
+
+      // Auto-apply scheme to Notes filter if present
+      const snScheme = document.getElementById('sn-scheme');
+      if (snScheme) {
+        snScheme.value = selectedScheme;
+        if (typeof window.studentFilterNotes === 'function') window.studentFilterNotes();
+      }
+
+      // Update autofill banner label
+      const banner = document.getElementById('sn-autofill-banner');
+      const label = document.getElementById('sn-autofill-label');
+      if (banner && label && window._currentStudentData) {
+        const d = window._currentStudentData;
+        const parts = [
+          d.year ? 'Year ' + d.year : '',
+          d.sem ? 'Sem ' + d.sem : '',
+          d.section ? 'Section ' + d.section : '',
+          selectedScheme + ' Scheme'
+        ].filter(Boolean);
+        label.textContent = parts.join(' · ');
+      }
+
+      if (btn) { btn.disabled = false; btn.innerHTML = '<span>Confirm &amp; Continue</span> <span style="font-size:16px;">→</span>'; }
+      closeSchemeSelectorModal();
+
+      if (typeof window.msg === 'function') {
+        window.msg('login-msg', `🎯 Syllabus scheme set to ${selectedScheme} Scheme!`, 'success');
+      }
+    };

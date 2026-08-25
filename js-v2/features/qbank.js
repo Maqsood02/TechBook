@@ -565,6 +565,7 @@ let lastQbankFetchTime = 0;
       const subject = document.getElementById('qbank-subject').value.trim();
       const titleInput = document.getElementById('qbank-title').value.trim();
       const desc = document.getElementById('qbank-desc').value.trim();
+      const scheme = document.getElementById('qbank-scheme')?.value || '2022';
       const year = document.getElementById('qbank-year').value;
       const sem = document.getElementById('qbank-sem').value;
       const sec = qbankGetSelectedSections();
@@ -629,7 +630,7 @@ let lastQbankFetchTime = 0;
 
           for (let si = 0; si < sections.length; si++) {
             const metaRef = await addDoc(collection(db, 'qbank_papers'), {
-              subject, title: currentTitle, desc, year, sem, section: sections[si],
+              subject, title: currentTitle, desc, year, sem, section: sections[si], scheme,
               fileName: currentFile.name,
               fileSize: currentFile.size,
               totalChunks: chunks.length,

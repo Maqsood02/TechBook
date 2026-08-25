@@ -343,6 +343,16 @@
                   </div>
 
                   <div class="form-group" style="margin-bottom: 16px;">
+                    <label style="display:block; font-weight:600; font-size:12.5px; color:#4b5563; margin-bottom:6px;">Syllabus Scheme</label>
+                    <select id="reg-scheme" style="width:100%; padding:10px 12px; border:1.5px solid #e5e7eb; border-radius:10px; background:#fff;">
+                      <option value="2022" selected>2022 Scheme (NEP Curriculum)</option>
+                      <option value="2021">2021 Scheme (Autonomous / VTU)</option>
+                      <option value="2018">2018 Scheme (CBCS)</option>
+                      <option value="2024">2024 Scheme (New)</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group" style="margin-bottom: 16px;">
                     <label style="display:block; font-weight:600; font-size:12.5px; color:#4b5563; margin-bottom:6px;">Password</label>
                     <div style="position: relative; width: 100%;">
                       <input id="reg-pass" type="password" placeholder="Create a strong password" style="width:100%; padding:10px 44px 10px 12px; border:1.5px solid #e5e7eb; border-radius:10px; box-sizing:border-box;" />
@@ -938,16 +948,31 @@
                     <!-- Auto-fill notice -->
                     <div id="sn-autofill-banner"
                       style="display:none;background:linear-gradient(135deg,#ffffff,#fafafe);border:1px solid #d1d5db;border-radius:12px;padding:12px 16px;margin-bottom:14px;">
-                      <span style="font-size:13px;color:#3d5af1;font-weight:600;">🎯 Showing notes for — <span
-                          id="sn-autofill-label" style="color:#6366f1;"></span></span>
+                      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+                        <span style="font-size:13px;color:#3d5af1;font-weight:600;">🎯 Showing notes for — <span
+                            id="sn-autofill-label" style="color:#6366f1;"></span></span>
+                        <button onclick="openSchemeSelectorModal()"
+                          style="padding:3px 10px;font-size:11.5px;background:#eff2fe;color:#3d5af1;border:1px solid #c7d2fe;border-radius:8px;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;gap:4px;">
+                          <span>✏️ Change Scheme</span>
+                        </button>
+                      </div>
                     </div>
                     <!-- Filter bar -->
                     <div
                       style="background:#f7f8fc;border:1px solid #ffffff;border-radius:14px;padding:14px;margin-bottom:16px;">
                       <div
                         style="font-size:10px;font-weight:700;color:var(--text-secondary);letter-spacing:1px;margin-bottom:10px;">
-                        🔍 FILTER BY CLASS</div>
-                      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;">
+                        🔍 FILTER BY CLASS &amp; SCHEME</div>
+                      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(100px, 1fr));gap:8px;margin-bottom:10px;">
+                        <div class="form-group" style="margin:0;"><label style="font-size:10px;">Scheme</label>
+                          <select id="sn-scheme" onchange="studentFilterNotes()" style="font-size:12px;">
+                            <option value="">All Schemes</option>
+                            <option value="2022">2022 Scheme</option>
+                            <option value="2021">2021 Scheme</option>
+                            <option value="2018">2018 Scheme</option>
+                            <option value="2024">2024 Scheme</option>
+                          </select>
+                        </div>
                         <div class="form-group" style="margin:0;"><label style="font-size:10px;">Year</label>
                           <select id="sn-year" onchange="studentFilterNotes()" style="font-size:12px;">
                             <option value="">All Years</option>
@@ -2589,7 +2614,17 @@
                     </div>
                   </div>
 
-                  <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:12px;margin-bottom:12px;">
+                  <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(130px, 1fr));gap:12px;margin-bottom:12px;">
+                    <div class="form-group" style="margin:0;">
+                      <label>Scheme *</label>
+                      <select id="adm-scheme">
+                        <option value="2022" selected>2022 Scheme (NEP)</option>
+                        <option value="2021">2021 Scheme</option>
+                        <option value="2018">2018 Scheme</option>
+                        <option value="2024">2024 Scheme</option>
+                        <option value="All">All Schemes (Common)</option>
+                      </select>
+                    </div>
                     <div class="form-group" style="margin:0;">
                       <label>Year *</label>
                       <select id="adm-year">
@@ -2812,6 +2847,19 @@
                       <label>Q-Bank Title *</label>
                       <input id="qbank-title" type="text" placeholder="e.g. Unit 1 &amp; 2 Question Bank" />
                     </div>
+                  </div>
+
+                  <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(130px, 1fr));gap:12px;margin-bottom:12px;">
+                    <div class="form-group" style="margin:0;">
+                      <label>Scheme *</label>
+                      <select id="qbank-scheme">
+                        <option value="2022" selected>2022 Scheme (NEP)</option>
+                        <option value="2021">2021 Scheme</option>
+                        <option value="2018">2018 Scheme</option>
+                        <option value="2024">2024 Scheme</option>
+                        <option value="All">All Schemes (Common)</option>
+                      </select>
+                    </div>
                     <div class="form-group" style="margin:0;">
                       <label>Year *</label>
                       <select id="qbank-year">
@@ -3021,6 +3069,19 @@
                     <div class="form-group" style="margin:0;">
                       <label>Paper Title *</label>
                       <input id="pyq-title" type="text" placeholder="e.g. 2023 Semester Exam" />
+                    </div>
+                  </div>
+
+                  <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(130px, 1fr));gap:12px;margin-bottom:12px;">
+                    <div class="form-group" style="margin:0;">
+                      <label>Scheme *</label>
+                      <select id="pyq-scheme">
+                        <option value="2022" selected>2022 Scheme (NEP)</option>
+                        <option value="2021">2021 Scheme</option>
+                        <option value="2018">2018 Scheme</option>
+                        <option value="2024">2024 Scheme</option>
+                        <option value="All">All Schemes (Common)</option>
+                      </select>
                     </div>
                     <div class="form-group" style="margin:0;">
                       <label>Year *</label>
@@ -3550,6 +3611,10 @@
                 <span class="sheet-menu-icon">🗃️</span>
                 <span class="sheet-menu-label">Attendance History</span>
               </button>
+              <button class="sheet-menu-item" onclick="openSchemeSelectorModal(); closeMobileMoreSheet();">
+                <span class="sheet-menu-icon">🎓</span>
+                <span class="sheet-menu-label">Change Syllabus Scheme</span>
+              </button>
               <button class="sheet-menu-item" onclick="openFounderModal(); closeMobileMoreSheet();">
                 <span class="sheet-menu-icon">🌟</span>
                 <span class="sheet-menu-label">Website Developer</span>
@@ -3870,8 +3935,8 @@
     <iframe id="pdf-viewer-frame" src="" style="flex:1;width:100%;border:none;background:#525659;"></iframe>
   </div>
 
-  <script type="module" src="js-v2/app.js?v=20260825b"></script>
-  <script type="module" src="js-v2/features/mobile-navigation.js?v=20260825b"></script>
+  <script type="module" src="js-v2/app.js?v=20260825c"></script>
+  <script type="module" src="js-v2/features/mobile-navigation.js?v=20260825c"></script>
 
   <!-- ══ FOUNDER MODAL ══ -->
   <div id="founder-modal"
@@ -3968,6 +4033,107 @@
         </div>
       </div>
     </div>
+  <!-- ══ SCHEME SELECTOR MODAL ══ -->
+  <div id="scheme-selector-modal"
+    style="display:none;position:fixed;inset:0;z-index:99999;align-items:center;justify-content:center;padding:16px;background:rgba(15,23,42,0.65);backdrop-filter:blur(12px);"
+    onclick="if(event.target===this && !window._schemeModalStrict) closeSchemeSelectorModal()">
+    <div
+      style="background:linear-gradient(145deg,#ffffff 0%,#f8faff 100%);border:1.5px solid rgba(99,102,241,0.25);border-radius:24px;max-width:440px;width:100%;padding:0 0 24px;overflow:hidden;position:relative;box-shadow:0 25px 60px -15px rgba(61,90,241,0.3),0 0 0 1px rgba(255,255,255,0.8) inset;animation:modalPop 0.3s cubic-bezier(0.34,1.56,0.64,1);">
+      
+      <!-- Gradient top accent bar -->
+      <div style="height:4px;background:linear-gradient(90deg,#3d5af1,#6366f1,#a855f7,#ec4899);"></div>
+      
+      <!-- Close btn -->
+      <button id="btn-close-scheme-modal" onclick="closeSchemeSelectorModal()"
+        style="position:absolute;top:14px;right:16px;background:#f1f5f9;border:none;border-radius:50%;width:32px;height:32px;color:#64748b;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;">✕</button>
+      
+      <!-- Header -->
+      <div style="padding:24px 22px 14px;text-align:center;">
+        <div style="display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:18px;background:linear-gradient(135deg,#eff2fe,#e0e7ff);border:1px solid #c7d2fe;font-size:28px;margin-bottom:12px;box-shadow:0 8px 16px rgba(61,90,241,0.12);">
+          🎓
+        </div>
+        <h3 style="margin:0 0 6px;font-size:20px;font-weight:900;color:#1e293b;font-family:'Orbitron',sans-serif;letter-spacing:-0.3px;">
+          Select Your Scheme
+        </h3>
+        <p style="margin:0;font-size:12.5px;color:#64748b;line-height:1.5;">
+          Choose your college curriculum scheme to personalize study notes, question banks, and academic materials.
+        </p>
+      </div>
+
+      <!-- Scheme Cards List -->
+      <div style="padding:0 20px;display:flex;flex-direction:column;gap:10px;" id="scheme-options-container">
+        
+        <!-- Option: 2022 Scheme -->
+        <label class="scheme-option-card active" data-scheme="2022" onclick="selectSchemeOption('2022', this)">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:22px;">✨</span>
+              <div>
+                <div style="font-size:14.5px;font-weight:800;color:#1e293b;">2022 Scheme</div>
+                <div style="font-size:11px;color:#64748b;">NEP 2020 Pattern · Most Enrolled</div>
+              </div>
+            </div>
+            <span class="scheme-badge" style="background:#eff2fe;color:#3d5af1;font-size:10px;font-weight:800;padding:3px 8px;border-radius:20px;border:1px solid #c7d2fe;">RECOMMENDED</span>
+          </div>
+          <input type="radio" name="selected_scheme_radio" value="2022" checked style="display:none;" />
+        </label>
+
+        <!-- Option: 2021 Scheme -->
+        <label class="scheme-option-card" data-scheme="2021" onclick="selectSchemeOption('2021', this)">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:22px;">📘</span>
+              <div>
+                <div style="font-size:14.5px;font-weight:800;color:#1e293b;">2021 Scheme</div>
+                <div style="font-size:11px;color:#64748b;">CBCS Autonomous / VTU Syllabus</div>
+              </div>
+            </div>
+            <span class="scheme-badge" style="background:#f1f5f9;color:#64748b;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;">CBCS</span>
+          </div>
+          <input type="radio" name="selected_scheme_radio" value="2021" style="display:none;" />
+        </label>
+
+        <!-- Option: 2018 Scheme -->
+        <label class="scheme-option-card" data-scheme="2018" onclick="selectSchemeOption('2018', this)">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:22px;">📗</span>
+              <div>
+                <div style="font-size:14.5px;font-weight:800;color:#1e293b;">2018 Scheme</div>
+                <div style="font-size:11px;color:#64748b;">Standard CBCS Regulation</div>
+              </div>
+            </div>
+            <span class="scheme-badge" style="background:#f1f5f9;color:#64748b;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;">LEGACY</span>
+          </div>
+          <input type="radio" name="selected_scheme_radio" value="2018" style="display:none;" />
+        </label>
+
+        <!-- Option: 2024 Scheme -->
+        <label class="scheme-option-card" data-scheme="2024" onclick="selectSchemeOption('2024', this)">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:22px;">🚀</span>
+              <div>
+                <div style="font-size:14.5px;font-weight:800;color:#1e293b;">2024 Scheme</div>
+                <div style="font-size:11px;color:#64748b;">New Multi-Disciplinary Framework</div>
+              </div>
+            </div>
+            <span class="scheme-badge" style="background:#fdf2f8;color:#db2777;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;border:1px solid #fbcfe8;">NEW</span>
+          </div>
+          <input type="radio" name="selected_scheme_radio" value="2024" style="display:none;" />
+        </label>
+
+      </div>
+
+      <!-- Action Button -->
+      <div style="padding:18px 20px 0;">
+        <button id="btn-save-scheme" onclick="saveStudentSchemeSelection()"
+          style="width:100%;padding:13px;background:linear-gradient(135deg,#3d5af1 0%,#6366f1 100%);color:#ffffff;border:none;border-radius:14px;font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 8px 20px rgba(61,90,241,0.3);transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px;">
+          <span>Confirm &amp; Continue</span>
+          <span style="font-size:16px;">→</span>
+        </button>
+      </div>
+
     </div>
   </div>
 
