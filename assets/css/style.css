@@ -5097,6 +5097,20 @@
       color: #ffffff !important;
       border-color: #3d5af1 !important;
     }
+    #scheme-options-container::-webkit-scrollbar {
+      width: 5px;
+    }
+    #scheme-options-container::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 10px;
+    }
+    #scheme-options-container::-webkit-scrollbar-thumb {
+      background: #c7d2fe;
+      border-radius: 10px;
+    }
+    #scheme-options-container::-webkit-scrollbar-thumb:hover {
+      background: #818cf8;
+    }
     @keyframes modalPop {
       0% { transform: scale(0.93) translateY(10px); opacity: 0; }
       100% { transform: scale(1) translateY(0); opacity: 1; }
