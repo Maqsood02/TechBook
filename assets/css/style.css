@@ -5092,10 +5092,15 @@
       background: linear-gradient(135deg, rgba(61, 90, 241, 0.06), rgba(99, 102, 241, 0.09));
       box-shadow: 0 4px 18px rgba(61, 90, 241, 0.16);
     }
-    .scheme-option-card.active .scheme-badge {
+    .scheme-option-card.active .scheme-check-circle {
+      border-color: #3d5af1 !important;
       background: #3d5af1 !important;
       color: #ffffff !important;
-      border-color: #3d5af1 !important;
+    }
+    .scheme-option-card:not(.active) .scheme-check-circle {
+      border-color: #cbd5e1 !important;
+      background: transparent !important;
+      color: transparent !important;
     }
     #scheme-options-container::-webkit-scrollbar {
       width: 5px;

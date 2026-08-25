@@ -14,7 +14,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <link rel="stylesheet" href="assets/css/style.css?v=20260825h" />
+  <link rel="stylesheet" href="assets/css/style.css?v=20260825i" />
   <style>
     @keyframes blink {
       0%, 100% { opacity: 1; }
@@ -350,7 +350,7 @@
                       <option value="2025">2025 Scheme</option>
                       <option value="2024">2024 Scheme</option>
                       <option value="2023">2023 Scheme</option>
-                      <option value="2022" selected>2022 Scheme (NEP)</option>
+                      <option value="2022" selected>2022 Scheme</option>
                     </select>
                   </div>
 
@@ -974,7 +974,7 @@
                             <option value="2025">2025 Scheme</option>
                             <option value="2024">2024 Scheme</option>
                             <option value="2023">2023 Scheme</option>
-                            <option value="2022">2022 Scheme (NEP)</option>
+                            <option value="2022">2022 Scheme</option>
                           </select>
                         </div>
                         <div class="form-group" style="margin:0;"><label style="font-size:10px;">Year</label>
@@ -2627,7 +2627,7 @@
                         <option value="2025">2025 Scheme</option>
                         <option value="2024">2024 Scheme</option>
                         <option value="2023">2023 Scheme</option>
-                        <option value="2022" selected>2022 Scheme (NEP)</option>
+                        <option value="2022" selected>2022 Scheme</option>
                         <option value="All">All Schemes (Common)</option>
                       </select>
                     </div>
@@ -2864,7 +2864,7 @@
                         <option value="2025">2025 Scheme</option>
                         <option value="2024">2024 Scheme</option>
                         <option value="2023">2023 Scheme</option>
-                        <option value="2022" selected>2022 Scheme (NEP)</option>
+                        <option value="2022" selected>2022 Scheme</option>
                         <option value="All">All Schemes (Common)</option>
                       </select>
                     </div>
@@ -3089,7 +3089,7 @@
                         <option value="2025">2025 Scheme</option>
                         <option value="2024">2024 Scheme</option>
                         <option value="2023">2023 Scheme</option>
-                        <option value="2022" selected>2022 Scheme (NEP)</option>
+                        <option value="2022" selected>2022 Scheme</option>
                         <option value="All">All Schemes (Common)</option>
                       </select>
                     </div>
@@ -3945,8 +3945,8 @@
     <iframe id="pdf-viewer-frame" src="" style="flex:1;width:100%;border:none;background:#525659;"></iframe>
   </div>
 
-  <script type="module" src="js-v2/app.js?v=20260825h"></script>
-  <script type="module" src="js-v2/features/mobile-navigation.js?v=20260825h"></script>
+  <script type="module" src="js-v2/app.js?v=20260825i"></script>
+  <script type="module" src="js-v2/features/mobile-navigation.js?v=20260825i"></script>
 
   <!-- ══ FOUNDER MODAL ══ -->
   <div id="founder-modal"
@@ -4078,14 +4078,11 @@
         <!-- Option: 2027 Scheme -->
         <label class="scheme-option-card" data-scheme="2027" onclick="selectSchemeOption('2027', this)">
           <div style="display:flex;align-items:center;justify-content:space-between;">
-            <div style="display:flex;align-items:center;gap:10px;">
+            <div style="display:flex;align-items:center;gap:12px;">
               <span style="font-size:22px;">🔮</span>
-              <div>
-                <div style="font-size:14px;font-weight:800;color:#1e293b;">2027 Scheme</div>
-                <div style="font-size:11px;color:#64748b;">Future &amp; Advanced Framework</div>
-              </div>
+              <span style="font-size:15px;font-weight:700;color:#1e293b;">2027 Scheme</span>
             </div>
-            <span class="scheme-badge" style="background:#f5f3ff;color:#7c3aed;font-size:10px;font-weight:800;padding:3px 8px;border-radius:20px;border:1px solid #ddd6fe;">UPCOMING</span>
+            <div class="scheme-check-circle" style="width:22px;height:22px;border-radius:50%;border:2px solid #cbd5e1;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;transition:all 0.2s;">✓</div>
           </div>
           <input type="radio" name="selected_scheme_radio" value="2027" style="display:none;" />
         </label>
@@ -4093,14 +4090,11 @@
         <!-- Option: 2026 Scheme -->
         <label class="scheme-option-card" data-scheme="2026" onclick="selectSchemeOption('2026', this)">
           <div style="display:flex;align-items:center;justify-content:space-between;">
-            <div style="display:flex;align-items:center;gap:10px;">
+            <div style="display:flex;align-items:center;gap:12px;">
               <span style="font-size:22px;">🌟</span>
-              <div>
-                <div style="font-size:14px;font-weight:800;color:#1e293b;">2026 Scheme</div>
-                <div style="font-size:11px;color:#64748b;">Next-Gen NEP Syllabus</div>
-              </div>
+              <span style="font-size:15px;font-weight:700;color:#1e293b;">2026 Scheme</span>
             </div>
-            <span class="scheme-badge" style="background:#eff6ff;color:#2563eb;font-size:10px;font-weight:800;padding:3px 8px;border-radius:20px;border:1px solid #bfdbfe;">ADVANCED</span>
+            <div class="scheme-check-circle" style="width:22px;height:22px;border-radius:50%;border:2px solid #cbd5e1;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;transition:all 0.2s;">✓</div>
           </div>
           <input type="radio" name="selected_scheme_radio" value="2026" style="display:none;" />
         </label>
@@ -4108,14 +4102,11 @@
         <!-- Option: 2025 Scheme -->
         <label class="scheme-option-card" data-scheme="2025" onclick="selectSchemeOption('2025', this)">
           <div style="display:flex;align-items:center;justify-content:space-between;">
-            <div style="display:flex;align-items:center;gap:10px;">
+            <div style="display:flex;align-items:center;gap:12px;">
               <span style="font-size:22px;">🚀</span>
-              <div>
-                <div style="font-size:14px;font-weight:800;color:#1e293b;">2025 Scheme</div>
-                <div style="font-size:11px;color:#64748b;">Latest Multi-Disciplinary Scheme</div>
-              </div>
+              <span style="font-size:15px;font-weight:700;color:#1e293b;">2025 Scheme</span>
             </div>
-            <span class="scheme-badge" style="background:#ecfeff;color:#0891b2;font-size:10px;font-weight:800;padding:3px 8px;border-radius:20px;border:1px solid #a5f3fc;">LATEST</span>
+            <div class="scheme-check-circle" style="width:22px;height:22px;border-radius:50%;border:2px solid #cbd5e1;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;transition:all 0.2s;">✓</div>
           </div>
           <input type="radio" name="selected_scheme_radio" value="2025" style="display:none;" />
         </label>
@@ -4123,14 +4114,11 @@
         <!-- Option: 2024 Scheme -->
         <label class="scheme-option-card" data-scheme="2024" onclick="selectSchemeOption('2024', this)">
           <div style="display:flex;align-items:center;justify-content:space-between;">
-            <div style="display:flex;align-items:center;gap:10px;">
+            <div style="display:flex;align-items:center;gap:12px;">
               <span style="font-size:22px;">⚡</span>
-              <div>
-                <div style="font-size:14px;font-weight:800;color:#1e293b;">2024 Scheme</div>
-                <div style="font-size:11px;color:#64748b;">New Curriculum Framework</div>
-              </div>
+              <span style="font-size:15px;font-weight:700;color:#1e293b;">2024 Scheme</span>
             </div>
-            <span class="scheme-badge" style="background:#fdf2f8;color:#db2777;font-size:10px;font-weight:800;padding:3px 8px;border-radius:20px;border:1px solid #fbcfe8;">NEW</span>
+            <div class="scheme-check-circle" style="width:22px;height:22px;border-radius:50%;border:2px solid #cbd5e1;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;transition:all 0.2s;">✓</div>
           </div>
           <input type="radio" name="selected_scheme_radio" value="2024" style="display:none;" />
         </label>
@@ -4138,14 +4126,11 @@
         <!-- Option: 2023 Scheme -->
         <label class="scheme-option-card" data-scheme="2023" onclick="selectSchemeOption('2023', this)">
           <div style="display:flex;align-items:center;justify-content:space-between;">
-            <div style="display:flex;align-items:center;gap:10px;">
+            <div style="display:flex;align-items:center;gap:12px;">
               <span style="font-size:22px;">📘</span>
-              <div>
-                <div style="font-size:14px;font-weight:800;color:#1e293b;">2023 Scheme</div>
-                <div style="font-size:11px;color:#64748b;">NEP 2023 Regulation &amp; Syllabus</div>
-              </div>
+              <span style="font-size:15px;font-weight:700;color:#1e293b;">2023 Scheme</span>
             </div>
-            <span class="scheme-badge" style="background:#f0fdf4;color:#16a34a;font-size:10px;font-weight:800;padding:3px 8px;border-radius:20px;border:1px solid #bbf7d0;">NEP</span>
+            <div class="scheme-check-circle" style="width:22px;height:22px;border-radius:50%;border:2px solid #cbd5e1;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;transition:all 0.2s;">✓</div>
           </div>
           <input type="radio" name="selected_scheme_radio" value="2023" style="display:none;" />
         </label>
@@ -4153,14 +4138,11 @@
         <!-- Option: 2022 Scheme -->
         <label class="scheme-option-card active" data-scheme="2022" onclick="selectSchemeOption('2022', this)">
           <div style="display:flex;align-items:center;justify-content:space-between;">
-            <div style="display:flex;align-items:center;gap:10px;">
+            <div style="display:flex;align-items:center;gap:12px;">
               <span style="font-size:22px;">✨</span>
-              <div>
-                <div style="font-size:14px;font-weight:800;color:#1e293b;">2022 Scheme</div>
-                <div style="font-size:11px;color:#64748b;">NEP 2020 Pattern · Most Enrolled</div>
-              </div>
+              <span style="font-size:15px;font-weight:700;color:#1e293b;">2022 Scheme</span>
             </div>
-            <span class="scheme-badge" style="background:#eff2fe;color:#3d5af1;font-size:10px;font-weight:800;padding:3px 8px;border-radius:20px;border:1px solid #c7d2fe;">RECOMMENDED</span>
+            <div class="scheme-check-circle" style="width:22px;height:22px;border-radius:50%;border:2px solid #3d5af1;background:#3d5af1;color:#ffffff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;transition:all 0.2s;">✓</div>
           </div>
           <input type="radio" name="selected_scheme_radio" value="2022" checked style="display:none;" />
         </label>
