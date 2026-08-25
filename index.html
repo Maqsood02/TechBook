@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <link rel="manifest" href="manifest.json" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="TechBook" />
@@ -750,13 +751,13 @@
               <div id="student-tab-content" style="display:none;">
                 <!-- Mobile Academics Sub-Tabs switcher -->
                 <div id="mobile-academics-tabs" class="mobile-academics-tabs hidden">
-                  <button class="mobile-subtab-btn active" data-subtab="notes" onclick="handleMobileSubtabClick('notes', this)">
+                  <button class="mobile-subtab-btn active" id="mob-subtab-notes" data-subtab="notes" onclick="handleMobileSubtabClick('notes', this)">
                     📚 Notes
                   </button>
-                  <button class="mobile-subtab-btn" data-subtab="qbank" onclick="handleMobileSubtabClick('qbank', this)">
+                  <button class="mobile-subtab-btn" id="mob-subtab-qbank" data-subtab="qbank" onclick="handleMobileSubtabClick('qbank', this)">
                     📖 Q-Bank
                   </button>
-                  <button class="mobile-subtab-btn" data-subtab="pyq" onclick="handleMobileSubtabClick('pyq', this)">
+                  <button class="mobile-subtab-btn" id="mob-subtab-pyq" data-subtab="pyq" onclick="handleMobileSubtabClick('pyq', this)">
                     🗂️ PYQs
                   </button>
                 </div>
@@ -3487,23 +3488,23 @@
         <!-- Mobile Bottom Nav and Sheet Elements -->
         <!-- Student Mobile Bottom Navigation -->
         <div id="student-mobile-nav" class="mobile-bottom-nav student-only-nav hidden">
-          <button class="mobile-nav-item active" onclick="handleMobileNavClick('home', this)">
+          <button class="mobile-nav-item active" id="mob-nav-home" onclick="handleMobileNavClick('home', this)">
             <span class="mobile-nav-icon">🏠</span>
             <span class="mobile-nav-label">Home</span>
           </button>
-          <button class="mobile-nav-item" onclick="handleMobileNavClick('attendance', this)">
+          <button class="mobile-nav-item" id="mob-nav-attendance" onclick="handleMobileNavClick('attendance', this)">
             <span class="mobile-nav-icon">📋</span>
             <span class="mobile-nav-label">Attendance</span>
           </button>
-          <button class="mobile-nav-item" onclick="handleMobileNavClick('quiz', this)">
+          <button class="mobile-nav-item" id="mob-nav-quiz" onclick="handleMobileNavClick('quiz', this)">
             <span class="mobile-nav-icon">🧠</span>
             <span class="mobile-nav-label">Quizzes</span>
           </button>
-          <button class="mobile-nav-item" onclick="handleMobileNavClick('academics', this)">
+          <button class="mobile-nav-item" id="mob-nav-academics" onclick="handleMobileNavClick('academics', this)">
             <span class="mobile-nav-icon">📚</span>
             <span class="mobile-nav-label">Library</span>
           </button>
-          <button class="mobile-nav-item" onclick="handleMobileNavClick('more', this)">
+          <button class="mobile-nav-item" id="mob-nav-more" onclick="handleMobileNavClick('more', this)">
             <span class="mobile-nav-icon">⚙️</span>
             <span class="mobile-nav-label">More</span>
           </button>
@@ -3541,11 +3542,11 @@
             <h3 class="sheet-title">Menu & Settings</h3>
             <div class="sheet-menu-list">
 
-              <button class="sheet-menu-item" onclick="switchStudentTab('quiz-history'); closeMobileMoreSheet();">
+              <button class="sheet-menu-item" id="mob-sheet-quiz-history" onclick="switchStudentTab('quiz-history'); closeMobileMoreSheet();">
                 <span class="sheet-menu-icon">📊</span>
                 <span class="sheet-menu-label">Quiz History</span>
               </button>
-              <button class="sheet-menu-item" onclick="switchStudentTab('history'); closeMobileMoreSheet();">
+              <button class="sheet-menu-item" id="mob-sheet-history" onclick="switchStudentTab('history'); closeMobileMoreSheet();">
                 <span class="sheet-menu-icon">🗃️</span>
                 <span class="sheet-menu-label">Attendance History</span>
               </button>
@@ -3869,8 +3870,8 @@
     <iframe id="pdf-viewer-frame" src="" style="flex:1;width:100%;border:none;background:#525659;"></iframe>
   </div>
 
-  <script type="module" src="js-v2/app.js?v=20260825a"></script>
-  <script type="module" src="js-v2/features/mobile-navigation.js?v=20260825a"></script>
+  <script type="module" src="js-v2/app.js?v=20260825b"></script>
+  <script type="module" src="js-v2/features/mobile-navigation.js?v=20260825b"></script>
 
   <!-- ══ FOUNDER MODAL ══ -->
   <div id="founder-modal"

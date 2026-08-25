@@ -85,16 +85,39 @@ window.handleMobileNavClick = function(tabName, element) {
   
   closeMobileMoreSheet();
 
-  // Map tabs to switchStudentTab args
+  let features = {};
+  try {
+    const cached = localStorage.getItem('techbook_features');
+    if (cached) features = JSON.parse(cached);
+  } catch (_) {}
+
+  // Map tabs to switchStudentTab args with feature toggle checking
   if (tabName === 'home') {
     if (typeof window.switchStudentTab === 'function') window.switchStudentTab(null);
   } else if (tabName === 'attendance') {
+    if (features.attendanceEnabled === false) {
+      alert('🛡️ Access Restricted: Attendance is currently disabled by administrator.');
+      return;
+    }
     if (typeof window.switchStudentTab === 'function') window.switchStudentTab('attendance');
   } else if (tabName === 'quiz') {
+    if (features.quizEnabled === false) {
+      alert('🛡️ Access Restricted: Quizzes are currently disabled by administrator.');
+      return;
+    }
     if (typeof window.switchStudentTab === 'function') window.switchStudentTab('quiz');
   } else if (tabName === 'academics') {
-    // Open notes by default on Academics tap
-    if (typeof window.switchStudentTab === 'function') window.switchStudentTab('notes');
+    // Determine the first available enabled academic tab
+    let target = null;
+    if (features.notesEnabled !== false) target = 'notes';
+    else if (features.qbankEnabled !== false) target = 'qbank';
+    else if (features.pyqEnabled !== false) target = 'pyq';
+
+    if (!target) {
+      alert('🛡️ Access Restricted: Study Library features are currently disabled by administrator.');
+      return;
+    }
+    if (typeof window.switchStudentTab === 'function') window.switchStudentTab(target);
   }
   
   syncMobileNavActiveState(tabName);
@@ -145,6 +168,24 @@ function syncAdminMobileNavActiveState(tabName) {
 
 // ─── 6. Subtab Switcher for Library/Academics (Notes/QBank/PYQ) ───
 window.handleMobileSubtabClick = function(subtabName, element) {
+  let features = {};
+  try {
+    const cached = localStorage.getItem('techbook_features');
+    if (cached) features = JSON.parse(cached);
+  } catch (_) {}
+
+  const tabFeatureKey = {
+    'notes': 'notesEnabled',
+    'qbank': 'qbankEnabled',
+    'pyq': 'pyqEnabled'
+  };
+
+  const fKey = tabFeatureKey[subtabName];
+  if (fKey && features[fKey] === false) {
+    alert('🛡️ Access Restricted: This feature is currently disabled by administrator.');
+    return;
+  }
+
   document.querySelectorAll('.mobile-subtab-btn').forEach(btn => btn.classList.remove('active'));
   if (element) element.classList.add('active');
   

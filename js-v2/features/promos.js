@@ -580,9 +580,8 @@ import { $, base64ToBlob, API_BASE_URL } from '../core/helpers.js';
                 if (video.readyState >= 1) {
                   video.currentTime = 0;
                 }
-                video.play().catch(e => console.log('Autoplay deferred for landing video:', e));
-              } catch (err) {
-                console.log("Could not reset or play video yet", err);
+                video.play().catch(() => {});
+              } catch (_) {
               }
               
               video.onended = () => {
@@ -697,7 +696,7 @@ import { $, base64ToBlob, API_BASE_URL } from '../core/helpers.js';
                       el.setAttribute('webkit-playsinline', '');
                       el.setAttribute('preload', 'auto');
                       el.load();
-                      el.play().catch(e => console.log("Landing mobile video autoplay:", e));
+                      el.play().catch(() => {});
                     }
                   }
                 }

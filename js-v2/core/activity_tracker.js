@@ -1,4 +1,4 @@
-import { db } from './firebase.js';
+import { db, auth } from './firebase.js';
 import { doc, setDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
 // Ensure anonymous UID is saved
@@ -10,8 +10,8 @@ let lastActivityTime = 0;
 let lastLoggedActivity = '';
 
 window.trackUserActivity = async function (description, logToHistory = false) {
-  // Do not track guest/anonymous users
-  if (!window._currentStudentUSN && !window._currentAdminUser) {
+  // Do not track if not signed in via Firebase Auth or no active role
+  if (!auth.currentUser || (!window._currentStudentUSN && !window._currentAdminUser)) {
     return;
   }
   let userId = '';

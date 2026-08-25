@@ -31,25 +31,43 @@ import { $, val } from '../core/helpers.js';
       }
 
       function applyFeatures(features) {
+        window._currentFeatures = features || {};
+        try {
+          localStorage.setItem('techbook_features', JSON.stringify(window._currentFeatures));
+        } catch (_) {}
+
         const featureMap = {
-          attendanceEnabled: "stab-attendance",
-          quizEnabled: "stab-quiz",
-          quizHistoryEnabled: "stab-quiz-history",
-          historyEnabled: "stab-history",
-          notesEnabled: "stab-notes",
-          pyqEnabled: "stab-pyq",
-          qbankEnabled: "stab-qbank",
-          iaTimetableEnabled: "stab-ia-timetable"
+          attendanceEnabled: ["stab-attendance", "mob-nav-attendance"],
+          quizEnabled: ["stab-quiz", "mob-nav-quiz"],
+          quizHistoryEnabled: ["stab-quiz-history", "mob-sheet-quiz-history"],
+          historyEnabled: ["stab-history", "mob-sheet-history"],
+          notesEnabled: ["stab-notes", "mob-subtab-notes"],
+          pyqEnabled: ["stab-pyq", "mob-subtab-pyq"],
+          qbankEnabled: ["stab-qbank", "mob-subtab-qbank"],
+          iaTimetableEnabled: ["stab-ia-timetable"]
         };
-        for (const [key, btnId] of Object.entries(featureMap)) {
-          const btn = document.getElementById(btnId);
-          const isEnabled = features[key] !== false; // Default to true if not cached
-          if (btn) {
-            if (isEnabled) btn.classList.remove("hidden");
-            else btn.classList.add("hidden");
-          }
+
+        for (const [key, elementIds] of Object.entries(featureMap)) {
+          const ids = Array.isArray(elementIds) ? elementIds : [elementIds];
+          const isEnabled = features[key] !== false; // Default to true if not specified
+          ids.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+              if (isEnabled) el.classList.remove("hidden");
+              else el.classList.add("hidden");
+            }
+          });
+        }
+
+        // Check if all academics (notes, qbank, pyq) are disabled -> hide Library nav icon on mobile
+        const allAcademicsDisabled = (features.notesEnabled === false && features.qbankEnabled === false && features.pyqEnabled === false);
+        const mobAcademics = document.getElementById('mob-nav-academics');
+        if (mobAcademics) {
+          if (allAcademicsDisabled) mobAcademics.classList.add('hidden');
+          else mobAcademics.classList.remove('hidden');
         }
       }
+      window.applyFeatures = applyFeatures;
 
       function renderStudentNavbarActions() {
         const actions = $("navbar-actions");

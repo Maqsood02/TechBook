@@ -17,6 +17,33 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
       const logoutBtn = document.getElementById('btn-logout');
       const tabContent = document.getElementById('student-tab-content');
 
+      // ── Enforce Feature Restrictions ──
+      if (tab) {
+        let features = {};
+        try {
+          const cached = localStorage.getItem('techbook_features');
+          if (cached) features = JSON.parse(cached);
+        } catch (_) {}
+
+        const tabFeatureKey = {
+          'attendance': 'attendanceEnabled',
+          'quiz': 'quizEnabled',
+          'quiz-history': 'quizHistoryEnabled',
+          'history': 'historyEnabled',
+          'notes': 'notesEnabled',
+          'qbank': 'qbankEnabled',
+          'pyq': 'pyqEnabled',
+          'ia-timetable': 'iaTimetableEnabled'
+        };
+
+        const fKey = tabFeatureKey[tab];
+        if (fKey && features[fKey] === false) {
+          alert('🛡️ Access Restricted: This feature is currently disabled by the administrator.');
+          if (window.switchStudentTab) window.switchStudentTab(null);
+          return;
+        }
+      }
+
       if (typeof window.trackUserActivity === 'function') {
         const tabNameMap = {
           'attendance': 'Viewing Attendance Page',
