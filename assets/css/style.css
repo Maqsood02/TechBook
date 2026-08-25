@@ -1129,19 +1129,27 @@
 
     .user-card .profile-details {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 8px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
       text-align: center;
       position: relative;
       z-index: 1;
+      justify-content: center;
+      align-items: center;
+      max-width: 100%;
+      margin: 0 auto;
     }
 
     .user-card .profile-details .detail-pill {
       background: #f7f8fc;
       border: 1px solid rgba(0, 0, 0, 0.03);
       border-radius: 14px;
-      padding: 10px 4px 8px;
+      padding: 10px 6px 8px;
       transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
 
     .user-card .profile-details .detail-pill:hover {
@@ -1151,18 +1159,35 @@
     }
 
     .user-card .profile-details .label {
-      font-size: 8px;
-      color: rgba(139, 168, 204, 0.55);
+      font-size: 8.5px;
+      color: rgba(139, 168, 204, 0.7);
       text-transform: uppercase;
       font-weight: 700;
       letter-spacing: 1px;
-      margin-bottom: 5px;
+      margin-bottom: 4px;
     }
 
     .user-card .profile-details .value {
-      font-size: 13px;
+      font-size: 13.5px;
       color: #1a1a2e;
       font-weight: 800;
+    }
+
+    @media (max-width: 480px) {
+      .user-card .profile-details {
+        gap: 6px;
+      }
+      .user-card .profile-details .detail-pill {
+        padding: 8px 4px 6px;
+        border-radius: 10px;
+      }
+      .user-card .profile-details .label {
+        font-size: 7.5px;
+        letter-spacing: 0.5px;
+      }
+      .user-card .profile-details .value {
+        font-size: 12px;
+      }
     }
 
     /* Stats Grid */
