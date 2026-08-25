@@ -163,19 +163,10 @@ import { $, val } from '../core/helpers.js';
         // Load attendance history
         loadStudentHistory(usn);
 
-        // Check student syllabus scheme
-        const studentScheme = data.scheme || localStorage.getItem('techbook_student_scheme');
-        if (studentScheme) {
-          window._currentStudentScheme = studentScheme;
-          try { localStorage.setItem('techbook_student_scheme', studentScheme); } catch (_) {}
-        } else {
-          // One-time attractive popup for existing/new students without scheme
-          setTimeout(() => {
-            if (typeof window.openSchemeSelectorModal === 'function') {
-              window.openSchemeSelectorModal(false);
-            }
-          }, 800);
-        }
+        // Check student syllabus scheme (no popup)
+        const studentScheme = data.scheme || localStorage.getItem('techbook_student_scheme') || '2022';
+        window._currentStudentScheme = studentScheme;
+        try { localStorage.setItem('techbook_student_scheme', studentScheme); } catch (_) {}
 
         // Real-time settings listener
         if (window._featureUnsubscribe) window._featureUnsubscribe();
