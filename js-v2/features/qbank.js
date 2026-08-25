@@ -2,7 +2,7 @@ import { auth, db } from '../core/firebase.js';
 import { doc, setDoc, getDoc, addDoc, collection, query, where, getDocs, orderBy, deleteDoc, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 import { $, val, base64ToBlob, esc, PdfDbCache, jsEsc, readFileBase64, getStudentProfile, API_BASE_URL } from '../core/helpers.js';
 
-const CHUNK_SIZE = 700 * 1024;
+const CHUNK_SIZE = 500 * 1024;
 let lastQbankFetchTime = 0;
 
     // ==========================================
@@ -121,12 +121,14 @@ let lastQbankFetchTime = 0;
         parts = await fetchChunksRest('qbank_papers', qbankId);
       } catch (restErr) {
         console.warn(`REST chunk fetch failed, falling back to Firestore SDK:`, restErr);
-        const chunksSnap = await getDocs(
-          query(collection(db, 'qbank_papers', qbankId, 'chunks'), orderBy('idx', 'asc'))
-        );
-        if (chunksSnap.empty) throw new Error('No chunks found for this Question Bank');
-        chunksSnap.forEach(d => parts.push(d.data().data));
+        const chunksSnap = await getDocs(collection(db, 'qbank_papers', qbankId, 'chunks'));
+        if (chunksSnap.empty) throw new Error('No chunks found for this Question Bank. Please try re-uploading.');
+        const chunkDocs = chunksSnap.docs.map(d => d.data());
+        chunkDocs.sort((a, b) => (parseInt(a.idx) || 0) - (parseInt(b.idx) || 0));
+        parts = chunkDocs.map(d => d.data || '').filter(Boolean);
       }
+
+      if (parts.length === 0) throw new Error('Question Bank content is empty or incomplete.');
 
       const blob = base64ToBlob(parts.join(''), 'application/pdf');
 
@@ -603,28 +605,18 @@ let lastQbankFetchTime = 0;
           const sections = sec === 'all' ? ['all'] : sec.split(',');
 
           async function uploadChunksFor(metaRefId, sectionIdx, totalSections) {
-            let batchStart = 0;
-            while (batchStart < chunks.length) {
-              const bN = writeBatch(db);
-              let batchBytes = 0;
-              let added = 0;
-              let j = batchStart;
-              while (j < chunks.length) {
-                const chunkBytes = chunks[j].length;
-                if (added > 0 && batchBytes + chunkBytes > 9 * 1024 * 1024) break;
-                const cr = doc(collection(db, 'qbank_papers', metaRefId, 'chunks'), String(j).padStart(5, '0'));
-                bN.set(cr, { idx: j, data: chunks[j] });
-                batchBytes += chunkBytes;
-                added++;
-                j++;
-              }
-              await bN.commit();
-              batchStart = j;
+            for (let j = 0; j < chunks.length; j++) {
+              const cr = doc(collection(db, 'qbank_papers', metaRefId, 'chunks'), String(j).padStart(5, '0'));
+              await setDoc(cr, { idx: j, data: chunks[j] });
 
-              const chunkProgress = batchStart / chunks.length;
+              if (j % 3 === 0) {
+                await new Promise(r => setTimeout(r, 20));
+              }
+
+              const chunkProgress = (j + 1) / chunks.length;
               const fileInternalProgress = (10 + (90 * (sectionIdx + chunkProgress) / totalSections));
               setQBankProgBar(Math.round(fileProgressBase + (fileInternalProgress * fileWeight / 100)));
-              qbankShowMsg(`📤 Uploading [${i + 1}/${qbankSelectedFiles.length}] ${currentFile.name}…`, '#0891b2');
+              qbankShowMsg(`📤 Uploading [${i + 1}/${qbankSelectedFiles.length}] ${currentFile.name} (Part ${j + 1}/${chunks.length})…`, '#0891b2');
             }
           }
 
@@ -669,6 +661,7 @@ let lastQbankFetchTime = 0;
               dept: dept || 'All',
               year,
               sem,
+              scheme,
               section: sec
             })
           }).then(r => r.json()).then(d => {
@@ -898,3 +891,10 @@ let lastQbankFetchTime = 0;
         qbankAdmLoadAll();
       } catch (e) { alert('Error deleting: ' + e.message); }
     };
+
+    // Register QBank _impl_ aliases for global HTML bridges
+    window._impl_qbankAdmView = window.qbankAdmView;
+    window._impl_qbankAdmDelete = window.qbankAdmDelete;
+    window._impl_qbankAdmBackToSubjects = window.qbankAdmBackToSubjects;
+    window._impl_studentViewQBank = window.studentViewQBank;
+    window._impl_studentDownloadQBank = window.studentDownloadQBank;

@@ -3,162 +3,162 @@ import { signOut } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth
 import { doc, setDoc, getDoc, addDoc, collection, query, where, getDocs, orderBy, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 import { $, val, API_BASE_URL } from '../core/helpers.js';
 
-    /* === STUDENT TABS === */
+/* === STUDENT TABS === */
 
-    window.showComingSoon = function (title, desc) {
-      const modal = document.getElementById('coming-soon-modal');
-      document.getElementById('cs-title').textContent = title;
-      document.getElementById('cs-desc').textContent = desc;
-      modal.style.display = 'flex';
+window.showComingSoon = function (title, desc) {
+  const modal = document.getElementById('coming-soon-modal');
+  document.getElementById('cs-title').textContent = title;
+  document.getElementById('cs-desc').textContent = desc;
+  modal.style.display = 'flex';
+};
+
+window._switchTab = window.switchStudentTab = function (tab) {
+  const navGrid = document.getElementById('student-nav-grid');
+  const logoutBtn = document.getElementById('btn-logout');
+  const tabContent = document.getElementById('student-tab-content');
+
+  // ── Enforce Feature Restrictions ──
+  if (tab) {
+    let features = {};
+    try {
+      const cached = localStorage.getItem('techbook_features');
+      if (cached) features = JSON.parse(cached);
+    } catch (_) { }
+
+    const tabFeatureKey = {
+      'attendance': 'attendanceEnabled',
+      'quiz': 'quizEnabled',
+      'quiz-history': 'quizHistoryEnabled',
+      'history': 'historyEnabled',
+      'notes': 'notesEnabled',
+      'qbank': 'qbankEnabled',
+      'pyq': 'pyqEnabled',
+      'ia-timetable': 'iaTimetableEnabled'
     };
 
-    window._switchTab = window.switchStudentTab = function (tab) {
-      const navGrid = document.getElementById('student-nav-grid');
-      const logoutBtn = document.getElementById('btn-logout');
-      const tabContent = document.getElementById('student-tab-content');
-
-      // ── Enforce Feature Restrictions ──
-      if (tab) {
-        let features = {};
-        try {
-          const cached = localStorage.getItem('techbook_features');
-          if (cached) features = JSON.parse(cached);
-        } catch (_) {}
-
-        const tabFeatureKey = {
-          'attendance': 'attendanceEnabled',
-          'quiz': 'quizEnabled',
-          'quiz-history': 'quizHistoryEnabled',
-          'history': 'historyEnabled',
-          'notes': 'notesEnabled',
-          'qbank': 'qbankEnabled',
-          'pyq': 'pyqEnabled',
-          'ia-timetable': 'iaTimetableEnabled'
-        };
-
-        const fKey = tabFeatureKey[tab];
-        if (fKey && features[fKey] === false) {
-          alert('🛡️ Access Restricted: This feature is currently disabled by the administrator.');
-          if (window.switchStudentTab) window.switchStudentTab(null);
-          return;
-        }
-      }
-
-      if (typeof window.trackUserActivity === 'function') {
-        const tabNameMap = {
-          'attendance': 'Viewing Attendance Page',
-          'quiz': 'Browsing Quizzes List',
-          'quiz-history': 'Viewing Quiz Attempts History',
-          'history': 'Viewing Attendance History',
-          'notes': 'Browsing Study Notes',
-          'qbank': 'Browsing Question Banks',
-          'pyq': 'Browsing Previous Year Question Papers',
-          'ia-timetable': 'Viewing IA Timetable'
-        };
-        const desc = tab ? (tabNameMap[tab] || `Viewing ${tab}`) : 'Viewing Student Dashboard Grid';
-        window.trackUserActivity(desc, false);
-      }
-
-      // Reset scroll position on tab switch
-      const contentEl = document.getElementById('content');
-      if (contentEl) contentEl.scrollTop = 0;
-      window.scrollTo(0, 0);
-      if (typeof window._updateNativeScrollState === 'function') window._updateNativeScrollState();
-
-      if (!tab) {
-        if (!window._studentHistoryNavLock) {
-          window.location.hash = '#student';
-          return;
-        }
-        // Back to nav grid
-        if (navGrid) navGrid.style.display = 'grid';
-        if (logoutBtn) logoutBtn.style.display = '';
-        if (tabContent) tabContent.style.display = 'none';
-        ['attendance', 'quiz', 'quiz-history', 'history', 'notes', 'qbank', 'pyq', 'ia-timetable'].forEach(t => {
-          const c = document.getElementById('stab-content-' + t);
-          if (c) c.style.display = 'none';
-        });
-        return;
-      }
-
-      // Hide nav, show content
-      if (navGrid) navGrid.style.display = 'none';
-      if (logoutBtn) logoutBtn.style.display = 'none';
-      if (tabContent) tabContent.style.display = '';
-      ['attendance', 'quiz', 'quiz-history', 'history', 'notes', 'qbank', 'pyq', 'ia-timetable'].forEach(t => {
-        const c = document.getElementById('stab-content-' + t);
-        if (c) c.style.display = t === tab ? '' : 'none';
-      });
-
-      if (tab === 'quiz') loadStudentQuizzes();
-      if (tab === 'quiz-history') loadStudentQuizHistory();
-      if (tab === 'notes') studentLoadNotes();
-      if (tab === 'qbank') studentLoadQBank();
-      if (tab === 'pyq') studentLoadPYQ();
-      if (tab === 'ia-timetable') window.loadIATimetable && window.loadIATimetable();
-
-      if (tab === 'ia-timetable') loadIATimetable();
-      if (typeof updateAppHistory === 'function' && !window._studentHistoryNavLock) updateAppHistory(tab, false);
-    };
-
-    function updateAppHistory(tab, replace = false) {
-      if (!window.history?.pushState) return;
-      const state = { role: 'student', tab: tab || null };
-      const url = '#student' + (tab ? '-' + tab : '');
-      if (replace) {
-        window.history.replaceState(state, '', url);
-      } else {
-        window.history.pushState(state, '', url);
-      }
+    const fKey = tabFeatureKey[tab];
+    if (fKey && features[fKey] === false) {
+      alert('🛡️ Access Restricted: This feature is currently disabled by the administrator.');
+      if (window.switchStudentTab) window.switchStudentTab(null);
+      return;
     }
+  }
 
-    window._studentLogout = window.studentLogout = async function () {
-      try {
-        if (typeof window.trackUserActivity === 'function') {
-          window.trackUserActivity('Logged out from Student Portal', true);
-        }
-        await signOut(auth);
-        window._currentStudentUSN = null;
-        window._currentStudentEmail = null;
-        try {
-          localStorage.removeItem('techbook_student_logged_in');
-          localStorage.removeItem('techbook_student_usn');
-          localStorage.removeItem('techbook_student_data');
-        } catch (storageErr) {
-          console.warn('Could not clear local student session:', storageErr);
-        }
-        if (typeof window.updateNavbarLoginBtn === 'function') {
-          window.updateNavbarLoginBtn();
-        }
-        if (window._featureUnsubscribe) {
-          window._featureUnsubscribe();
-          window._featureUnsubscribe = null;
-        }
-        switchStudentTab(null);
-        msg('login-msg', 'Logged out successfully', 'info');
-        if (typeof showLandingPage === 'function') showLandingPage();
-      } catch (e) { console.error('Logout error:', e); }
+  if (typeof window.trackUserActivity === 'function') {
+    const tabNameMap = {
+      'attendance': 'Viewing Attendance Page',
+      'quiz': 'Browsing Quizzes List',
+      'quiz-history': 'Viewing Quiz Attempts History',
+      'history': 'Viewing Attendance History',
+      'notes': 'Browsing Study Notes',
+      'qbank': 'Browsing Question Banks',
+      'pyq': 'Browsing Previous Year Question Papers',
+      'ia-timetable': 'Viewing IA Timetable'
     };
+    const desc = tab ? (tabNameMap[tab] || `Viewing ${tab}`) : 'Viewing Student Dashboard Grid';
+    window.trackUserActivity(desc, false);
+  }
 
-    async function loadStudentQuizHistory() {
-      const c = document.getElementById('quiz-history-container');
-      c.innerHTML = '<p style="color:var(--text-secondary);text-align:center;padding:20px;">⏳ Loading…</p>';
-      try {
-        const usn = window._currentStudentUSN || 'UNKNOWN';
-        const snap = await getDocs(query(collection(db, 'quiz_results'), where('usn', '==', usn)));
-        const results = [];
-        snap.forEach(d => results.push({ id: d.id, ...d.data() }));
-        if (!results.length) { c.innerHTML = '<p style="color:var(--text-secondary);text-align:center;padding:20px;">No quiz attempts yet.</p>'; return; }
-        results.sort((a, b) => (b.submittedAt || '').localeCompare(a.submittedAt || ''));
-        c.innerHTML = '<p style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;">Tap any quiz to see detailed answers</p>';
-        results.forEach(r => {
-          const pct = r.percent || Math.round((r.score / r.total) * 100);
-          const color = pct >= 80 ? '#34d399' : pct >= 50 ? '#fbbf24' : '#f87171';
-          const emoji = pct >= 80 ? '🎉' : pct >= 50 ? '👍' : '📚';
-          const date = r.submittedAt ? new Date(r.submittedAt).toLocaleString() : '—';
-          const card = document.createElement('div');
-          card.style.cssText = 'background:#f7f8fc;border:1px solid rgba(0,0,0,0.03);border-radius:12px;padding:14px 16px;margin-bottom:10px;cursor:pointer;transition:all 0.2s;';
-          card.innerHTML = `
+  // Reset scroll position on tab switch
+  const contentEl = document.getElementById('content');
+  if (contentEl) contentEl.scrollTop = 0;
+  window.scrollTo(0, 0);
+  if (typeof window._updateNativeScrollState === 'function') window._updateNativeScrollState();
+
+  if (!tab) {
+    if (!window._studentHistoryNavLock) {
+      window.location.hash = '#student';
+      return;
+    }
+    // Back to nav grid
+    if (navGrid) navGrid.style.display = 'grid';
+    if (logoutBtn) logoutBtn.style.display = '';
+    if (tabContent) tabContent.style.display = 'none';
+    ['attendance', 'quiz', 'quiz-history', 'history', 'notes', 'qbank', 'pyq', 'ia-timetable'].forEach(t => {
+      const c = document.getElementById('stab-content-' + t);
+      if (c) c.style.display = 'none';
+    });
+    return;
+  }
+
+  // Hide nav, show content
+  if (navGrid) navGrid.style.display = 'none';
+  if (logoutBtn) logoutBtn.style.display = 'none';
+  if (tabContent) tabContent.style.display = '';
+  ['attendance', 'quiz', 'quiz-history', 'history', 'notes', 'qbank', 'pyq', 'ia-timetable'].forEach(t => {
+    const c = document.getElementById('stab-content-' + t);
+    if (c) c.style.display = t === tab ? '' : 'none';
+  });
+
+  if (tab === 'quiz') loadStudentQuizzes();
+  if (tab === 'quiz-history') loadStudentQuizHistory();
+  if (tab === 'notes') studentLoadNotes();
+  if (tab === 'qbank') studentLoadQBank();
+  if (tab === 'pyq') studentLoadPYQ();
+  if (tab === 'ia-timetable') window.loadIATimetable && window.loadIATimetable();
+
+  if (tab === 'ia-timetable') loadIATimetable();
+  if (typeof updateAppHistory === 'function' && !window._studentHistoryNavLock) updateAppHistory(tab, false);
+};
+
+function updateAppHistory(tab, replace = false) {
+  if (!window.history?.pushState) return;
+  const state = { role: 'student', tab: tab || null };
+  const url = '#student' + (tab ? '-' + tab : '');
+  if (replace) {
+    window.history.replaceState(state, '', url);
+  } else {
+    window.history.pushState(state, '', url);
+  }
+}
+
+window._studentLogout = window.studentLogout = async function () {
+  try {
+    if (typeof window.trackUserActivity === 'function') {
+      window.trackUserActivity('Logged out from Student Portal', true);
+    }
+    await signOut(auth);
+    window._currentStudentUSN = null;
+    window._currentStudentEmail = null;
+    try {
+      localStorage.removeItem('techbook_student_logged_in');
+      localStorage.removeItem('techbook_student_usn');
+      localStorage.removeItem('techbook_student_data');
+    } catch (storageErr) {
+      console.warn('Could not clear local student session:', storageErr);
+    }
+    if (typeof window.updateNavbarLoginBtn === 'function') {
+      window.updateNavbarLoginBtn();
+    }
+    if (window._featureUnsubscribe) {
+      window._featureUnsubscribe();
+      window._featureUnsubscribe = null;
+    }
+    switchStudentTab(null);
+    msg('login-msg', 'Logged out successfully', 'info');
+    if (typeof showLandingPage === 'function') showLandingPage();
+  } catch (e) { console.error('Logout error:', e); }
+};
+
+async function loadStudentQuizHistory() {
+  const c = document.getElementById('quiz-history-container');
+  c.innerHTML = '<p style="color:var(--text-secondary);text-align:center;padding:20px;">⏳ Loading…</p>';
+  try {
+    const usn = window._currentStudentUSN || 'UNKNOWN';
+    const snap = await getDocs(query(collection(db, 'quiz_results'), where('usn', '==', usn)));
+    const results = [];
+    snap.forEach(d => results.push({ id: d.id, ...d.data() }));
+    if (!results.length) { c.innerHTML = '<p style="color:var(--text-secondary);text-align:center;padding:20px;">No quiz attempts yet.</p>'; return; }
+    results.sort((a, b) => (b.submittedAt || '').localeCompare(a.submittedAt || ''));
+    c.innerHTML = '<p style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;">Tap any quiz to see detailed answers</p>';
+    results.forEach(r => {
+      const pct = r.percent || Math.round((r.score / r.total) * 100);
+      const color = pct >= 80 ? '#34d399' : pct >= 50 ? '#fbbf24' : '#f87171';
+      const emoji = pct >= 80 ? '🎉' : pct >= 50 ? '👍' : '📚';
+      const date = r.submittedAt ? new Date(r.submittedAt).toLocaleString() : '—';
+      const card = document.createElement('div');
+      card.style.cssText = 'background:#f7f8fc;border:1px solid rgba(0,0,0,0.03);border-radius:12px;padding:14px 16px;margin-bottom:10px;cursor:pointer;transition:all 0.2s;';
+      card.innerHTML = `
             <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
               <div>
                 <div style="font-weight:700;font-size:14px;">📚 ${r.subject || ''} — ${r.topic || ''}</div>
@@ -171,93 +171,93 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
             </div>
             <div class="qh-detail" style="display:none;margin-top:14px;border-top:1px solid #ffffff;padding-top:12px;"></div>`;
 
-          // Click to expand/collapse answer review
-          card.addEventListener('click', async () => {
-            const detail = card.querySelector('.qh-detail');
-            if (detail.style.display !== 'none') { detail.style.display = 'none'; return; }
-            detail.style.display = '';
-            if (detail.innerHTML) { return; } // already loaded
+      // Click to expand/collapse answer review
+      card.addEventListener('click', async () => {
+        const detail = card.querySelector('.qh-detail');
+        if (detail.style.display !== 'none') { detail.style.display = 'none'; return; }
+        detail.style.display = '';
+        if (detail.innerHTML) { return; } // already loaded
 
-            detail.innerHTML = '<p style="color:var(--text-secondary);font-size:13px;">Loading answers…</p>';
-            try {
-              // Load the quiz questions from Firestore
-              const qSnap = await getDoc(doc(db, 'quizzes', r.quizId));
-              if (!qSnap.exists()) { detail.innerHTML = '<p style="color:#f87171;font-size:12px;">Quiz data no longer available.</p>'; return; }
-              const questions = qSnap.data().questions || [];
-              const studentAnswers = r.answers || {}; // may not be stored
-              detail.innerHTML = '<div style="font-weight:700;font-size:13px;margin-bottom:10px;">📋 Answer Review:</div>' +
-                questions.map((q, i) => {
-                  const correctIdx = q.correctIndex;
-                  const studentIdx = studentAnswers[i];
-                  const ok = studentIdx === correctIdx;
-                  return `<div style="padding:10px;border-radius:8px;margin-bottom:8px;background:${ok ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)'};border:1px solid ${ok ? 'rgba(16,185,129,0.25)' : 'rgba(239,68,68,0.25)'}">
+        detail.innerHTML = '<p style="color:var(--text-secondary);font-size:13px;">Loading answers…</p>';
+        try {
+          // Load the quiz questions from Firestore
+          const qSnap = await getDoc(doc(db, 'quizzes', r.quizId));
+          if (!qSnap.exists()) { detail.innerHTML = '<p style="color:#f87171;font-size:12px;">Quiz data no longer available.</p>'; return; }
+          const questions = qSnap.data().questions || [];
+          const studentAnswers = r.answers || {}; // may not be stored
+          detail.innerHTML = '<div style="font-weight:700;font-size:13px;margin-bottom:10px;">📋 Answer Review:</div>' +
+            questions.map((q, i) => {
+              const correctIdx = q.correctIndex;
+              const studentIdx = studentAnswers[i];
+              const ok = studentIdx === correctIdx;
+              return `<div style="padding:10px;border-radius:8px;margin-bottom:8px;background:${ok ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)'};border:1px solid ${ok ? 'rgba(16,185,129,0.25)' : 'rgba(239,68,68,0.25)'}">
                     <div style="font-size:13px;font-weight:600;margin-bottom:6px;">${ok ? '✅' : '❌'} Q${i + 1}. ${q.question}</div>
                     <div style="font-size:12px;color:#34d399;">✓ Correct: <strong>${q.options[correctIdx]}</strong></div>
                     ${studentIdx !== undefined && !ok ? `<div style="font-size:12px;color:#f87171;margin-top:2px;">✗ Your answer: <strong>${q.options[studentIdx]}</strong></div>` : ''}
                     ${studentIdx === undefined ? `<div style="font-size:12px;color:#6b7280;margin-top:2px;">— Not answered (time ran out)</div>` : ''}
                     ${q.explanation ? `<div style="font-size:11px;color:#60a5fa;margin-top:4px;padding:4px 8px;background:rgba(96,165,250,0.08);border-radius:6px;">💡 ${q.explanation}</div>` : ''}
                   </div>`;
-                }).join('');
-            } catch (e) { detail.innerHTML = `<p style="color:#f87171;font-size:12px;">❌ ${e.message}</p>`; }
-          });
+            }).join('');
+        } catch (e) { detail.innerHTML = `<p style="color:#f87171;font-size:12px;">❌ ${e.message}</p>`; }
+      });
 
-          c.appendChild(card);
-        });
-      } catch (e) {
-        c.innerHTML = `<p style="color:#f87171;text-align:center;padding:20px;">❌ ${e.message}</p>`;
-      }
-    }
+      c.appendChild(card);
+    });
+  } catch (e) {
+    c.innerHTML = `<p style="color:#f87171;text-align:center;padding:20px;">❌ ${e.message}</p>`;
+  }
+}
 
-    /* === STUDENT QUIZ === */
-    let _cq = null, _qi = 0, _ans = {}, _timerInt = null, _qTimerSecs = 0;
+/* === STUDENT QUIZ === */
+let _cq = null, _qi = 0, _ans = {}, _timerInt = null, _qTimerSecs = 0;
 
-    async function loadStudentQuizzes() {
-      const c = document.getElementById('quiz-list-container');
-      c.innerHTML = '<p style="color:var(--text-secondary);text-align:center;padding:20px;">⏳ Loading…</p>';
-      try {
-        const usn = window._currentStudentUSN || 'UNKNOWN';
-        // Load quizzes + student's completed results in parallel
-        const [quizSnap, resultSnap] = await Promise.all([
-          getDocs(collection(db, 'quizzes')),
-          getDocs(query(collection(db, 'quiz_results'), where('usn', '==', usn)))
-        ]);
-        const completedIds = new Set();
-        resultSnap.forEach(d => completedIds.add(d.data().quizId));
+async function loadStudentQuizzes() {
+  const c = document.getElementById('quiz-list-container');
+  c.innerHTML = '<p style="color:var(--text-secondary);text-align:center;padding:20px;">⏳ Loading…</p>';
+  try {
+    const usn = window._currentStudentUSN || 'UNKNOWN';
+    // Load quizzes + student's completed results in parallel
+    const [quizSnap, resultSnap] = await Promise.all([
+      getDocs(collection(db, 'quizzes')),
+      getDocs(query(collection(db, 'quiz_results'), where('usn', '==', usn)))
+    ]);
+    const completedIds = new Set();
+    resultSnap.forEach(d => completedIds.add(d.data().quizId));
 
-        const list = [];
-        quizSnap.forEach(d => { if (d.data().published) list.push({ id: d.id, ...d.data() }); });
-        if (!list.length) { c.innerHTML = '<p style="color:var(--text-secondary);text-align:center;padding:40px;">No quizzes available yet. Check back soon!</p>'; return; }
-        list.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
-        c.innerHTML = '';
+    const list = [];
+    quizSnap.forEach(d => { if (d.data().published) list.push({ id: d.id, ...d.data() }); });
+    if (!list.length) { c.innerHTML = '<p style="color:var(--text-secondary);text-align:center;padding:40px;">No quizzes available yet. Check back soon!</p>'; return; }
+    list.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+    c.innerHTML = '';
 
-        list.forEach((q, idx) => {
-          const done = completedIds.has(q.id);
-          const qCount = q.questions?.length || 0;
-          const diff = (q.difficulty || 'medium').toLowerCase();
-          const diffColor = diff === 'easy' ? '#34d399' : diff === 'hard' ? '#f87171' : '#fbbf24';
-          const diffBg = diff === 'easy' ? 'rgba(16,185,129,0.12)' : diff === 'hard' ? 'rgba(239,68,68,0.12)' : 'rgba(251,191,36,0.12)';
-          const timeLbl = q.timeLimit > 0 ? (q.timeLimit === 0.75 ? '45s/Q' : q.timeLimit + 'min/Q') : 'No limit';
-          const gradients = [
-            'linear-gradient(135deg,#eff0fe,rgba(139,92,246,0.08))',
-            'linear-gradient(135deg,rgba(236,72,153,0.15),rgba(168,85,247,0.08))',
-            'linear-gradient(135deg,rgba(16,185,129,0.15),rgba(6,182,212,0.08))',
-            'linear-gradient(135deg,rgba(245,158,11,0.15),rgba(239,68,68,0.08))',
-          ];
-          const borderColors = ['rgba(99,102,241,0.35)', 'rgba(236,72,153,0.35)', 'rgba(16,185,129,0.35)', 'rgba(245,158,11,0.35)'];
-          const grad = done ? 'linear-gradient(135deg,rgba(16,185,129,0.1),rgba(5,150,105,0.05))' : gradients[idx % gradients.length];
-          const border = done ? 'rgba(16,185,129,0.4)' : borderColors[idx % borderColors.length];
+    list.forEach((q, idx) => {
+      const done = completedIds.has(q.id);
+      const qCount = q.questions?.length || 0;
+      const diff = (q.difficulty || 'medium').toLowerCase();
+      const diffColor = diff === 'easy' ? '#34d399' : diff === 'hard' ? '#f87171' : '#fbbf24';
+      const diffBg = diff === 'easy' ? 'rgba(16,185,129,0.12)' : diff === 'hard' ? 'rgba(239,68,68,0.12)' : 'rgba(251,191,36,0.12)';
+      const timeLbl = q.timeLimit > 0 ? (q.timeLimit === 0.75 ? '45s/Q' : q.timeLimit + 'min/Q') : 'No limit';
+      const gradients = [
+        'linear-gradient(135deg,#eff0fe,rgba(139,92,246,0.08))',
+        'linear-gradient(135deg,rgba(236,72,153,0.15),rgba(168,85,247,0.08))',
+        'linear-gradient(135deg,rgba(16,185,129,0.15),rgba(6,182,212,0.08))',
+        'linear-gradient(135deg,rgba(245,158,11,0.15),rgba(239,68,68,0.08))',
+      ];
+      const borderColors = ['rgba(99,102,241,0.35)', 'rgba(236,72,153,0.35)', 'rgba(16,185,129,0.35)', 'rgba(245,158,11,0.35)'];
+      const grad = done ? 'linear-gradient(135deg,rgba(16,185,129,0.1),rgba(5,150,105,0.05))' : gradients[idx % gradients.length];
+      const border = done ? 'rgba(16,185,129,0.4)' : borderColors[idx % borderColors.length];
 
-          const card = document.createElement('div');
-          card.style.cssText = `background:${grad};border:1px solid ${border};border-radius:20px;padding:0;margin-bottom:14px;position:relative;overflow:hidden;transition:transform 0.2s ease,box-shadow 0.2s ease;cursor:${done ? 'default' : 'pointer'};box-shadow:0 4px 20px rgba(0,0,0,0.03);`;
+      const card = document.createElement('div');
+      card.style.cssText = `background:${grad};border:1px solid ${border};border-radius:20px;padding:0;margin-bottom:14px;position:relative;overflow:hidden;transition:transform 0.2s ease,box-shadow 0.2s ease;cursor:${done ? 'default' : 'pointer'};box-shadow:0 4px 20px rgba(0,0,0,0.03);`;
 
-          // Decorative circle
-          const deco = `<div style="position:absolute;top:-24px;right:-24px;width:100px;height:100px;border-radius:50%;background:${done ? 'rgba(16,185,129,0.07)' : borderColors[idx % 4].replace('0.35', '0.07')};pointer-events:none;"></div>
+      // Decorative circle
+      const deco = `<div style="position:absolute;top:-24px;right:-24px;width:100px;height:100px;border-radius:50%;background:${done ? 'rgba(16,185,129,0.07)' : borderColors[idx % 4].replace('0.35', '0.07')};pointer-events:none;"></div>
           <div style="position:absolute;bottom:-20px;left:-20px;width:70px;height:70px;border-radius:50%;background:${borderColors[idx % 4].replace('0.35', '0.04')};pointer-events:none;"></div>`;
 
-          // Coloured left accent bar
-          const accentColor = done ? '#10b981' : borderColors[idx % 4].replace('0.35', '0.9');
+      // Coloured left accent bar
+      const accentColor = done ? '#10b981' : borderColors[idx % 4].replace('0.35', '0.9');
 
-          card.innerHTML = deco + `
+      card.innerHTML = deco + `
             <div style="display:flex;gap:0;">
               <!-- Left accent bar -->
               <div style="width:4px;background:${done ? 'linear-gradient(180deg,#34d399,#059669)' : ('linear-gradient(180deg,' + borderColors[idx % 4].replace('0.35', '0.9') + ',' + borderColors[(idx + 1) % 4].replace('0.35', '0.7') + ')')};border-radius:20px 0 0 20px;flex-shrink:0;"></div>
@@ -270,9 +270,9 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
                     <span style="color:#6b7280;font-weight:500;font-size:13px;"> — ${q.topic}</span>
                   </div>
                   ${done
-              ? `<div style="flex-shrink:0;padding:5px 12px;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.35);border-radius:20px;color:#34d399;font-weight:700;font-size:11px;white-space:nowrap;">✔ Done</div>`
-              : `<button onclick="startQuiz('${q.id}')" style="flex-shrink:0;padding:10px 18px;background:linear-gradient(135deg,#3d5af1,#6366f1);border:none;border-radius:14px;color:#ffffff;font-weight:900;font-size:13px;cursor:pointer;box-shadow:0 4px 14px #d1d5db;transition:transform 0.15s,box-shadow 0.15s;white-space:nowrap;" onmouseover="this.style.transform='scale(1.05)';this.style.boxShadow='0 6px 20px #c7d0fb';" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 14px #d1d5db';">Start →</button>`
-            }
+          ? `<div style="flex-shrink:0;padding:5px 12px;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.35);border-radius:20px;color:#34d399;font-weight:700;font-size:11px;white-space:nowrap;">✔ Done</div>`
+          : `<button onclick="startQuiz('${q.id}')" style="flex-shrink:0;padding:10px 18px;background:linear-gradient(135deg,#3d5af1,#6366f1);border:none;border-radius:14px;color:#ffffff;font-weight:900;font-size:13px;cursor:pointer;box-shadow:0 4px 14px #d1d5db;transition:transform 0.15s,box-shadow 0.15s;white-space:nowrap;" onmouseover="this.style.transform='scale(1.05)';this.style.boxShadow='0 6px 20px #c7d0fb';" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 14px #d1d5db';">Start →</button>`
+        }
                 </div>
                 <!-- Pills row -->
                 <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
@@ -284,562 +284,562 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
               </div>
             </div>`;
 
-          if (!done) {
-            card.addEventListener('mouseenter', () => { card.style.transform = 'translateY(-3px) scale(1.01)'; card.style.boxShadow = '0 12px 36px rgba(0,0,0,0.03)'; });
-            card.addEventListener('mouseleave', () => { card.style.transform = ''; card.style.boxShadow = '0 4px 20px rgba(0,0,0,0.03)'; });
-          }
-          c.appendChild(card);
-        });
-      } catch (e) {
-        c.innerHTML = `<p style="color:#f87171;text-align:center;padding:20px;">❌ ${e.message}</p>`;
+      if (!done) {
+        card.addEventListener('mouseenter', () => { card.style.transform = 'translateY(-3px) scale(1.01)'; card.style.boxShadow = '0 12px 36px rgba(0,0,0,0.03)'; });
+        card.addEventListener('mouseleave', () => { card.style.transform = ''; card.style.boxShadow = '0 4px 20px rgba(0,0,0,0.03)'; });
       }
+      c.appendChild(card);
+    });
+  } catch (e) {
+    c.innerHTML = `<p style="color:#f87171;text-align:center;padding:20px;">❌ ${e.message}</p>`;
+  }
+}
+
+// Tab switch & screenshot detection
+let _tabWarnings = 0;
+let _quizActive = false;
+
+// Screenshot shield functions
+function showScreenshotShield(duration = 2000) {
+  if (!_quizActive) return;
+  const shield = document.getElementById('quiz-screenshot-shield');
+  const quizArea = document.getElementById('quiz-take-view');
+  if (shield) shield.style.display = 'flex';
+  if (quizArea) quizArea.classList.add('quiz-blur-active');
+  showQuizWarning('📵 Screenshot attempt detected! Your attempt is flagged.', false);
+  _tabWarnings++;
+  if (_tabWarnings >= 3) {
+    showQuizWarning('🚫 Quiz auto-submitted due to repeated violations!', true);
+    window.submitQuiz();
+  }
+  setTimeout(() => {
+    if (shield) shield.style.display = 'none';
+    if (quizArea) quizArea.classList.remove('quiz-blur-active');
+  }, duration);
+}
+
+function setupQuizSecurityListeners() {
+  // Tab switch / window blur
+  const onBlur = () => {
+    if (!_quizActive) return;
+    _tabWarnings++;
+    const remaining = 3 - _tabWarnings;
+    if (_tabWarnings >= 3) {
+      showQuizWarning('🚫 Quiz auto-submitted: You switched tabs 3 times!', true);
+      window.submitQuiz();
+    } else {
+      showQuizWarning(`⚠️ Warning ${_tabWarnings}/3: Do not switch tabs! ${remaining} warning(s) left.`, false);
     }
+  };
+  window.addEventListener('blur', onBlur);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && _quizActive) onBlur();
+  });
 
-    // Tab switch & screenshot detection
-    let _tabWarnings = 0;
-    let _quizActive = false;
-
-    // Screenshot shield functions
-    function showScreenshotShield(duration = 2000) {
-      if (!_quizActive) return;
-      const shield = document.getElementById('quiz-screenshot-shield');
-      const quizArea = document.getElementById('quiz-take-view');
-      if (shield) shield.style.display = 'flex';
-      if (quizArea) quizArea.classList.add('quiz-blur-active');
-      showQuizWarning('📵 Screenshot attempt detected! Your attempt is flagged.', false);
-      _tabWarnings++;
-      if (_tabWarnings >= 3) {
-        showQuizWarning('🚫 Quiz auto-submitted due to repeated violations!', true);
-        window.submitQuiz();
-      }
-      setTimeout(() => {
-        if (shield) shield.style.display = 'none';
-        if (quizArea) quizArea.classList.remove('quiz-blur-active');
-      }, duration);
+  // Keyboard screenshot detection (desktop)
+  document.addEventListener('keydown', (e) => {
+    if (!_quizActive) return;
+    const isScreenshot = e.key === 'PrintScreen' ||
+      (e.ctrlKey && e.shiftKey && (e.key === 's' || e.key === 'S' || e.key === '3' || e.key === '4' || e.key === '5')) ||
+      (e.metaKey && e.shiftKey && (e.key === '3' || e.key === '4' || e.key === '5' || e.key === 's' || e.key === 'S'));
+    if (isScreenshot) {
+      e.preventDefault();
+      showScreenshotShield(1500);
     }
+  });
 
-    function setupQuizSecurityListeners() {
-      // Tab switch / window blur
-      const onBlur = () => {
-        if (!_quizActive) return;
-        _tabWarnings++;
-        const remaining = 3 - _tabWarnings;
-        if (_tabWarnings >= 3) {
-          showQuizWarning('🚫 Quiz auto-submitted: You switched tabs 3 times!', true);
-          window.submitQuiz();
-        } else {
-          showQuizWarning(`⚠️ Warning ${_tabWarnings}/3: Do not switch tabs! ${remaining} warning(s) left.`, false);
-        }
-      };
-      window.addEventListener('blur', onBlur);
-      document.addEventListener('visibilitychange', () => {
-        if (document.hidden && _quizActive) onBlur();
-      });
+  // Right-click disabled during quiz
+  document.addEventListener('contextmenu', (e) => {
+    if (_quizActive) { e.preventDefault(); showQuizWarning('📵 Right-click is disabled during the quiz.', false); }
+  });
 
-      // Keyboard screenshot detection (desktop)
-      document.addEventListener('keydown', (e) => {
-        if (!_quizActive) return;
-        const isScreenshot = e.key === 'PrintScreen' ||
-          (e.ctrlKey && e.shiftKey && (e.key === 's' || e.key === 'S' || e.key === '3' || e.key === '4' || e.key === '5')) ||
-          (e.metaKey && e.shiftKey && (e.key === '3' || e.key === '4' || e.key === '5' || e.key === 's' || e.key === 'S'));
-        if (isScreenshot) {
-          e.preventDefault();
-          showScreenshotShield(1500);
-        }
-      });
+  // Mobile: block long-press copy / share on quiz area
+  document.addEventListener('touchstart', (e) => {
+    if (!_quizActive) return;
+    const inQuiz = e.target.closest('#quiz-take-view');
+    if (inQuiz) { e.target.style.webkitUserSelect = 'none'; e.target.style.userSelect = 'none'; }
+  }, { passive: true });
 
-      // Right-click disabled during quiz
-      document.addEventListener('contextmenu', (e) => {
-        if (_quizActive) { e.preventDefault(); showQuizWarning('📵 Right-click is disabled during the quiz.', false); }
-      });
+  // Detect Android power+vol screenshot (visibility change approach)
+  // When screen goes dark briefly (Android screenshot), visibilitychange fires
+  // Already handled by tab switch detection above
 
-      // Mobile: block long-press copy / share on quiz area
-      document.addEventListener('touchstart', (e) => {
-        if (!_quizActive) return;
-        const inQuiz = e.target.closest('#quiz-take-view');
-        if (inQuiz) { e.target.style.webkitUserSelect = 'none'; e.target.style.userSelect = 'none'; }
-      }, { passive: true });
-
-      // Detect Android power+vol screenshot (visibility change approach)
-      // When screen goes dark briefly (Android screenshot), visibilitychange fires
-      // Already handled by tab switch detection above
-
-      // Block Media Capture API if available
-      if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
-        const origGetDisplay = navigator.mediaDevices.getDisplayMedia.bind(navigator.mediaDevices);
-        navigator.mediaDevices.getDisplayMedia = async (...args) => {
-          if (_quizActive) { showScreenshotShield(2000); throw new Error('Screen capture blocked during quiz'); }
-          return origGetDisplay(...args);
-        };
-      }
-    }
-    setupQuizSecurityListeners();
-
-    function showQuizWarning(msg, fatal) {
-      let warn = document.getElementById('quiz-security-warning');
-      if (!warn) {
-        warn = document.createElement('div');
-        warn.id = 'quiz-security-warning';
-        warn.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;padding:14px 20px;text-align:center;font-weight:700;font-size:14px;animation:slideDown 0.3s ease;';
-        document.body.appendChild(warn);
-      }
-      warn.style.background = fatal ? '#7f1d1d' : '#78350f';
-      warn.style.color = fatal ? '#fca5a5' : '#fde68a';
-      warn.style.border = `2px solid ${fatal ? '#ef4444' : '#f59e0b'}`;
-      warn.textContent = msg;
-      warn.style.display = 'block';
-      if (!fatal) setTimeout(() => { if (warn) warn.style.display = 'none'; }, 3000);
-    }
-
-    window.startQuiz = async function (qid) {
-      const snap = await getDoc(doc(db, 'quizzes', qid));
-      if (!snap.exists()) return;
-      _cq = { id: qid, ...snap.data() }; _qi = 0; _ans = {};
-      _tabWarnings = 0;
-      _quizActive = true;
-      _expiredQs = new Set(); // reset expired questions tracker
-      _qTimerSecs = _cq.timeLimit > 0 ? Math.round(_cq.timeLimit * 60) : 0;
-      document.getElementById('quiz-list-view').style.display = 'none';
-      document.getElementById('quiz-take-view').style.display = '';
-      document.getElementById('quiz-result-view').style.display = 'none';
-      document.getElementById('quiz-take-title').textContent = `${_cq.subject} — ${_cq.topic}`;
-      document.getElementById('quiz-q-total').textContent = _cq.questions.length;
-      if (_timerInt) clearInterval(_timerInt);
-      renderQ();
+  // Block Media Capture API if available
+  if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+    const origGetDisplay = navigator.mediaDevices.getDisplayMedia.bind(navigator.mediaDevices);
+    navigator.mediaDevices.getDisplayMedia = async (...args) => {
+      if (_quizActive) { showScreenshotShield(2000); throw new Error('Screen capture blocked during quiz'); }
+      return origGetDisplay(...args);
     };
+  }
+}
+setupQuizSecurityListeners();
 
-    function fmtTime(s) {
-      if (s <= 0) return '⏱ 0:00';
-      return `⏱ ${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
-    }
+function showQuizWarning(msg, fatal) {
+  let warn = document.getElementById('quiz-security-warning');
+  if (!warn) {
+    warn = document.createElement('div');
+    warn.id = 'quiz-security-warning';
+    warn.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;padding:14px 20px;text-align:center;font-weight:700;font-size:14px;animation:slideDown 0.3s ease;';
+    document.body.appendChild(warn);
+  }
+  warn.style.background = fatal ? '#7f1d1d' : '#78350f';
+  warn.style.color = fatal ? '#fca5a5' : '#fde68a';
+  warn.style.border = `2px solid ${fatal ? '#ef4444' : '#f59e0b'}`;
+  warn.textContent = msg;
+  warn.style.display = 'block';
+  if (!fatal) setTimeout(() => { if (warn) warn.style.display = 'none'; }, 3000);
+}
 
-    function startQTimer() {
-      if (_timerInt) clearInterval(_timerInt);
-      const te = document.getElementById('quiz-timer');
-      if (!_qTimerSecs) { if (te) te.textContent = ''; return; }
+window.startQuiz = async function (qid) {
+  const snap = await getDoc(doc(db, 'quizzes', qid));
+  if (!snap.exists()) return;
+  _cq = { id: qid, ...snap.data() }; _qi = 0; _ans = {};
+  _tabWarnings = 0;
+  _quizActive = true;
+  _expiredQs = new Set(); // reset expired questions tracker
+  _qTimerSecs = _cq.timeLimit > 0 ? Math.round(_cq.timeLimit * 60) : 0;
+  document.getElementById('quiz-list-view').style.display = 'none';
+  document.getElementById('quiz-take-view').style.display = '';
+  document.getElementById('quiz-result-view').style.display = 'none';
+  document.getElementById('quiz-take-title').textContent = `${_cq.subject} — ${_cq.topic}`;
+  document.getElementById('quiz-q-total').textContent = _cq.questions.length;
+  if (_timerInt) clearInterval(_timerInt);
+  renderQ();
+};
 
-      // If this question's timer already expired, show "⏱ Time's up" but don't restart
-      if (_expiredQs.has(_qi)) {
-        if (te) { te.textContent = '⏱ Time\'s up'; te.style.color = '#ef4444'; te.style.background = 'rgba(239,68,68,0.1)'; }
-        return;
-      }
+function fmtTime(s) {
+  if (s <= 0) return '⏱ 0:00';
+  return `⏱ ${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
+}
 
-      let s = _qTimerSecs;
-      if (te) { te.textContent = fmtTime(s); te.style.color = '#f59e0b'; te.style.background = 'rgba(245,158,11,0.1)'; }
-      _timerInt = setInterval(() => {
-        s--;
-        if (te) { te.textContent = fmtTime(s); }
-        if (s <= 10 && te) te.style.color = '#ef4444';
-        if (s <= 0) {
-          clearInterval(_timerInt);
-          _expiredQs.add(_qi); // mark this question as expired
-          if (te) { te.textContent = '⏱ Time\'s up'; te.style.color = '#ef4444'; }
-          // Auto-advance after 1 second pause
-          setTimeout(() => {
-            if (_qi < _cq.questions.length - 1) { _qi++; renderQ(); }
-            else { window.submitQuiz(); }
-          }, 1000);
-        }
+function startQTimer() {
+  if (_timerInt) clearInterval(_timerInt);
+  const te = document.getElementById('quiz-timer');
+  if (!_qTimerSecs) { if (te) te.textContent = ''; return; }
+
+  // If this question's timer already expired, show "⏱ Time's up" but don't restart
+  if (_expiredQs.has(_qi)) {
+    if (te) { te.textContent = '⏱ Time\'s up'; te.style.color = '#ef4444'; te.style.background = 'rgba(239,68,68,0.1)'; }
+    return;
+  }
+
+  let s = _qTimerSecs;
+  if (te) { te.textContent = fmtTime(s); te.style.color = '#f59e0b'; te.style.background = 'rgba(245,158,11,0.1)'; }
+  _timerInt = setInterval(() => {
+    s--;
+    if (te) { te.textContent = fmtTime(s); }
+    if (s <= 10 && te) te.style.color = '#ef4444';
+    if (s <= 0) {
+      clearInterval(_timerInt);
+      _expiredQs.add(_qi); // mark this question as expired
+      if (te) { te.textContent = '⏱ Time\'s up'; te.style.color = '#ef4444'; }
+      // Auto-advance after 1 second pause
+      setTimeout(() => {
+        if (_qi < _cq.questions.length - 1) { _qi++; renderQ(); }
+        else { window.submitQuiz(); }
       }, 1000);
     }
+  }, 1000);
+}
 
-    function renderQ() {
-      const q = _cq.questions[_qi];
-      const total = _cq.questions.length;
-      document.getElementById('quiz-q-current').textContent = _qi + 1;
-      document.getElementById('quiz-question-text').textContent = sanitizeText(q.question);
+function renderQ() {
+  const q = _cq.questions[_qi];
+  const total = _cq.questions.length;
+  document.getElementById('quiz-q-current').textContent = _qi + 1;
+  document.getElementById('quiz-question-text').textContent = sanitizeText(q.question);
 
-      // Update progress bar
-      const pb = document.getElementById('quiz-progress-bar');
-      if (pb) pb.style.width = Math.round((_qi + 1) / total * 100) + '%';
+  // Update progress bar
+  const pb = document.getElementById('quiz-progress-bar');
+  if (pb) pb.style.width = Math.round((_qi + 1) / total * 100) + '%';
 
-      const optBox = document.getElementById('quiz-options');
-      optBox.innerHTML = '';
+  const optBox = document.getElementById('quiz-options');
+  optBox.innerHTML = '';
 
-      // Locked if answered OR if timer expired for this question
-      const timeExpired = _expiredQs.has(_qi);
-      const answered = _ans[_qi] !== undefined;
-      const locked = answered || timeExpired;
+  // Locked if answered OR if timer expired for this question
+  const timeExpired = _expiredQs.has(_qi);
+  const answered = _ans[_qi] !== undefined;
+  const locked = answered || timeExpired;
 
-      const colors = ['rgba(99,102,241,', 'rgba(236,72,153,', 'rgba(16,185,129,', 'rgba(245,158,11,'];
-      const letters = ['A', 'B', 'C', 'D'];
+  const colors = ['rgba(99,102,241,', 'rgba(236,72,153,', 'rgba(16,185,129,', 'rgba(245,158,11,'];
+  const letters = ['A', 'B', 'C', 'D'];
 
-      q.options.forEach((optText, i) => {
-        const btn = document.createElement('button');
-        const selected = _ans[_qi] === i;
-        const col = colors[i] || 'rgba(255,255,255,';
+  q.options.forEach((optText, i) => {
+    const btn = document.createElement('button');
+    const selected = _ans[_qi] === i;
+    const col = colors[i] || 'rgba(255,255,255,';
 
-        // If time expired and no answer selected — show all options greyed out
-        const dimmed = locked && !selected;
-        btn.style.cssText = [
-          'width:100%', 'text-align:left', 'padding:14px 16px', 'border-radius:14px',
-          'font-size:14px', 'font-family:inherit', 'display:flex', 'align-items:center', 'gap:12px',
-          'border:2px solid ' + (selected ? col + '0.8)' : col + '0.15)'),
-          'background:' + (selected ? col + '0.18)' : (timeExpired && !answered ? 'rgba(255,255,255,0.02)' : col + '0.04)')),
-          'color:' + (dimmed ? '#9ca3af' : (selected ? '#111827' : '#374151')),
-          'cursor:not-allowed',
-          'transition:all 0.15s', 'outline:none',
-          'opacity:' + (dimmed ? '0.45' : '1')
-        ].join(';');
+    // If time expired and no answer selected — show all options greyed out
+    const dimmed = locked && !selected;
+    btn.style.cssText = [
+      'width:100%', 'text-align:left', 'padding:14px 16px', 'border-radius:14px',
+      'font-size:14px', 'font-family:inherit', 'display:flex', 'align-items:center', 'gap:12px',
+      'border:2px solid ' + (selected ? col + '0.8)' : col + '0.15)'),
+      'background:' + (selected ? col + '0.18)' : (timeExpired && !answered ? 'rgba(255,255,255,0.02)' : col + '0.04)')),
+      'color:' + (dimmed ? '#9ca3af' : (selected ? '#111827' : '#374151')),
+      'cursor:not-allowed',
+      'transition:all 0.15s', 'outline:none',
+      'opacity:' + (dimmed ? '0.45' : '1')
+    ].join(';');
 
-        const badge = document.createElement('span');
-        badge.style.cssText = 'min-width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:8px;font-weight:800;font-size:13px;flex-shrink:0;background:' +
-          (selected ? col + '0.35)' : col + '0.08)') + ';color:' +
-          (selected ? '#fff' : (dimmed ? '#9ca3af' : col + '0.9)')) + ';border:1px solid ' +
-          col + (selected ? '0.6)' : '0.15)') + ';';
-        badge.textContent = letters[i];
+    const badge = document.createElement('span');
+    badge.style.cssText = 'min-width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:8px;font-weight:800;font-size:13px;flex-shrink:0;background:' +
+      (selected ? col + '0.35)' : col + '0.08)') + ';color:' +
+      (selected ? '#fff' : (dimmed ? '#9ca3af' : col + '0.9)')) + ';border:1px solid ' +
+      col + (selected ? '0.6)' : '0.15)') + ';';
+    badge.textContent = letters[i];
 
-        const text = document.createElement('span');
-        text.style.cssText = 'line-height:1.4;';
-        text.textContent = stripOptionPrefix(sanitizeText(optText));
-        btn.appendChild(badge);
-        btn.appendChild(text);
+    const text = document.createElement('span');
+    text.style.cssText = 'line-height:1.4;';
+    text.textContent = stripOptionPrefix(sanitizeText(optText));
+    btn.appendChild(badge);
+    btn.appendChild(text);
 
-        if (selected) {
-          const tick = document.createElement('span');
-          tick.textContent = '✓';
-          tick.style.cssText = 'margin-left:auto;font-size:16px;font-weight:900;color:#34d399;flex-shrink:0;';
-          btn.appendChild(tick);
-        }
-        // Only allow clicking if not locked at all
-        if (!locked) {
-          btn.style.cursor = 'pointer';
-          btn.addEventListener('click', () => { _ans[_qi] = i; renderQ(); });
-        }
-        optBox.appendChild(btn);
-      });
-
-      // Lock/expired note
-      let lockNote = document.getElementById('quiz-lock-note');
-      if (!lockNote) {
-        lockNote = document.createElement('div');
-        lockNote.id = 'quiz-lock-note';
-        lockNote.style.cssText = 'font-size:12px;text-align:center;margin-top:10px;height:18px;';
-        optBox.parentNode.insertBefore(lockNote, optBox.nextSibling);
-      }
-      if (timeExpired && !answered) {
-        lockNote.innerHTML = '<span style="color:#ef4444;">⏱ Time expired — no answer recorded</span>';
-      } else if (answered) {
-        lockNote.innerHTML = '<span style="color:#f59e0b;">🔒 Answer locked</span>';
-      } else {
-        lockNote.innerHTML = '';
-      }
-
-      document.getElementById('quiz-prev-btn').style.display = _qi === 0 ? 'none' : '';
-      document.getElementById('quiz-next-btn').style.display = _qi === total - 1 ? 'none' : '';
-      document.getElementById('quiz-submit-btn').style.display = _qi === total - 1 ? '' : 'none';
-
-      startQTimer();
+    if (selected) {
+      const tick = document.createElement('span');
+      tick.textContent = '✓';
+      tick.style.cssText = 'margin-left:auto;font-size:16px;font-weight:900;color:#34d399;flex-shrink:0;';
+      btn.appendChild(tick);
     }
-    window.renderQ = renderQ;
+    // Only allow clicking if not locked at all
+    if (!locked) {
+      btn.style.cursor = 'pointer';
+      btn.addEventListener('click', () => { _ans[_qi] = i; renderQ(); });
+    }
+    optBox.appendChild(btn);
+  });
 
-    // Track which questions had their timer expire (so Prev doesn't restart timer)
-    let _expiredQs = new Set();
+  // Lock/expired note
+  let lockNote = document.getElementById('quiz-lock-note');
+  if (!lockNote) {
+    lockNote = document.createElement('div');
+    lockNote.id = 'quiz-lock-note';
+    lockNote.style.cssText = 'font-size:12px;text-align:center;margin-top:10px;height:18px;';
+    optBox.parentNode.insertBefore(lockNote, optBox.nextSibling);
+  }
+  if (timeExpired && !answered) {
+    lockNote.innerHTML = '<span style="color:#ef4444;">⏱ Time expired — no answer recorded</span>';
+  } else if (answered) {
+    lockNote.innerHTML = '<span style="color:#f59e0b;">🔒 Answer locked</span>';
+  } else {
+    lockNote.innerHTML = '';
+  }
 
-    window.quizNav = function (d) {
-      if (_timerInt) clearInterval(_timerInt);
-      _qi = Math.max(0, Math.min(_cq.questions.length - 1, _qi + d));
-      renderQ();
-    };
+  document.getElementById('quiz-prev-btn').style.display = _qi === 0 ? 'none' : '';
+  document.getElementById('quiz-next-btn').style.display = _qi === total - 1 ? 'none' : '';
+  document.getElementById('quiz-submit-btn').style.display = _qi === total - 1 ? '' : 'none';
 
-    window.submitQuiz = async function () {
-      if (_timerInt) clearInterval(_timerInt);
-      _quizActive = false;
-      // Hide any warning banner
-      const warn = document.getElementById('quiz-security-warning');
-      if (warn) warn.style.display = 'none';
+  startQTimer();
+}
+window.renderQ = renderQ;
 
-      let score = 0;
-      _cq.questions.forEach((q, i) => { if (_ans[i] === q.correctIndex) score++; });
-      const pct = Math.round(score / _cq.questions.length * 100);
+// Track which questions had their timer expire (so Prev doesn't restart timer)
+let _expiredQs = new Set();
+
+window.quizNav = function (d) {
+  if (_timerInt) clearInterval(_timerInt);
+  _qi = Math.max(0, Math.min(_cq.questions.length - 1, _qi + d));
+  renderQ();
+};
+
+window.submitQuiz = async function () {
+  if (_timerInt) clearInterval(_timerInt);
+  _quizActive = false;
+  // Hide any warning banner
+  const warn = document.getElementById('quiz-security-warning');
+  if (warn) warn.style.display = 'none';
+
+  let score = 0;
+  _cq.questions.forEach((q, i) => { if (_ans[i] === q.correctIndex) score++; });
+  const pct = Math.round(score / _cq.questions.length * 100);
+  try {
+    const usn = window._currentStudentUSN || 'UNKNOWN';
+    await setDoc(doc(db, 'quiz_results', `${usn}_${_cq.id}`), {
+      usn, quizId: _cq.id, subject: _cq.subject, topic: _cq.topic,
+      score, total: _cq.questions.length, percent: pct,
+      answers: { ..._ans }, // save student answers for review
+      submittedAt: new Date().toISOString(),
+      tabWarnings: _tabWarnings
+    });
+
+    // ── Send quiz result email notification ──
+    try {
+      const studentData = window._currentStudentData || {};
+      if (studentData.email && studentData.email_verified) {
+        fetch(`${API_BASE_URL}/api/notify-quiz-result`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            usn,
+            studentEmail: studentData.email,
+            studentName: studentData.name || usn,
+            quizName: `${_cq.subject} — ${_cq.topic}`,
+            subject: _cq.subject,
+            marksObtained: score,
+            totalMarks: _cq.questions.length,
+            percentage: pct,
+            completionTime: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
+          })
+        }).catch(() => { }); // silent fail — don't block UI
+      }
+    } catch (e) { /* silent fail */ }
+
+
+  } catch (e) { console.warn('Save result:', e.message); }
+  document.getElementById('quiz-take-view').style.display = 'none';
+  document.getElementById('quiz-result-view').style.display = '';
+  document.getElementById('quiz-result-emoji').textContent = pct >= 80 ? '🎉' : pct >= 50 ? '👍' : '📚';
+  document.getElementById('quiz-result-title').textContent = `${_cq.subject} — ${_cq.topic}`;
+  document.getElementById('quiz-score-display').textContent = `${score} / ${_cq.questions.length}`;
+  document.getElementById('quiz-result-msg').textContent = pct >= 80 ? `Excellent! ${pct}%` : pct >= 50 ? `Good job! ${pct}%` : `Keep practicing! ${pct}%`;
+  document.getElementById('quiz-answer-review').innerHTML = '<div style="font-weight:700;margin-bottom:12px;font-size:14px;">📋 Answer Review</div>' +
+    _cq.questions.map((q, i) => {
+      const ok = _ans[i] === q.correctIndex;
+      const qText = sanitizeText(q.question);
+      const yourAns = _ans[i] !== undefined ? stripOptionPrefix(sanitizeText(q.options[_ans[i]])) : 'Not answered';
+      const correctAns = stripOptionPrefix(sanitizeText(q.options[q.correctIndex]));
+      const expl = sanitizeText(q.explanation);
+      return '<div style="padding:12px;border-radius:10px;margin-bottom:8px;text-align:left;' +
+        'background:' + (ok ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)') + ';' +
+        'border:1px solid ' + (ok ? 'rgba(16,185,129,0.25)' : 'rgba(239,68,68,0.25)') + ';">' +
+        '<div style="font-size:13px;font-weight:600;margin-bottom:6px;line-height:1.4;">' + (ok ? '✅' : '❌') + ' Q' + (i + 1) + '. ' + qText + '</div>' +
+        (!ok ? '<div style="font-size:12px;color:#f87171;margin-bottom:3px;">Your: ' + yourAns + '</div>' : '') +
+        '<div style="font-size:12px;color:#34d399;margin-bottom:2px;">✓ ' + correctAns + '</div>' +
+        (expl ? '<div style="font-size:12px;color:#93c5fd;padding:5px 8px;background:rgba(96,165,250,0.08);border-radius:6px;line-height:1.4;margin-top:4px;">💡 ' + expl + '</div>' : '') +
+        '</div>';
+    }).join('');
+};
+
+window.backToQuizList = function () {
+  if (_timerInt) clearInterval(_timerInt);
+  _quizActive = false;
+  const warn = document.getElementById('quiz-security-warning');
+  if (warn) warn.style.display = 'none';
+  document.getElementById('quiz-take-view').style.display = 'none';
+  document.getElementById('quiz-result-view').style.display = 'none';
+  document.getElementById('quiz-list-view').style.display = '';
+  loadStudentQuizzes(); // refresh list to show completed status
+};
+
+/* === ADMIN QUIZ GENERATION (Groq / OpenRouter — CORS-safe) === */
+let _generatedQuiz = null;
+let _allUsedQuestions = [];
+let _aiApiKey = '';
+
+function getAiKey() {
+  return _aiApiKey || '';
+}
+window.getAiKey = getAiKey;
+
+function updateAiKeyStatus(type, message) {
+  const statusEl = document.getElementById('ai-key-status');
+  if (statusEl) statusEl.innerHTML = `<span style="color:#34d399;">✅ ${type} key loaded</span>${message ? ' <span style="color:#d1d5db;">' + message + '</span>' : ''}`;
+}
+
+async function saveAIKey() {
+  const inputEl = document.getElementById('ai-api-key');
+  const statusEl = document.getElementById('ai-key-status');
+  const key = inputEl?.value.trim() || '';
+  if (!key) {
+    if (statusEl) statusEl.innerHTML = '<span style="color:#f87171;">⚠️ Paste your API key first.</span>';
+    return;
+  }
+  try {
+    await setDoc(doc(db, 'settings', 'ai_api_key'), {
+      key,
+      updatedAt: serverTimestamp(),
+      updatedBy: window._currentAdminId || 'admin'
+    });
+    _aiApiKey = key;
+    if (inputEl) inputEl.value = key;
+    const type = key.startsWith('gsk_') ? 'Groq' : key.startsWith('sk-or-') ? 'OpenRouter' : 'API';
+    if (statusEl) statusEl.innerHTML = `<span style="color:#34d399;">✅ ${type} key saved</span> <span style="color:#d1d5db;">Saved in admin settings.</span>`;
+  } catch (err) {
+    if (statusEl) statusEl.innerHTML = `<span style="color:#f87171;">Error saving key: ${err.message}</span>`;
+  }
+}
+window.saveAIKey = saveAIKey;
+
+async function loadAIKey() {
+  const el = document.getElementById('ai-api-key');
+  const statusEl = document.getElementById('ai-key-status');
+  try {
+    const snap = await getDoc(doc(db, 'settings', 'ai_api_key'));
+    if (snap.exists() && snap.data().key) {
+      _aiApiKey = snap.data().key;
+      if (el) el.value = _aiApiKey;
+      const type = _aiApiKey.startsWith('gsk_') ? 'Groq' : _aiApiKey.startsWith('sk-or-') ? 'OpenRouter' : 'API';
+      if (statusEl) statusEl.innerHTML = `<span style="color:#34d399;">✅ ${type} key loaded</span> <span style="color:#d1d5db;">Loaded from admin settings.</span>`;
+      return;
+    }
+  } catch (err) {
+    if (statusEl) statusEl.innerHTML = `<span style="color:#f87171;">Error loading AI key: ${err.message}</span>`;
+    return;
+  }
+  _aiApiKey = '';
+  if (el) el.value = '';
+  if (statusEl) statusEl.innerHTML = '<span style="color:#fbbf24;">⚠️ No AI key saved yet. Admin can add one above.</span>';
+}
+window.loadAIKey = loadAIKey;
+
+async function callAnthropicAI(prompt, maxTok) {
+  // Use the Cloudflare Worker AI Proxy URL if defined in window.AI_PROXY
+  const proxyUrl = window.AI_PROXY;
+
+  const endpoint = proxyUrl || 'https://api.anthropic.com/v1/messages';
+  const headers = { 'Content-Type': 'application/json' };
+  let body;
+
+  if (proxyUrl) {
+    body = JSON.stringify({
+      system: 'You are TechBook Bot, a helpful academic assistant.',
+      messages: [{ role: 'user', content: prompt }]
+    });
+  } else {
+    headers['anthropic-version'] = '2023-06-01';
+    headers['anthropic-dangerous-direct-browser-access'] = 'true';
+    body = JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: maxTok || 4000,
+      messages: [{ role: 'user', content: prompt }]
+    });
+  }
+
+  const res = await fetch(endpoint, {
+    method: 'POST',
+    headers: headers,
+    body: body
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error?.message || 'AI Proxy/API error ' + res.status);
+
+  if (proxyUrl) {
+    return data.reply || '';
+  }
+  return data.content?.[0]?.text || '';
+}
+
+
+async function callAI(apiKey, prompt) {
+  // If no external key, use Anthropic API directly
+  if (!apiKey) {
+    return callAnthropicAI(prompt);
+  }
+  // Groq — extremely fast, free, full CORS support
+  if (apiKey.startsWith('gsk_')) {
+    // Try Groq models from largest to smallest; if one isn't available, continue to the next
+    const groqModels = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'llama3-8b-8192', 'mixtral-8x7b-32768', 'gemma2-9b-it'];
+    let lastErr = '';
+    for (const gModel of groqModels) {
       try {
-        const usn = window._currentStudentUSN || 'UNKNOWN';
-        await setDoc(doc(db, 'quiz_results', `${usn}_${_cq.id}`), {
-          usn, quizId: _cq.id, subject: _cq.subject, topic: _cq.topic,
-          score, total: _cq.questions.length, percent: pct,
-          answers: { ..._ans }, // save student answers for review
-          submittedAt: new Date().toISOString(),
-          tabWarnings: _tabWarnings
+        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
+          body: JSON.stringify({
+            model: gModel,
+            messages: [{ role: 'user', content: prompt }],
+            max_tokens: 3200,
+            temperature: 0.7
+          })
         });
-
-        // ── Send quiz result email notification ──
-        try {
-          const studentData = window._currentStudentData || {};
-          if (studentData.email && studentData.email_verified) {
-            fetch(`${API_BASE_URL}/api/notify-quiz-result`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                usn,
-                studentEmail: studentData.email,
-                studentName: studentData.name || usn,
-                quizName: `${_cq.subject} — ${_cq.topic}`,
-                subject: _cq.subject,
-                marksObtained: score,
-                totalMarks: _cq.questions.length,
-                percentage: pct,
-                completionTime: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
-              })
-            }).catch(() => {}); // silent fail — don't block UI
-          }
-        } catch (e) { /* silent fail */ }
-
-
-      } catch (e) { console.warn('Save result:', e.message); }
-      document.getElementById('quiz-take-view').style.display = 'none';
-      document.getElementById('quiz-result-view').style.display = '';
-      document.getElementById('quiz-result-emoji').textContent = pct >= 80 ? '🎉' : pct >= 50 ? '👍' : '📚';
-      document.getElementById('quiz-result-title').textContent = `${_cq.subject} — ${_cq.topic}`;
-      document.getElementById('quiz-score-display').textContent = `${score} / ${_cq.questions.length}`;
-      document.getElementById('quiz-result-msg').textContent = pct >= 80 ? `Excellent! ${pct}%` : pct >= 50 ? `Good job! ${pct}%` : `Keep practicing! ${pct}%`;
-      document.getElementById('quiz-answer-review').innerHTML = '<div style="font-weight:700;margin-bottom:12px;font-size:14px;">📋 Answer Review</div>' +
-        _cq.questions.map((q, i) => {
-          const ok = _ans[i] === q.correctIndex;
-          const qText = sanitizeText(q.question);
-          const yourAns = _ans[i] !== undefined ? stripOptionPrefix(sanitizeText(q.options[_ans[i]])) : 'Not answered';
-          const correctAns = stripOptionPrefix(sanitizeText(q.options[q.correctIndex]));
-          const expl = sanitizeText(q.explanation);
-          return '<div style="padding:12px;border-radius:10px;margin-bottom:8px;text-align:left;' +
-            'background:' + (ok ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)') + ';' +
-            'border:1px solid ' + (ok ? 'rgba(16,185,129,0.25)' : 'rgba(239,68,68,0.25)') + ';">' +
-            '<div style="font-size:13px;font-weight:600;margin-bottom:6px;line-height:1.4;">' + (ok ? '✅' : '❌') + ' Q' + (i + 1) + '. ' + qText + '</div>' +
-            (!ok ? '<div style="font-size:12px;color:#f87171;margin-bottom:3px;">Your: ' + yourAns + '</div>' : '') +
-            '<div style="font-size:12px;color:#34d399;margin-bottom:2px;">✓ ' + correctAns + '</div>' +
-            (expl ? '<div style="font-size:12px;color:#93c5fd;padding:5px 8px;background:rgba(96,165,250,0.08);border-radius:6px;line-height:1.4;margin-top:4px;">💡 ' + expl + '</div>' : '') +
-            '</div>';
-        }).join('');
-    };
-
-    window.backToQuizList = function () {
-      if (_timerInt) clearInterval(_timerInt);
-      _quizActive = false;
-      const warn = document.getElementById('quiz-security-warning');
-      if (warn) warn.style.display = 'none';
-      document.getElementById('quiz-take-view').style.display = 'none';
-      document.getElementById('quiz-result-view').style.display = 'none';
-      document.getElementById('quiz-list-view').style.display = '';
-      loadStudentQuizzes(); // refresh list to show completed status
-    };
-
-    /* === ADMIN QUIZ GENERATION (Groq / OpenRouter — CORS-safe) === */
-    let _generatedQuiz = null;
-    let _allUsedQuestions = [];
-    let _aiApiKey = '';
-
-    function getAiKey() {
-      return _aiApiKey || '';
-    }
-    window.getAiKey = getAiKey;
-
-    function updateAiKeyStatus(type, message) {
-      const statusEl = document.getElementById('ai-key-status');
-      if (statusEl) statusEl.innerHTML = `<span style="color:#34d399;">✅ ${type} key loaded</span>${message ? ' <span style="color:#d1d5db;">' + message + '</span>' : ''}`;
-    }
-
-    async function saveAIKey() {
-      const inputEl = document.getElementById('ai-api-key');
-      const statusEl = document.getElementById('ai-key-status');
-      const key = inputEl?.value.trim() || '';
-      if (!key) {
-        if (statusEl) statusEl.innerHTML = '<span style="color:#f87171;">⚠️ Paste your API key first.</span>';
-        return;
-      }
-      try {
-        await setDoc(doc(db, 'settings', 'ai_api_key'), {
-          key,
-          updatedAt: serverTimestamp(),
-          updatedBy: window._currentAdminId || 'admin'
-        });
-        _aiApiKey = key;
-        if (inputEl) inputEl.value = key;
-        const type = key.startsWith('gsk_') ? 'Groq' : key.startsWith('sk-or-') ? 'OpenRouter' : 'API';
-        if (statusEl) statusEl.innerHTML = `<span style="color:#34d399;">✅ ${type} key saved</span> <span style="color:#d1d5db;">Saved in admin settings.</span>`;
-      } catch (err) {
-        if (statusEl) statusEl.innerHTML = `<span style="color:#f87171;">Error saving key: ${err.message}</span>`;
-      }
-    }
-    window.saveAIKey = saveAIKey;
-
-    async function loadAIKey() {
-      const el = document.getElementById('ai-api-key');
-      const statusEl = document.getElementById('ai-key-status');
-      try {
-        const snap = await getDoc(doc(db, 'settings', 'ai_api_key'));
-        if (snap.exists() && snap.data().key) {
-          _aiApiKey = snap.data().key;
-          if (el) el.value = _aiApiKey;
-          const type = _aiApiKey.startsWith('gsk_') ? 'Groq' : _aiApiKey.startsWith('sk-or-') ? 'OpenRouter' : 'API';
-          if (statusEl) statusEl.innerHTML = `<span style="color:#34d399;">✅ ${type} key loaded</span> <span style="color:#d1d5db;">Loaded from admin settings.</span>`;
-          return;
+        const data = await res.json();
+        if (res.status === 429) {
+          // Extract wait time from error message and wait before trying next model
+          const msg = data.error?.message || '';
+          const waitMatch = msg.match(/try again in ([\d.]+)s/);
+          const waitMs = waitMatch ? Math.ceil(parseFloat(waitMatch[1]) * 1000) + 500 : 3000;
+          console.warn(`Groq 429 on ${gModel}, waiting ${waitMs}ms before next model…`);
+          await new Promise(r => setTimeout(r, waitMs));
+          lastErr = msg;
+          continue; // try next model
         }
-      } catch (err) {
-        if (statusEl) statusEl.innerHTML = `<span style="color:#f87171;">Error loading AI key: ${err.message}</span>`;
-        return;
-      }
-      _aiApiKey = '';
-      if (el) el.value = '';
-      if (statusEl) statusEl.innerHTML = '<span style="color:#fbbf24;">⚠️ No AI key saved yet. Admin can add one above.</span>';
+        if (!res.ok) { lastErr = data.error?.message || 'Groq error ' + res.status; continue; }
+        const gText = data.choices?.[0]?.message?.content || '';
+        if (gText) return gText;
+        lastErr = 'Empty response from ' + gModel;
+      } catch (e) { lastErr = e.message; continue; }
     }
-    window.loadAIKey = loadAIKey;
+    console.warn('All Groq models failed, falling back to Anthropic:', lastErr); return callAnthropicAI(prompt);
+  }
 
-    async function callAnthropicAI(prompt, maxTok) {
-      // Use the Cloudflare Worker AI Proxy URL if defined in window.AI_PROXY
-      const proxyUrl = window.AI_PROXY;
-      
-      const endpoint = proxyUrl || 'https://api.anthropic.com/v1/messages';
-      const headers = { 'Content-Type': 'application/json' };
-      let body;
-
-      if (proxyUrl) {
-        body = JSON.stringify({
-          system: 'You are TechBook Bot, a helpful academic assistant.',
-          messages: [{ role: 'user', content: prompt }]
-        });
-      } else {
-        headers['anthropic-version'] = '2023-06-01';
-        headers['anthropic-dangerous-direct-browser-access'] = 'true';
-        body = JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: maxTok || 4000,
-          messages: [{ role: 'user', content: prompt }]
-        });
-      }
-
-      const res = await fetch(endpoint, {
+  // OpenRouter — support the fastest free models first
+  const models = [
+    'mistralai/mistral-7b-instruct:free',
+    'microsoft/phi-3-mini-128k-instruct:free',
+    'qwen/qwen-2-7b-instruct:free',
+    'meta-llama/llama-3.1-8b-instruct:free',
+  ];
+  let lastErr = '';
+  for (const model of models) {
+    try {
+      const controller = new AbortController();
+      const tid = setTimeout(() => controller.abort(), 18000);
+      const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
-        headers: headers,
-        body: body
+        signal: controller.signal,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + apiKey,
+          'HTTP-Referer': location.href,
+          'X-Title': 'Quiz Generator'
+        },
+        body: JSON.stringify({ model, messages: [{ role: 'user', content: prompt }], max_tokens: 3200, temperature: 0.7 })
       });
-      
+      clearTimeout(tid);
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error?.message || 'AI Proxy/API error ' + res.status);
-      
-      if (proxyUrl) {
-        return data.reply || '';
-      }
-      return data.content?.[0]?.text || '';
+      if (!res.ok) { lastErr = data.error?.message || 'HTTP ' + res.status; continue; }
+      const text = data.choices?.[0]?.message?.content || '';
+      if (text) return text;
+      lastErr = 'Empty response from ' + model;
+    } catch (e) {
+      lastErr = e.name === 'AbortError' ? 'Timeout on ' + model : e.message;
     }
+  }
+  // All OpenRouter models failed — fall back to Anthropic
+  console.warn('OpenRouter failed, falling back to Anthropic:', lastErr);
+  return callAnthropicAI(prompt);
+}
+window.callAI = callAI;
 
 
-    async function callAI(apiKey, prompt) {
-      // If no external key, use Anthropic API directly
-      if (!apiKey) {
-        return callAnthropicAI(prompt);
-      }
-      // Groq — extremely fast, free, full CORS support
-      if (apiKey.startsWith('gsk_')) {
-        // Try Groq models from largest to smallest; if one isn't available, continue to the next
-        const groqModels = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'llama3-8b-8192', 'mixtral-8x7b-32768', 'gemma2-9b-it'];
-        let lastErr = '';
-        for (const gModel of groqModels) {
-          try {
-            const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
-              body: JSON.stringify({
-                model: gModel,
-                messages: [{ role: 'user', content: prompt }],
-                max_tokens: 3200,
-                temperature: 0.7
-              })
-            });
-            const data = await res.json();
-            if (res.status === 429) {
-              // Extract wait time from error message and wait before trying next model
-              const msg = data.error?.message || '';
-              const waitMatch = msg.match(/try again in ([\d.]+)s/);
-              const waitMs = waitMatch ? Math.ceil(parseFloat(waitMatch[1]) * 1000) + 500 : 3000;
-              console.warn(`Groq 429 on ${gModel}, waiting ${waitMs}ms before next model…`);
-              await new Promise(r => setTimeout(r, waitMs));
-              lastErr = msg;
-              continue; // try next model
-            }
-            if (!res.ok) { lastErr = data.error?.message || 'Groq error ' + res.status; continue; }
-            const gText = data.choices?.[0]?.message?.content || '';
-            if (gText) return gText;
-            lastErr = 'Empty response from ' + gModel;
-          } catch (e) { lastErr = e.message; continue; }
-        }
-        console.warn('All Groq models failed, falling back to Anthropic:', lastErr); return callAnthropicAI(prompt);
-      }
+document.getElementById('btn-generate-quiz')?.addEventListener('click', async () => {
+  const subject = document.getElementById('qz-subject')?.value.trim();
+  const topic = document.getElementById('qz-topic')?.value.trim();
+  const count = parseInt(document.getElementById('qz-count')?.value || '10');
+  const difficulty = document.getElementById('qz-difficulty')?.value || 'medium';
+  const timeLimit = parseFloat(document.getElementById('qz-time')?.value || '0');
+  const target = document.getElementById('qz-target')?.value.trim();
+  const instructions = document.getElementById('qz-instructions')?.value.trim();
+  const msgEl = document.getElementById('qz-create-msg');
 
-      // OpenRouter — support the fastest free models first
-      const models = [
-        'mistralai/mistral-7b-instruct:free',
-        'microsoft/phi-3-mini-128k-instruct:free',
-        'qwen/qwen-2-7b-instruct:free',
-        'meta-llama/llama-3.1-8b-instruct:free',
-      ];
-      let lastErr = '';
-      for (const model of models) {
-        try {
-          const controller = new AbortController();
-          const tid = setTimeout(() => controller.abort(), 18000);
-          const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-            method: 'POST',
-            signal: controller.signal,
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer ' + apiKey,
-              'HTTP-Referer': location.href,
-              'X-Title': 'Quiz Generator'
-            },
-            body: JSON.stringify({ model, messages: [{ role: 'user', content: prompt }], max_tokens: 3200, temperature: 0.7 })
-          });
-          clearTimeout(tid);
-          const data = await res.json();
-          if (!res.ok) { lastErr = data.error?.message || 'HTTP ' + res.status; continue; }
-          const text = data.choices?.[0]?.message?.content || '';
-          if (text) return text;
-          lastErr = 'Empty response from ' + model;
-        } catch (e) {
-          lastErr = e.name === 'AbortError' ? 'Timeout on ' + model : e.message;
-        }
-      }
-      // All OpenRouter models failed — fall back to Anthropic
-      console.warn('OpenRouter failed, falling back to Anthropic:', lastErr);
-      return callAnthropicAI(prompt);
-    }
-    window.callAI = callAI;
+  if (!subject || !topic) { msgEl.innerHTML = '<span style="color:#f87171;">⚠️ Enter Subject and Topic.</span>'; return; }
 
+  const apiKey = document.getElementById('ai-api-key')?.value.trim() || _aiApiKey || '';
 
-    document.getElementById('btn-generate-quiz')?.addEventListener('click', async () => {
-      const subject = document.getElementById('qz-subject')?.value.trim();
-      const topic = document.getElementById('qz-topic')?.value.trim();
-      const count = parseInt(document.getElementById('qz-count')?.value || '10');
-      const difficulty = document.getElementById('qz-difficulty')?.value || 'medium';
-      const timeLimit = parseFloat(document.getElementById('qz-time')?.value || '0');
-      const target = document.getElementById('qz-target')?.value.trim();
-      const instructions = document.getElementById('qz-instructions')?.value.trim();
-      const msgEl = document.getElementById('qz-create-msg');
+  const btn = document.getElementById('btn-generate-quiz');
+  btn.disabled = true;
+  document.getElementById('qz-preview-box').style.display = 'none';
 
-      if (!subject || !topic) { msgEl.innerHTML = '<span style="color:#f87171;">⚠️ Enter Subject and Topic.</span>'; return; }
+  const apiType = !apiKey ? 'TechBook AI' : apiKey.startsWith('gsk_') ? 'Groq' : 'OpenRouter';
 
-      const apiKey = document.getElementById('ai-api-key')?.value.trim() || _aiApiKey || '';
-
-      const btn = document.getElementById('btn-generate-quiz');
-      btn.disabled = true;
-      document.getElementById('qz-preview-box').style.display = 'none';
-
-      const apiType = !apiKey ? 'TechBook AI' : apiKey.startsWith('gsk_') ? 'Groq' : 'OpenRouter';
-
-      const setProgress = (msg, pct) => {
-        msgEl.innerHTML = `<div style="background:#f7f8fc;border:1px solid #e5e7eb;border-radius:12px;padding:12px 14px;">
+  const setProgress = (msg, pct) => {
+    msgEl.innerHTML = `<div style="background:#f7f8fc;border:1px solid #e5e7eb;border-radius:12px;padding:12px 14px;">
           <span style="font-size:12px;color:#3d5af1;font-weight:700;">${msg}</span>
           <div style="background:#ffffff;border-radius:999px;height:5px;overflow:hidden;margin-top:8px;">
             <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#3d5af1,#00d9f5,#a855f7);border-radius:999px;transition:width 0.4s ease;"></div>
           </div>
         </div>`;
-        btn.innerHTML = `<span style="display:inline-flex;align-items:center;gap:8px;"><span style="width:14px;height:14px;border:2px solid rgba(5,13,26,0.3);border-top-color:#050d1a;border-radius:50%;display:inline-block;animation:spin 0.7s linear infinite;"></span> Generating…</span>`;
-      };
+    btn.innerHTML = `<span style="display:inline-flex;align-items:center;gap:8px;"><span style="width:14px;height:14px;border:2px solid rgba(5,13,26,0.3);border-top-color:#050d1a;border-radius:50%;display:inline-block;animation:spin 0.7s linear infinite;"></span> Generating…</span>`;
+  };
 
-      // Build a set of already-used question keys for O(1) lookup
-      const usedKeys = new Set(_allUsedQuestions.map(q => q.slice(0, 50).toLowerCase().replace(/\s+/g, ' ').trim()));
+  // Build a set of already-used question keys for O(1) lookup
+  const usedKeys = new Set(_allUsedQuestions.map(q => q.slice(0, 50).toLowerCase().replace(/\s+/g, ' ').trim()));
 
-      const buildPrompt = (needed, attempt) => {
-        // Send recently used to AI so it avoids them in its generation
-        const recentUsed = _allUsedQuestions.slice(-80).map(q => q.slice(0, 60)).join(' | ');
-        return `You are an expert teacher. Create a ${difficulty} difficulty multiple choice quiz.
+  const buildPrompt = (needed, attempt) => {
+    // Send recently used to AI so it avoids them in its generation
+    const recentUsed = _allUsedQuestions.slice(-80).map(q => q.slice(0, 60)).join(' | ');
+    return `You are an expert teacher. Create a ${difficulty} difficulty multiple choice quiz.
 Subject: ${subject}
 Topic: ${topic}
 ${instructions ? 'Special focus: ' + instructions : ''}
@@ -857,419 +857,419 @@ Strict rules:
 4. correctIndex is 0, 1, 2, or 3 (spread variety across positions)
 5. Each option must be a complete meaningful phrase
 6. Seed for variety: ${Math.floor(Math.random() * 999999)} attempt:${attempt}`;
-      };
+  };
 
-      let allQuestions = [];
-      let attempt = 0;
-      const maxAttempts = 3;
+  let allQuestions = [];
+  let attempt = 0;
+  const maxAttempts = 3;
 
-      try {
-        while (allQuestions.length < count && attempt < maxAttempts) {
-          attempt++;
-          const needed = count - allQuestions.length;
-          const pct = Math.round((allQuestions.length / count) * 80) + 10;
-          setProgress(`🤖 ${apiType} — generating ${needed} question${needed > 1 ? 's' : ''} (${allQuestions.length}/${count} done, attempt ${attempt})…`, pct);
+  try {
+    while (allQuestions.length < count && attempt < maxAttempts) {
+      attempt++;
+      const needed = count - allQuestions.length;
+      const pct = Math.round((allQuestions.length / count) * 80) + 10;
+      setProgress(`🤖 ${apiType} — generating ${needed} question${needed > 1 ? 's' : ''} (${allQuestions.length}/${count} done, attempt ${attempt})…`, pct);
 
-          const raw = await callAI(apiKey, buildPrompt(needed, attempt));
-          // Small pause between attempts to stay within rate limits
-          if (attempt < maxAttempts) await new Promise(r => setTimeout(r, 1200));
-          const cleaned = raw.replace(/```json/gi, '').replace(/```/g, '').replace(/^[^\[]*/, '').replace(/[^\]]*$/, '').trim();
-          const arrMatch = cleaned.match(/\[([\s\S]*)\]/);
-          if (!arrMatch) { console.warn('No JSON array in attempt', attempt, 'Raw:', raw.slice(0, 200)); continue; }
+      const raw = await callAI(apiKey, buildPrompt(needed, attempt));
+      // Small pause between attempts to stay within rate limits
+      if (attempt < maxAttempts) await new Promise(r => setTimeout(r, 1200));
+      const cleaned = raw.replace(/```json/gi, '').replace(/```/g, '').replace(/^[^\[]*/, '').replace(/[^\]]*$/, '').trim();
+      const arrMatch = cleaned.match(/\[([\s\S]*)\]/);
+      if (!arrMatch) { console.warn('No JSON array in attempt', attempt, 'Raw:', raw.slice(0, 200)); continue; }
 
-          let parsed;
-          try { parsed = JSON.parse(arrMatch[0]); }
-          catch (pe) { console.warn('JSON parse failed attempt', attempt, pe.message); continue; }
+      let parsed;
+      try { parsed = JSON.parse(arrMatch[0]); }
+      catch (pe) { console.warn('JSON parse failed attempt', attempt, pe.message); continue; }
 
-          if (!Array.isArray(parsed)) continue;
+      if (!Array.isArray(parsed)) continue;
 
-          // Sanitize, validate, deduplicate
-          const newOnes = parsed
-            .map(q => ({
-              ...q,
-              question: sanitizeText(q.question) || String(q.question || '').replace(/[<>`]/g, '').trim(),
-              options: (q.options || []).map(o => sanitizeText(o) || String(o || '').replace(/[<>]/g, '').trim() || 'Option'),
-              explanation: sanitizeText(q.explanation)
-            }))
-            .filter(q => q.question && Array.isArray(q.options) && q.options.length === 4 && q.options.filter(o => (o || '').trim().length > 0).length === 4)
-            .filter(q => {
-              // Check against global used AND already collected this session
-              const key = q.question.slice(0, 50).toLowerCase().replace(/\s+/g, ' ').trim();
-              const alreadyInSession = allQuestions.some(a =>
-                a.question.slice(0, 50).toLowerCase().replace(/\s+/g, ' ').trim() === key
-              );
-              return !usedKeys.has(key) && !alreadyInSession;
-            });
+      // Sanitize, validate, deduplicate
+      const newOnes = parsed
+        .map(q => ({
+          ...q,
+          question: sanitizeText(q.question) || String(q.question || '').replace(/[<>`]/g, '').trim(),
+          options: (q.options || []).map(o => sanitizeText(o) || String(o || '').replace(/[<>]/g, '').trim() || 'Option'),
+          explanation: sanitizeText(q.explanation)
+        }))
+        .filter(q => q.question && Array.isArray(q.options) && q.options.length === 4 && q.options.filter(o => (o || '').trim().length > 0).length === 4)
+        .filter(q => {
+          // Check against global used AND already collected this session
+          const key = q.question.slice(0, 50).toLowerCase().replace(/\s+/g, ' ').trim();
+          const alreadyInSession = allQuestions.some(a =>
+            a.question.slice(0, 50).toLowerCase().replace(/\s+/g, ' ').trim() === key
+          );
+          return !usedKeys.has(key) && !alreadyInSession;
+        });
 
-          allQuestions.push(...newOnes);
-          console.log(`Attempt ${attempt}: got ${newOnes.length} new questions, total ${allQuestions.length}/${count}`);
-        }
+      allQuestions.push(...newOnes);
+      console.log(`Attempt ${attempt}: got ${newOnes.length} new questions, total ${allQuestions.length}/${count}`);
+    }
 
-        const finalQuestions = allQuestions.slice(0, count);
+    const finalQuestions = allQuestions.slice(0, count);
 
-        if (finalQuestions.length > 0) {
-          // Mark all as used
-          finalQuestions.forEach(q => _allUsedQuestions.push(q.question));
-          // Keep _allUsedQuestions from growing too large
-          if (_allUsedQuestions.length > 300) _allUsedQuestions = _allUsedQuestions.slice(-200);
+    if (finalQuestions.length > 0) {
+      // Mark all as used
+      finalQuestions.forEach(q => _allUsedQuestions.push(q.question));
+      // Keep _allUsedQuestions from growing too large
+      if (_allUsedQuestions.length > 300) _allUsedQuestions = _allUsedQuestions.slice(-200);
 
-          _generatedQuiz = { subject, topic, difficulty, timeLimit, target, questions: finalQuestions, count: finalQuestions.length };
-          renderQuizPreview(_generatedQuiz);
-          const shortfall = count - finalQuestions.length;
-          if (shortfall > 0) {
-            msgEl.innerHTML = `<span style="color:#fbbf24;">⚠️ Generated ${finalQuestions.length}/${count} questions (topic may be too narrow for more unique ones).</span>`;
-          } else {
-            msgEl.innerHTML = `<span style="color:#34d399;">✅ ${finalQuestions.length} unique questions generated!</span>`;
+      _generatedQuiz = { subject, topic, difficulty, timeLimit, target, questions: finalQuestions, count: finalQuestions.length };
+      renderQuizPreview(_generatedQuiz);
+      const shortfall = count - finalQuestions.length;
+      if (shortfall > 0) {
+        msgEl.innerHTML = `<span style="color:#fbbf24;">⚠️ Generated ${finalQuestions.length}/${count} questions (topic may be too narrow for more unique ones).</span>`;
+      } else {
+        msgEl.innerHTML = `<span style="color:#34d399;">✅ ${finalQuestions.length} unique questions generated!</span>`;
+      }
+    } else {
+      msgEl.innerHTML = '<span style="color:#f87171;">❌ Could not generate questions. Check your API key or try a broader topic.</span>';
+    }
+  } catch (e) {
+    console.error('Quiz generation error:', e);
+    msgEl.innerHTML = `<span style="color:#f87171;">❌ ${e.message || 'Generation failed. Check your API key and try again.'}</span>`;
+  }
+
+  btn.disabled = false; btn.innerHTML = '✨ Generate Quiz with AI';
+});
+
+function sanitizeText(t) {
+  return String(t || '')
+    .replace(/`([^`]*)`/g, '$1')   // `code` → code
+    .replace(/`/g, "'")             // stray backticks
+    .replace(/<[^>]+>/g, ' ')       // <any tag> → space
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')
+    .replace(/\s+/g, ' ').trim();
+}
+
+// Strip AI-generated letter prefix like "A: ", "A. ", "A) " from option text
+function stripOptionPrefix(t) {
+  return t.replace(/^[A-Da-d][.:\)]\s*/, '');
+}
+
+function renderQuizPreview(quiz) {
+  document.getElementById('qz-preview-title').textContent = '📚 ' + quiz.subject + ' — ' + quiz.topic + ' (' + quiz.questions.length + ' Qs)';
+  document.getElementById('qz-preview-list').innerHTML = quiz.questions.map((q, i) => {
+    const qText = sanitizeText(q.question);
+    const opts = q.options.map(o => stripOptionPrefix(sanitizeText(o)));
+    const expl = sanitizeText(q.explanation);
+    const letters = ['A', 'B', 'C', 'D'];
+    return '<div style="padding:12px 14px;background:#f7f8fc;border-radius:12px;border:1px solid #ffffff;margin-bottom:10px;">' +
+      '<div style="font-weight:700;font-size:13px;margin-bottom:10px;line-height:1.5;color:#1a1a2e;">Q' + (i + 1) + '. ' + qText + '</div>' +
+      '<div style="display:flex;flex-direction:column;gap:5px;margin-bottom:8px;">' +
+      opts.map((o, oi) =>
+        '<div style="font-size:12px;padding:6px 10px;border-radius:8px;line-height:1.4;word-break:break-word;' +
+        'background:' + (oi === q.correctIndex ? 'rgba(16,185,129,0.15)' : '#f7f8fc') + ';' +
+        'border:1px solid ' + (oi === q.correctIndex ? 'rgba(16,185,129,0.4)' : '#ffffff') + ';' +
+        'color:' + (oi === q.correctIndex ? '#34d399' : 'var(--text-secondary)') + ';">' +
+        '<b>' + letters[oi] + '.</b> ' + o + '</div>'
+      ).join('') +
+      '</div>' +
+      (expl ? '<div style="font-size:12px;color:#6b7280;padding:6px 10px;background:rgba(96,165,250,0.08);border:1px solid rgba(96,165,250,0.2);border-radius:8px;line-height:1.4;word-break:break-word;">💡 ' + expl + '</div>' : '') +
+      '</div>';
+  }).join('');
+  document.getElementById('qz-preview-box').style.display = '';
+}
+
+document.getElementById('btn-regenerate-quiz')?.addEventListener('click', () => {
+  // Save current questions to used list BEFORE clearing, so new generation skips them
+  if (_generatedQuiz?.questions) {
+    _allUsedQuestions.push(..._generatedQuiz.questions.map(q => q.question));
+  }
+  _generatedQuiz = null;
+  document.getElementById('qz-preview-box').style.display = 'none';
+  document.getElementById('qz-preview-list').innerHTML = '';
+  document.getElementById('qz-create-msg').innerHTML = '';
+  document.getElementById('btn-generate-quiz')?.click();
+});
+
+document.getElementById('btn-publish-quiz')?.addEventListener('click', async () => {
+  if (!_generatedQuiz) return;
+  const btn = document.getElementById('btn-publish-quiz');
+  btn.disabled = true; btn.textContent = '⏳ Publishing…';
+  try {
+    await setDoc(doc(collection(db, 'quizzes')), { ..._generatedQuiz, published: true, createdAt: new Date().toISOString() });
+    btn.textContent = '✅ Published!';
+    document.getElementById('qz-create-msg').innerHTML = '<span style="color:#34d399;">✅ Quiz published! Students can take it now.</span>';
+    loadPublishedQuizzes();
+    setTimeout(() => { btn.disabled = false; btn.textContent = '📤 Publish'; }, 2000);
+
+    // ── Send email notifications to eligible students ──
+    try {
+      const dept = document.getElementById('qz-dept')?.value || '';
+      const year = document.getElementById('qz-year')?.value || '';
+      const sem = document.getElementById('qz-sem')?.value || '';
+      if (dept || year || sem) {
+        const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
+        fetch(`${API_BASE_URL}/api/notify-quiz`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            quizName: `${_generatedQuiz.subject} - ${_generatedQuiz.topic}`,
+            subject: _generatedQuiz.subject,
+            questionCount: _generatedQuiz.count,
+            duration: _generatedQuiz.timeLimit,
+            difficulty: _generatedQuiz.difficulty,
+            dept: dept || 'All',
+            year: year || '1',
+            sem: sem || '1'
+          })
+        }).then(r => r.json()).then(d => {
+          if (d.success && d.sentCount > 0) {
+            const msgEl = document.getElementById('qz-create-msg');
+            if (msgEl) msgEl.innerHTML += `<br><span style="color:#00f3ff;font-size:12px;">📧 ${d.sentCount} students notified by email!</span>`;
           }
-        } else {
-          msgEl.innerHTML = '<span style="color:#f87171;">❌ Could not generate questions. Check your API key or try a broader topic.</span>';
-        }
-      } catch (e) {
-        console.error('Quiz generation error:', e);
-        msgEl.innerHTML = `<span style="color:#f87171;">❌ ${e.message || 'Generation failed. Check your API key and try again.'}</span>`;
+        }).catch(() => { });
       }
+    } catch (e) { /* silent fail */ }
 
-      btn.disabled = false; btn.innerHTML = '✨ Generate Quiz with AI';
-    });
-
-    function sanitizeText(t) {
-      return String(t || '')
-        .replace(/`([^`]*)`/g, '$1')   // `code` → code
-        .replace(/`/g, "'")             // stray backticks
-        .replace(/<[^>]+>/g, ' ')       // <any tag> → space
-        .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')
-        .replace(/\s+/g, ' ').trim();
-    }
-
-    // Strip AI-generated letter prefix like "A: ", "A. ", "A) " from option text
-    function stripOptionPrefix(t) {
-      return t.replace(/^[A-Da-d][.:\)]\s*/, '');
-    }
-
-    function renderQuizPreview(quiz) {
-      document.getElementById('qz-preview-title').textContent = '📚 ' + quiz.subject + ' — ' + quiz.topic + ' (' + quiz.questions.length + ' Qs)';
-      document.getElementById('qz-preview-list').innerHTML = quiz.questions.map((q, i) => {
-        const qText = sanitizeText(q.question);
-        const opts = q.options.map(o => stripOptionPrefix(sanitizeText(o)));
-        const expl = sanitizeText(q.explanation);
-        const letters = ['A', 'B', 'C', 'D'];
-        return '<div style="padding:12px 14px;background:#f7f8fc;border-radius:12px;border:1px solid #ffffff;margin-bottom:10px;">' +
-          '<div style="font-weight:700;font-size:13px;margin-bottom:10px;line-height:1.5;color:#1a1a2e;">Q' + (i + 1) + '. ' + qText + '</div>' +
-          '<div style="display:flex;flex-direction:column;gap:5px;margin-bottom:8px;">' +
-          opts.map((o, oi) =>
-            '<div style="font-size:12px;padding:6px 10px;border-radius:8px;line-height:1.4;word-break:break-word;' +
-            'background:' + (oi === q.correctIndex ? 'rgba(16,185,129,0.15)' : '#f7f8fc') + ';' +
-            'border:1px solid ' + (oi === q.correctIndex ? 'rgba(16,185,129,0.4)' : '#ffffff') + ';' +
-            'color:' + (oi === q.correctIndex ? '#34d399' : 'var(--text-secondary)') + ';">' +
-            '<b>' + letters[oi] + '.</b> ' + o + '</div>'
-          ).join('') +
-          '</div>' +
-          (expl ? '<div style="font-size:12px;color:#6b7280;padding:6px 10px;background:rgba(96,165,250,0.08);border:1px solid rgba(96,165,250,0.2);border-radius:8px;line-height:1.4;word-break:break-word;">💡 ' + expl + '</div>' : '') +
-          '</div>';
-      }).join('');
-      document.getElementById('qz-preview-box').style.display = '';
-    }
-
-    document.getElementById('btn-regenerate-quiz')?.addEventListener('click', () => {
-      // Save current questions to used list BEFORE clearing, so new generation skips them
-      if (_generatedQuiz?.questions) {
-        _allUsedQuestions.push(..._generatedQuiz.questions.map(q => q.question));
-      }
-      _generatedQuiz = null;
-      document.getElementById('qz-preview-box').style.display = 'none';
-      document.getElementById('qz-preview-list').innerHTML = '';
-      document.getElementById('qz-create-msg').innerHTML = '';
-      document.getElementById('btn-generate-quiz')?.click();
-    });
-
-    document.getElementById('btn-publish-quiz')?.addEventListener('click', async () => {
-      if (!_generatedQuiz) return;
-      const btn = document.getElementById('btn-publish-quiz');
-      btn.disabled = true; btn.textContent = '⏳ Publishing…';
-      try {
-        await setDoc(doc(collection(db, 'quizzes')), { ..._generatedQuiz, published: true, createdAt: new Date().toISOString() });
-        btn.textContent = '✅ Published!';
-        document.getElementById('qz-create-msg').innerHTML = '<span style="color:#34d399;">✅ Quiz published! Students can take it now.</span>';
-        loadPublishedQuizzes();
-        setTimeout(() => { btn.disabled = false; btn.textContent = '📤 Publish'; }, 2000);
-
-        // ── Send email notifications to eligible students ──
-        try {
-          const dept = document.getElementById('qz-dept')?.value || '';
-          const year = document.getElementById('qz-year')?.value || '';
-          const sem = document.getElementById('qz-sem')?.value || '';
-          if (dept || year || sem) {
-            const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
-            fetch(`${API_BASE_URL}/api/notify-quiz`, {
-              method: 'POST',
-              headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-              },
-              body: JSON.stringify({
-                quizName: `${_generatedQuiz.subject} - ${_generatedQuiz.topic}`,
-                subject: _generatedQuiz.subject,
-                questionCount: _generatedQuiz.count,
-                duration: _generatedQuiz.timeLimit,
-                difficulty: _generatedQuiz.difficulty,
-                dept: dept || 'All',
-                year: year || '1',
-                sem: sem || '1'
-              })
-            }).then(r => r.json()).then(d => {
-              if (d.success && d.sentCount > 0) {
-                const msgEl = document.getElementById('qz-create-msg');
-                if (msgEl) msgEl.innerHTML += `<br><span style="color:#00f3ff;font-size:12px;">📧 ${d.sentCount} students notified by email!</span>`;
-              }
-            }).catch(() => {});
-          }
-        } catch (e) { /* silent fail */ }
-
-      } catch (e) {
-        document.getElementById('qz-create-msg').innerHTML = `<span style="color:#f87171;">❌ ${e.message}</span>`;
-        btn.disabled = false; btn.textContent = '📤 Publish';
-      }
-    });
+  } catch (e) {
+    document.getElementById('qz-create-msg').innerHTML = `<span style="color:#f87171;">❌ ${e.message}</span>`;
+    btn.disabled = false; btn.textContent = '📤 Publish';
+  }
+});
 
 
-    async function loadPublishedQuizzes() {
-      const c = document.getElementById('qz-published-list');
-      c.innerHTML = '<p style="color:var(--text-secondary);font-size:13px;text-align:center;padding:12px;">⏳ Loading…</p>';
-      try {
-        const snap = await getDocs(collection(db, 'quizzes'));
-        const list = [];
-        snap.forEach(d => list.push({ id: d.id, ...d.data() }));
-        list.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
-        if (!list.length) { c.innerHTML = '<p style="color:var(--text-secondary);font-size:13px;text-align:center;padding:12px;">No quizzes yet.</p>'; return; }
-        c.innerHTML = '';
-        list.forEach(q => {
-          const row = document.createElement('div');
-          row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#f7f8fc;border-radius:10px;border:1px solid #ffffff;flex-wrap:wrap;gap:8px;margin-bottom:6px;';
-          row.innerHTML = `<div>
+async function loadPublishedQuizzes() {
+  const c = document.getElementById('qz-published-list');
+  c.innerHTML = '<p style="color:var(--text-secondary);font-size:13px;text-align:center;padding:12px;">⏳ Loading…</p>';
+  try {
+    const snap = await getDocs(collection(db, 'quizzes'));
+    const list = [];
+    snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+    list.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+    if (!list.length) { c.innerHTML = '<p style="color:var(--text-secondary);font-size:13px;text-align:center;padding:12px;">No quizzes yet.</p>'; return; }
+    c.innerHTML = '';
+    list.forEach(q => {
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#f7f8fc;border-radius:10px;border:1px solid #ffffff;flex-wrap:wrap;gap:8px;margin-bottom:6px;';
+      row.innerHTML = `<div>
             <span style="font-weight:700;font-size:13px;">📚 ${q.subject} — ${q.topic}</span>
             <span style="margin-left:8px;font-size:11px;color:var(--text-secondary);">${q.questions?.length || 0} Qs · ${q.difficulty || 'medium'}</span>
           </div>
           <div style="display:flex;gap:6px;">
             <span style="font-size:11px;padding:3px 8px;border-radius:6px;background:${q.published ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'};color:${q.published ? '#34d399' : '#f87171'};">${q.published ? '✅ Live' : '⛔ Hidden'}</span>
           </div>`;
-          const btnRow = document.createElement('div');
-          btnRow.style.cssText = 'display:flex;gap:6px;';
-          const toggleBtn = document.createElement('button');
-          toggleBtn.textContent = q.published ? 'Hide' : 'Show';
-          toggleBtn.style.cssText = 'padding:4px 10px;font-size:11px;border-radius:6px;cursor:pointer;background:#f7f8fc;border:1px solid rgba(0,0,0,0.03);color:var(--text-secondary);';
-          toggleBtn.addEventListener('click', () => toggleQuizPublish(q.id, !q.published));
-          const delBtn = document.createElement('button');
-          delBtn.textContent = 'Delete';
-          delBtn.style.cssText = 'padding:4px 10px;font-size:11px;border-radius:6px;cursor:pointer;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#f87171;';
-          delBtn.addEventListener('click', () => deleteQuiz(q.id));
-          btnRow.appendChild(toggleBtn); btnRow.appendChild(delBtn);
-          row.appendChild(btnRow);
-          c.appendChild(row);
-        });
-      } catch (e) { c.innerHTML = `<p style="color:#f87171;font-size:13px;text-align:center;padding:12px;">❌ ${e.message}</p>`; }
-    }
+      const btnRow = document.createElement('div');
+      btnRow.style.cssText = 'display:flex;gap:6px;';
+      const toggleBtn = document.createElement('button');
+      toggleBtn.textContent = q.published ? 'Hide' : 'Show';
+      toggleBtn.style.cssText = 'padding:4px 10px;font-size:11px;border-radius:6px;cursor:pointer;background:#f7f8fc;border:1px solid rgba(0,0,0,0.03);color:var(--text-secondary);';
+      toggleBtn.addEventListener('click', () => toggleQuizPublish(q.id, !q.published));
+      const delBtn = document.createElement('button');
+      delBtn.textContent = 'Delete';
+      delBtn.style.cssText = 'padding:4px 10px;font-size:11px;border-radius:6px;cursor:pointer;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#f87171;';
+      delBtn.addEventListener('click', () => deleteQuiz(q.id));
+      btnRow.appendChild(toggleBtn); btnRow.appendChild(delBtn);
+      row.appendChild(btnRow);
+      c.appendChild(row);
+    });
+  } catch (e) { c.innerHTML = `<p style="color:#f87171;font-size:13px;text-align:center;padding:12px;">❌ ${e.message}</p>`; }
+}
 
-    window.toggleQuizPublish = async function (id, pub) {
-      await setDoc(doc(db, 'quizzes', id), { published: pub }, { merge: true });
-      loadPublishedQuizzes();
-    };
-    window.deleteQuiz = async function (id) {
-      if (!confirm('Delete this quiz?')) return;
-      await deleteDoc(doc(db, 'quizzes', id));
-      loadPublishedQuizzes();
-    };
+window.toggleQuizPublish = async function (id, pub) {
+  await setDoc(doc(db, 'quizzes', id), { published: pub }, { merge: true });
+  loadPublishedQuizzes();
+};
+window.deleteQuiz = async function (id) {
+  if (!confirm('Delete this quiz?')) return;
+  await deleteDoc(doc(db, 'quizzes', id));
+  loadPublishedQuizzes();
+};
 
-    document.getElementById('btn-load-quizzes')?.addEventListener('click', loadPublishedQuizzes);
+document.getElementById('btn-load-quizzes')?.addEventListener('click', loadPublishedQuizzes);
 
-    // Admin: search student quiz results and reset
-    window.searchStudentQuizResults = async function () {
-      const usn = document.getElementById('reset-usn')?.value.trim().toUpperCase();
-      const c = document.getElementById('reset-quiz-results');
-      if (!usn) { c.innerHTML = '<p style="color:#f87171;font-size:13px;">Enter a USN first.</p>'; return; }
-      c.innerHTML = '<p style="color:var(--text-secondary);font-size:13px;">⏳ Searching…</p>';
-      try {
-        const snap = await getDocs(query(collection(db, 'quiz_results'), where('usn', '==', usn)));
-        if (snap.empty) { c.innerHTML = `<p style="color:#fbbf24;font-size:13px;">No quiz attempts found for ${usn}.</p>`; return; }
-        const results = [];
-        snap.forEach(d => results.push({ docId: d.id, ...d.data() }));
-        results.sort((a, b) => (b.submittedAt || '').localeCompare(a.submittedAt || ''));
-        c.innerHTML = `<p style="font-size:13px;color:#34d399;margin-bottom:10px;">Found ${results.length} attempt(s) for <strong>${usn}</strong>:</p>`;
-        results.forEach(r => {
-          const pct = r.percent || 0;
-          const date = r.submittedAt ? new Date(r.submittedAt).toLocaleString() : '—';
-          const row = document.createElement('div');
-          row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#f7f8fc;border-radius:10px;margin-bottom:8px;gap:8px;flex-wrap:wrap;';
-          row.innerHTML = `<div>
+// Admin: search student quiz results and reset
+window.searchStudentQuizResults = async function () {
+  const usn = document.getElementById('reset-usn')?.value.trim().toUpperCase();
+  const c = document.getElementById('reset-quiz-results');
+  if (!usn) { c.innerHTML = '<p style="color:#f87171;font-size:13px;">Enter a USN first.</p>'; return; }
+  c.innerHTML = '<p style="color:var(--text-secondary);font-size:13px;">⏳ Searching…</p>';
+  try {
+    const snap = await getDocs(query(collection(db, 'quiz_results'), where('usn', '==', usn)));
+    if (snap.empty) { c.innerHTML = `<p style="color:#fbbf24;font-size:13px;">No quiz attempts found for ${usn}.</p>`; return; }
+    const results = [];
+    snap.forEach(d => results.push({ docId: d.id, ...d.data() }));
+    results.sort((a, b) => (b.submittedAt || '').localeCompare(a.submittedAt || ''));
+    c.innerHTML = `<p style="font-size:13px;color:#34d399;margin-bottom:10px;">Found ${results.length} attempt(s) for <strong>${usn}</strong>:</p>`;
+    results.forEach(r => {
+      const pct = r.percent || 0;
+      const date = r.submittedAt ? new Date(r.submittedAt).toLocaleString() : '—';
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#f7f8fc;border-radius:10px;margin-bottom:8px;gap:8px;flex-wrap:wrap;';
+      row.innerHTML = `<div>
             <div style="font-weight:700;font-size:13px;">📚 ${r.subject || ''} — ${r.topic || ''}</div>
             <div style="font-size:11px;color:var(--text-secondary);">${date} · Score: ${r.score}/${r.total} (${pct}%)</div>
           </div>`;
-          const resetBtn = document.createElement('button');
-          resetBtn.textContent = '🔓 Give Chance';
-          resetBtn.style.cssText = 'padding:6px 14px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);border-radius:8px;color:#f87171;font-weight:700;font-size:12px;cursor:pointer;';
-          resetBtn.addEventListener('click', async () => {
-            if (!confirm(`Reset quiz attempt for ${usn} on "${r.subject} — ${r.topic}"? They will be able to retake it.`)) return;
-            try {
-              await deleteDoc(doc(db, 'quiz_results', r.docId));
-              resetBtn.textContent = '✅ Reset!';
-              resetBtn.style.color = '#34d399';
-              resetBtn.disabled = true;
-              row.style.opacity = '0.5';
-            } catch (e) { alert('Error: ' + e.message); }
-          });
-          row.appendChild(resetBtn);
-          c.appendChild(row);
-        });
-      } catch (e) { c.innerHTML = `<p style="color:#f87171;font-size:13px;">❌ ${e.message}</p>`; }
-    };
-    window._currentStudentUSN = null;
+      const resetBtn = document.createElement('button');
+      resetBtn.textContent = '🔓 Give Chance';
+      resetBtn.style.cssText = 'padding:6px 14px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);border-radius:8px;color:#f87171;font-weight:700;font-size:12px;cursor:pointer;';
+      resetBtn.addEventListener('click', async () => {
+        if (!confirm(`Reset quiz attempt for ${usn} on "${r.subject} — ${r.topic}"? They will be able to retake it.`)) return;
+        try {
+          await deleteDoc(doc(db, 'quiz_results', r.docId));
+          resetBtn.textContent = '✅ Reset!';
+          resetBtn.style.color = '#34d399';
+          resetBtn.disabled = true;
+          row.style.opacity = '0.5';
+        } catch (e) { alert('Error: ' + e.message); }
+      });
+      row.appendChild(resetBtn);
+      c.appendChild(row);
+    });
+  } catch (e) { c.innerHTML = `<p style="color:#f87171;font-size:13px;">❌ ${e.message}</p>`; }
+};
+window._currentStudentUSN = null;
 
-    /* === LEADERBOARD === */
-    let _lbResults = []; // store for PDF export
+/* === LEADERBOARD === */
+let _lbResults = []; // store for PDF export
 
-    window.loadLeaderboard = async function () {
-      const c = document.getElementById('leaderboard-container');
-      if (!c) return;
-      c.innerHTML = '<p style="color:var(--text-secondary);text-align:center;padding:20px;">⏳ Loading…</p>';
+window.loadLeaderboard = async function () {
+  const c = document.getElementById('leaderboard-container');
+  if (!c) return;
+  c.innerHTML = '<p style="color:var(--text-secondary);text-align:center;padding:20px;">⏳ Loading…</p>';
+  try {
+    const [resultsSnap, quizzesSnap] = await Promise.all([
+      getDocs(collection(db, 'quiz_results')),
+      getDocs(collection(db, 'quizzes'))
+    ]);
+    const quizMap = {};
+    quizzesSnap.forEach(d => quizMap[d.id] = d.data());
+
+    // Always rebuild quiz filter dropdown fresh
+    const filterEl = document.getElementById('lb-quiz-filter');
+    const currentVal = filterEl ? filterEl.value : '';
+    if (filterEl) {
+      filterEl.innerHTML = '<option value="">All Quizzes</option>';
+      Object.entries(quizMap).forEach(([id, q]) => {
+        const opt = document.createElement('option');
+        opt.value = id;
+        opt.textContent = (q.subject || '') + ' — ' + (q.topic || '');
+        if (id === currentVal) opt.selected = true;
+        filterEl.appendChild(opt);
+      });
+    }
+
+    const filterQuiz = filterEl ? filterEl.value : '';
+    const results = [];
+    resultsSnap.forEach(d => {
+      const r = { docId: d.id, ...d.data() };
+      if (!filterQuiz || r.quizId === filterQuiz) results.push(r);
+    });
+
+    if (!results.length) {
+      c.innerHTML = '<p style="color:var(--text-secondary);text-align:center;padding:30px;">No results yet for this selection.</p>';
+      return;
+    }
+
+    // Sort: higher % first, ties by earliest submission time
+    results.sort((a, b) => {
+      if (b.percent !== a.percent) return b.percent - a.percent;
+      return (a.submittedAt || '').localeCompare(b.submittedAt || '');
+    });
+    _lbResults = results;
+
+    const medals = ['🥇', '🥈', '🥉'];
+    c.innerHTML = '';
+
+    // MOBILE-FIRST: card layout, no grid table
+    results.forEach((r, idx) => {
+      const rank = idx + 1;
+      const pct = r.percent || 0;
+      const color = pct >= 80 ? '#34d399' : pct >= 50 ? '#fbbf24' : '#f87171';
+      const date = r.submittedAt ? new Date(r.submittedAt).toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+
+      const card = document.createElement('div');
+      card.style.cssText = [
+        'display:flex', 'align-items:center', 'gap:12px',
+        'padding:14px 12px', 'border-radius:14px', 'margin-bottom:8px',
+        'background:' + (rank === 1 ? 'rgba(0,0,0,0.03)' : rank <= 3 ? '#f7f8fc' : '#f7f8fc'),
+        'border:1px solid ' + (rank === 1 ? 'rgba(57,255,180,0.5)' : rank <= 3 ? '#e5e7eb' : '#ffffff'),
+        'overflow:hidden'
+      ].join(';');
+
+      card.innerHTML =
+        // Rank medal
+        '<div style="font-size:' + (rank <= 3 ? '24' : '16') + 'px;font-weight:900;min-width:32px;text-align:center;flex-shrink:0;">' + (medals[rank - 1] || rank) + '</div>' +
+        // Main info
+        '<div style="flex:1;min-width:0;">' +
+        '<div style="font-weight:700;font-size:14px;color:#1a1a2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (r.usn || '—') + '</div>' +
+        '<div style="font-size:11px;color:var(--text-secondary);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">📚 ' + (r.subject || '') + ' — ' + (r.topic || '') + '</div>' +
+        '<div style="font-size:11px;color:var(--text-secondary);margin-top:1px;">🕐 ' + date + '</div>' +
+        '</div>' +
+        // Score
+        '<div style="text-align:right;flex-shrink:0;">' +
+        '<div style="font-weight:900;font-size:18px;color:' + color + ';">' + pct + '%</div>' +
+        '<div style="font-size:12px;color:var(--text-secondary);margin-top:2px;">' + r.score + '/' + r.total + '</div>' +
+        '</div>';
+
+      c.appendChild(card);
+    });
+
+    const note = document.createElement('p');
+    note.style.cssText = 'font-size:12px;color:var(--text-secondary);text-align:center;margin-top:14px;padding-top:10px;border-top:1px solid #ffffff;';
+    note.textContent = results.length + ' result(s) · Equal scores ranked by earliest submission time';
+    c.appendChild(note);
+
+  } catch (e) { c.innerHTML = '<p style="color:#f87171;text-align:center;padding:20px;">❌ ' + e.message + '</p>'; }
+};
+
+
+window.resetLeaderboard = async function () {
+  const filterEl = document.getElementById('lb-quiz-filter');
+  const quizName = filterEl && filterEl.value ? filterEl.options[filterEl.selectedIndex]?.text : 'ALL quizzes';
+  if (!confirm('Delete ALL quiz results for ' + quizName + '? This cannot be undone.')) return;
+  const c = document.getElementById('leaderboard-container');
+  c.innerHTML = '<p style="color:var(--text-secondary);text-align:center;padding:20px;">⏳ Deleting…</p>';
+  try {
+    const filterQuiz = filterEl ? filterEl.value : '';
+    const snap = await getDocs(collection(db, 'quiz_results'));
+    const toDelete = [];
+    snap.forEach(d => {
+      const r = d.data();
+      if (!filterQuiz || r.quizId === filterQuiz) toDelete.push(d.id);
+    });
+    await Promise.all(toDelete.map(id => deleteDoc(doc(db, 'quiz_results', id))));
+    _lbResults = [];
+    c.innerHTML = '<p style="color:#34d399;text-align:center;padding:20px;">✅ Deleted ' + toDelete.length + ' result(s).</p>';
+  } catch (e) { c.innerHTML = '<p style="color:#f87171;text-align:center;padding:20px;">❌ ' + e.message + '</p>'; }
+};
+
+window.exportLeaderboardPDF = async function () {
+  if (!_lbResults.length) { alert('Load the leaderboard first, then export.'); return; }
+  const filterEl = document.getElementById('lb-quiz-filter');
+  const quizLabel = filterEl && filterEl.value ? filterEl.options[filterEl.selectedIndex]?.text : 'All Quizzes';
+
+  // Fetch student details for all USNs in results
+  const usns = [...new Set(_lbResults.map(r => r.usn).filter(Boolean))];
+  const studentMap = {};
+  try {
+    await Promise.all(usns.map(async usn => {
       try {
-        const [resultsSnap, quizzesSnap] = await Promise.all([
-          getDocs(collection(db, 'quiz_results')),
-          getDocs(collection(db, 'quizzes'))
-        ]);
-        const quizMap = {};
-        quizzesSnap.forEach(d => quizMap[d.id] = d.data());
-
-        // Always rebuild quiz filter dropdown fresh
-        const filterEl = document.getElementById('lb-quiz-filter');
-        const currentVal = filterEl ? filterEl.value : '';
-        if (filterEl) {
-          filterEl.innerHTML = '<option value="">All Quizzes</option>';
-          Object.entries(quizMap).forEach(([id, q]) => {
-            const opt = document.createElement('option');
-            opt.value = id;
-            opt.textContent = (q.subject || '') + ' — ' + (q.topic || '');
-            if (id === currentVal) opt.selected = true;
-            filterEl.appendChild(opt);
-          });
-        }
-
-        const filterQuiz = filterEl ? filterEl.value : '';
-        const results = [];
-        resultsSnap.forEach(d => {
-          const r = { docId: d.id, ...d.data() };
-          if (!filterQuiz || r.quizId === filterQuiz) results.push(r);
-        });
-
-        if (!results.length) {
-          c.innerHTML = '<p style="color:var(--text-secondary);text-align:center;padding:30px;">No results yet for this selection.</p>';
-          return;
-        }
-
-        // Sort: higher % first, ties by earliest submission time
-        results.sort((a, b) => {
-          if (b.percent !== a.percent) return b.percent - a.percent;
-          return (a.submittedAt || '').localeCompare(b.submittedAt || '');
-        });
-        _lbResults = results;
-
-        const medals = ['🥇', '🥈', '🥉'];
-        c.innerHTML = '';
-
-        // MOBILE-FIRST: card layout, no grid table
-        results.forEach((r, idx) => {
-          const rank = idx + 1;
-          const pct = r.percent || 0;
-          const color = pct >= 80 ? '#34d399' : pct >= 50 ? '#fbbf24' : '#f87171';
-          const date = r.submittedAt ? new Date(r.submittedAt).toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
-
-          const card = document.createElement('div');
-          card.style.cssText = [
-            'display:flex', 'align-items:center', 'gap:12px',
-            'padding:14px 12px', 'border-radius:14px', 'margin-bottom:8px',
-            'background:' + (rank === 1 ? 'rgba(0,0,0,0.03)' : rank <= 3 ? '#f7f8fc' : '#f7f8fc'),
-            'border:1px solid ' + (rank === 1 ? 'rgba(57,255,180,0.5)' : rank <= 3 ? '#e5e7eb' : '#ffffff'),
-            'overflow:hidden'
-          ].join(';');
-
-          card.innerHTML =
-            // Rank medal
-            '<div style="font-size:' + (rank <= 3 ? '24' : '16') + 'px;font-weight:900;min-width:32px;text-align:center;flex-shrink:0;">' + (medals[rank - 1] || rank) + '</div>' +
-            // Main info
-            '<div style="flex:1;min-width:0;">' +
-            '<div style="font-weight:700;font-size:14px;color:#1a1a2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (r.usn || '—') + '</div>' +
-            '<div style="font-size:11px;color:var(--text-secondary);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">📚 ' + (r.subject || '') + ' — ' + (r.topic || '') + '</div>' +
-            '<div style="font-size:11px;color:var(--text-secondary);margin-top:1px;">🕐 ' + date + '</div>' +
-            '</div>' +
-            // Score
-            '<div style="text-align:right;flex-shrink:0;">' +
-            '<div style="font-weight:900;font-size:18px;color:' + color + ';">' + pct + '%</div>' +
-            '<div style="font-size:12px;color:var(--text-secondary);margin-top:2px;">' + r.score + '/' + r.total + '</div>' +
-            '</div>';
-
-          c.appendChild(card);
-        });
-
-        const note = document.createElement('p');
-        note.style.cssText = 'font-size:12px;color:var(--text-secondary);text-align:center;margin-top:14px;padding-top:10px;border-top:1px solid #ffffff;';
-        note.textContent = results.length + ' result(s) · Equal scores ranked by earliest submission time';
-        c.appendChild(note);
-
-      } catch (e) { c.innerHTML = '<p style="color:#f87171;text-align:center;padding:20px;">❌ ' + e.message + '</p>'; }
-    };
-
-
-    window.resetLeaderboard = async function () {
-      const filterEl = document.getElementById('lb-quiz-filter');
-      const quizName = filterEl && filterEl.value ? filterEl.options[filterEl.selectedIndex]?.text : 'ALL quizzes';
-      if (!confirm('Delete ALL quiz results for ' + quizName + '? This cannot be undone.')) return;
-      const c = document.getElementById('leaderboard-container');
-      c.innerHTML = '<p style="color:var(--text-secondary);text-align:center;padding:20px;">⏳ Deleting…</p>';
-      try {
-        const filterQuiz = filterEl ? filterEl.value : '';
-        const snap = await getDocs(collection(db, 'quiz_results'));
-        const toDelete = [];
-        snap.forEach(d => {
-          const r = d.data();
-          if (!filterQuiz || r.quizId === filterQuiz) toDelete.push(d.id);
-        });
-        await Promise.all(toDelete.map(id => deleteDoc(doc(db, 'quiz_results', id))));
-        _lbResults = [];
-        c.innerHTML = '<p style="color:#34d399;text-align:center;padding:20px;">✅ Deleted ' + toDelete.length + ' result(s).</p>';
-      } catch (e) { c.innerHTML = '<p style="color:#f87171;text-align:center;padding:20px;">❌ ' + e.message + '</p>'; }
-    };
-
-    window.exportLeaderboardPDF = async function () {
-      if (!_lbResults.length) { alert('Load the leaderboard first, then export.'); return; }
-      const filterEl = document.getElementById('lb-quiz-filter');
-      const quizLabel = filterEl && filterEl.value ? filterEl.options[filterEl.selectedIndex]?.text : 'All Quizzes';
-
-      // Fetch student details for all USNs in results
-      const usns = [...new Set(_lbResults.map(r => r.usn).filter(Boolean))];
-      const studentMap = {};
-      try {
-        await Promise.all(usns.map(async usn => {
-          try {
-            const snap = await getDoc(doc(db, 'students', usn));
-            if (snap.exists()) studentMap[usn] = snap.data();
-          } catch (e) { }
-        }));
+        const snap = await getDoc(doc(db, 'students', usn));
+        if (snap.exists()) studentMap[usn] = snap.data();
       } catch (e) { }
+    }));
+  } catch (e) { }
 
-      const medals = ['🥇', '🥈', '🥉'];
-      const medalsBg = ['#fffbeb', '#f9fafb', '#fff7ed'];
+  const medals = ['🥇', '🥈', '🥉'];
+  const medalsBg = ['#fffbeb', '#f9fafb', '#fff7ed'];
 
-      const rows = _lbResults.map((r, idx) => {
-        const rank = idx + 1;
-        const pct = r.percent || 0;
-        const pctColor = pct >= 80 ? '#059669' : pct >= 50 ? '#d97706' : '#dc2626';
-        const date = r.submittedAt ? new Date(r.submittedAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
-        const bg = rank <= 3 ? (medalsBg[rank - 1] || '#fff') : (rank % 2 === 0 ? '#f9fafb' : '#ffffff');
-        const s = studentMap[r.usn] || {};
-        const name = s.name || s.fullName || s.studentName || '—';
-        const sem = s.sem || s.semester || '—';
-        const year = s.year || s.academicYear || '—';
-        const section = s.section || s.branch || '—';
-        const nowrap = 'white-space:nowrap;';
-        return `<tr style="background:${bg};">
+  const rows = _lbResults.map((r, idx) => {
+    const rank = idx + 1;
+    const pct = r.percent || 0;
+    const pctColor = pct >= 80 ? '#059669' : pct >= 50 ? '#d97706' : '#dc2626';
+    const date = r.submittedAt ? new Date(r.submittedAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+    const bg = rank <= 3 ? (medalsBg[rank - 1] || '#fff') : (rank % 2 === 0 ? '#f9fafb' : '#ffffff');
+    const s = studentMap[r.usn] || {};
+    const name = s.name || s.fullName || s.studentName || '—';
+    const sem = s.sem || s.semester || '—';
+    const year = s.year || s.academicYear || '—';
+    const section = s.section || s.branch || '—';
+    const nowrap = 'white-space:nowrap;';
+    return `<tr style="background:${bg};">
           <td style="text-align:center;font-size:${rank <= 3 ? '20' : '15'}px;font-weight:900;padding:10px 8px;${nowrap}">${medals[rank - 1] || rank}</td>
           <td style="padding:10px 12px;font-weight:700;font-size:14px;color:#1a1a1a;${nowrap}">${name}</td>
           <td style="padding:10px 8px;font-size:12px;color:#6b7280;font-weight:600;${nowrap}">${r.usn || '—'}</td>
@@ -1281,11 +1281,11 @@ Strict rules:
           <td style="text-align:center;padding:10px 8px;font-weight:800;font-size:15px;color:${pctColor};${nowrap}">${pct}%</td>
           <td style="padding:10px 8px;font-size:12px;color:#6b7280;${nowrap}">${date}</td>
         </tr>`;
-      }).join('');
+  }).join('');
 
-      const generatedOn = new Date().toLocaleString('en-IN', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  const generatedOn = new Date().toLocaleString('en-IN', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
-      const html = `<!DOCTYPE html>
+  const html = `<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
@@ -1516,26 +1516,26 @@ Strict rules:
 <\/body>
 <\/html>`;
 
-      // Open in hidden iframe and trigger print (browser saves as PDF with Ctrl+P / print dialog)
-      // Most modern browsers will show "Save as PDF" option in the print dialog
-      const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
+  // Open in hidden iframe and trigger print (browser saves as PDF with Ctrl+P / print dialog)
+  // Most modern browsers will show "Save as PDF" option in the print dialog
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
 
-      // Open popup sized to A4 with auto-print triggered
-      const pdfWin = window.open('', '_blank', 'width=900,height=700,scrollbars=yes');
-      if (pdfWin) {
-        pdfWin.document.open();
-        pdfWin.document.write(html);
-        pdfWin.document.close();
-        // Inject auto-print script after load
-        pdfWin.document.title = 'leaderboard_' + quizLabel.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '_' + new Date().toISOString().slice(0, 10);
-        setTimeout(() => {
-          try {
-            pdfWin.focus();
-            pdfWin.print();
-          } catch (e) { }
-        }, 600);
-      }
-      setTimeout(() => URL.revokeObjectURL(url), 8000);
-    };
+  // Open popup sized to A4 with auto-print triggered
+  const pdfWin = window.open('', '_blank', 'width=900,height=700,scrollbars=yes');
+  if (pdfWin) {
+    pdfWin.document.open();
+    pdfWin.document.write(html);
+    pdfWin.document.close();
+    // Inject auto-print script after load
+    pdfWin.document.title = 'leaderboard_' + quizLabel.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '_' + new Date().toISOString().slice(0, 10);
+    setTimeout(() => {
+      try {
+        pdfWin.focus();
+        pdfWin.print();
+      } catch (e) { }
+    }, 600);
+  }
+  setTimeout(() => URL.revokeObjectURL(url), 8000);
+};
 

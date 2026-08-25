@@ -336,6 +336,8 @@ function firestoreDeleteOTP(usn) {
       resolve({ status: 500, success: false, error: e.message });
     }
   });
+}
+
 function firestoreCheckStudentExists(usn) {
   return new Promise(async (resolve) => {
     if (!FIREBASE_PROJECT_ID || !FIREBASE_API_KEY) return resolve(false);
@@ -365,7 +367,12 @@ function firestoreCheckStudentExists(usn) {
 }
 
 // ─── Middleware ───
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
+}));
+app.options('*', cors());
 app.use(express.json());
 
 // Security Headers Middleware
@@ -688,7 +695,7 @@ app.post('/api/verify-otp', verifyLimiter, async (req, res) => {
  * Sends content upload notification emails to eligible students.
  */
 app.post('/api/notify-upload', verifyAdminMiddleware, async (req, res) => {
-  const { contentType, subject, title, dept, year, sem, section } = req.body;
+  const { contentType, subject, title, dept, year, sem, section, scheme } = req.body;
 
   if (!contentType || !subject || !dept || !year || !sem) {
     return res.status(400).json({ success: false, error: 'Missing required fields.' });
@@ -701,7 +708,7 @@ app.post('/api/notify-upload', verifyAdminMiddleware, async (req, res) => {
       { fieldFilter: { field: { fieldPath: 'email_verified' }, op: 'EQUAL', value: { booleanValue: true } } }
     ];
 
-    if (dept && dept !== 'All') {
+    if (dept && dept !== 'All' && dept !== 'all') {
       filters.push({ fieldFilter: { field: { fieldPath: 'dept' }, op: 'EQUAL', value: { stringValue: dept } } });
     }
 
@@ -719,9 +726,20 @@ app.post('/api/notify-upload', verifyAdminMiddleware, async (req, res) => {
       .map(r => parseDoc(r.document));
 
     const targetStudents = students.filter(s => {
-      if (!section || section === 'all') return true;
-      const secs = section.split(',').map(x => x.trim());
-      return secs.includes('all') || secs.includes(s.section);
+      // 1. Scheme criteria filter:
+      if (scheme && scheme !== 'all' && scheme !== 'All') {
+        const studentScheme = String(s.scheme || '2022').trim().toLowerCase();
+        const targetScheme = String(scheme).trim().toLowerCase();
+        if (studentScheme !== targetScheme) return false;
+      }
+
+      // 2. Section criteria filter:
+      if (!section || section === 'all' || section === 'All') return true;
+      const targetSecs = section.split(',').map(x => x.trim().toLowerCase());
+      if (targetSecs.includes('all')) return true;
+
+      const studentSec = String(s.section || '').trim().toLowerCase();
+      return targetSecs.includes(studentSec);
     });
 
     const icons = { 'Notes': '📄', 'Question Bank': '📝', 'PYQ': '📋' };
@@ -743,6 +761,7 @@ app.post('/api/notify-upload', verifyAdminMiddleware, async (req, res) => {
           DEPT: dept,
           YEAR: String(year),
           SEM: String(sem),
+          SCHEME: String(scheme || '2022'),
           UPLOAD_DATE: uploadDate,
           APP_URL: clientOrigin
         });

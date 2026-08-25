@@ -2,7 +2,7 @@ import { auth, db } from '../core/firebase.js';
 import { doc, setDoc, getDoc, addDoc, collection, query, where, getDocs, orderBy, deleteDoc, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 import { $, val, esc, PdfDbCache, jsEsc, readFileBase64, getStudentProfile, API_BASE_URL } from '../core/helpers.js';
 
-const CHUNK_SIZE = 700 * 1024;
+const CHUNK_SIZE = 500 * 1024;
 let lastPyqFetchTime = 0;
 
     // ─── ADMIN: Load All PYQs ───
@@ -924,6 +924,7 @@ let lastPyqFetchTime = 0;
               dept: dept || 'All',
               year,
               sem,
+              scheme,
               section: sec
             })
           }).then(r => r.json()).then(d => {
@@ -1060,12 +1061,14 @@ let lastPyqFetchTime = 0;
         parts = await fetchChunksRest('pyq_papers', id);
       } catch (restErr) {
         console.warn(`REST chunk fetch failed, falling back to Firestore SDK:`, restErr);
-        const chunksSnap = await getDocs(
-          query(collection(db, 'pyq_papers', id, 'chunks'), orderBy('idx', 'asc'))
-        );
-        if (chunksSnap.empty) throw new Error('No file data found for this paper');
-        chunksSnap.forEach(d => parts.push(d.data().data));
+        const chunksSnap = await getDocs(collection(db, 'pyq_papers', id, 'chunks'));
+        if (chunksSnap.empty) throw new Error('No file data found for this paper. Please try re-uploading.');
+        const chunkDocs = chunksSnap.docs.map(d => d.data());
+        chunkDocs.sort((a, b) => (parseInt(a.idx) || 0) - (parseInt(b.idx) || 0));
+        parts = chunkDocs.map(d => d.data || '').filter(Boolean);
       }
+
+      if (parts.length === 0) throw new Error('PYQ paper content is empty or incomplete.');
 
       const blob = base64ToBlob(parts.join(''), 'application/pdf');
 
