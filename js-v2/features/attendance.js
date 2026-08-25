@@ -163,10 +163,27 @@ import { $, val } from '../core/helpers.js';
         // Load attendance history
         loadStudentHistory(usn);
 
-        // Check student syllabus scheme (no popup)
-        const studentScheme = data.scheme || localStorage.getItem('techbook_student_scheme') || '2022';
-        window._currentStudentScheme = studentScheme;
-        try { localStorage.setItem('techbook_student_scheme', studentScheme); } catch (_) {}
+        // Check student syllabus scheme and automatically prompt unconfirmed/existing students
+        const studentScheme = data.scheme || localStorage.getItem('techbook_student_scheme');
+        const isSchemeConfirmed = Boolean(data.scheme || localStorage.getItem('techbook_student_scheme_confirmed'));
+
+        if (studentScheme) {
+          window._currentStudentScheme = studentScheme;
+          try { localStorage.setItem('techbook_student_scheme', studentScheme); } catch (_) {}
+        } else {
+          window._currentStudentScheme = '2022';
+        }
+
+        if (!isSchemeConfirmed) {
+          setTimeout(() => {
+            if (typeof window.openSchemeSelectorModal === 'function') {
+              window.openSchemeSelectorModal(false);
+            } else {
+              const modal = document.getElementById('scheme-selector-modal');
+              if (modal) modal.style.display = 'flex';
+            }
+          }, 600);
+        }
 
         // Real-time settings listener
         if (window._featureUnsubscribe) window._featureUnsubscribe();
@@ -2869,6 +2886,7 @@ service cloud.firestore {
       window._currentStudentScheme = selectedScheme;
       try {
         localStorage.setItem('techbook_student_scheme', selectedScheme);
+        localStorage.setItem('techbook_student_scheme_confirmed', 'true');
         localStorage.setItem('techbook_student_scheme_prompted', 'true');
       } catch (_) {}
 
