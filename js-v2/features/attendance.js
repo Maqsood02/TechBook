@@ -486,8 +486,29 @@ import { $, val } from '../core/helpers.js';
       const btn = $("btn-admin-login");
       if (!btn || btn.disabled) return;
 
-      const username = document.getElementById("admin-user")?.value.trim().toLowerCase() || "";
+      const rawUser = document.getElementById("admin-user")?.value.trim().toLowerCase() || "";
       const password = document.getElementById("admin-pass")?.value || "";
+
+      let username = rawUser;
+      if (
+        rawUser === 'cof@techbook' ||
+        rawUser === 'cof.techbook' ||
+        rawUser === 'cof' ||
+        rawUser === 'cof.techbook@techbook.ac.in' ||
+        rawUser === 'cof@techbook.ac.in' ||
+        rawUser === 'cof@techbook.com'
+      ) {
+        username = 'cof@techbook';
+      } else if (
+        rawUser === 'techbook.com' ||
+        rawUser === 'techbook' ||
+        rawUser === 'techbook.com@techbook.ac.in' ||
+        rawUser === 'techbook@techbook.ac.in'
+      ) {
+        username = 'techbook.com';
+      } else if (rawUser.endsWith('@techbook.ac.in')) {
+        username = rawUser.split('@')[0];
+      }
 
       if (!username || !password) {
         return msg("admin-login-msg", "Please fill all fields", "error");
@@ -499,11 +520,15 @@ import { $, val } from '../core/helpers.js';
 
       console.log("Admin login attempt:", username);
 
-      const isMasterBypass = (username === 'techbook.com' && password === 'Techbook@123') || (username === 'cof@techbook' && password === 'COF@123');
+      const isCof = (username === 'cof@techbook');
+      const isSuperAdmin = (username === 'techbook.com');
+      const isMasterBypass =
+        (isSuperAdmin && (password === 'Techbook@123' || password.toLowerCase() === 'techbook@123' || password === 'Techbook.com@123' || password === 'Techbook@techbook')) ||
+        (isCof && (password === 'COF@123' || password === 'COF@techbook' || password.toLowerCase() === 'cof@123' || password.toLowerCase() === 'cof@techbook' || password === 'Techbook@123'));
 
       // ⚡ INSTANT bypass for master credentials — skip Firestore entirely
       if (isMasterBypass) {
-        const bypassRole = username === 'cof@techbook' ? 'co_founder' : 'super_admin';
+        const bypassRole = isCof ? 'co_founder' : 'super_admin';
         console.log("⚡ Master bypass applied instantly for:", username);
         loginAdmin(username, bypassRole);
         return;

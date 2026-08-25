@@ -569,6 +569,18 @@ let lastPyqFetchTime = 0;
           window.trackUserActivity(actText, true);
         }
         const blob = await fetchPyqBlob(id);
+        const bridge = window.Android || (window.parent && window.parent.Android);
+        if (bridge && typeof bridge.processBlob === 'function') {
+          const reader = new FileReader();
+          reader.onloadend = function() {
+            if (reader.result) {
+              bridge.processBlob(reader.result, blob.type || 'application/pdf', action === 'download');
+            }
+          };
+          reader.readAsDataURL(blob);
+          return;
+        }
+
         const url = URL.createObjectURL(blob);
         if (action === 'view') {
           window._openPdfViewer(url, fileName || 'PYQ Paper');

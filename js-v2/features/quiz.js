@@ -32,6 +32,12 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
         window.trackUserActivity(desc, false);
       }
 
+      // Reset scroll position on tab switch
+      const contentEl = document.getElementById('content');
+      if (contentEl) contentEl.scrollTop = 0;
+      window.scrollTo(0, 0);
+      if (typeof window._updateNativeScrollState === 'function') window._updateNativeScrollState();
+
       if (!tab) {
         if (!window._studentHistoryNavLock) {
           window.location.hash = '#student';
@@ -63,6 +69,7 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
       if (tab === 'qbank') studentLoadQBank();
       if (tab === 'pyq') studentLoadPYQ();
       if (tab === 'ia-timetable') window.loadIATimetable && window.loadIATimetable();
+
       if (tab === 'ia-timetable') loadIATimetable();
       if (typeof updateAppHistory === 'function' && !window._studentHistoryNavLock) updateAppHistory(tab, false);
     };

@@ -6,16 +6,16 @@ import './core/helpers.js';
 import './core/activity_tracker.js';
 
 // Features & Components
-import './features/auth.js?v=20260707c';
-import './features/promos.js?v=20260707c';
-import './features/attendance.js?v=20260707c';
-import './features/notes.js?v=20260707c';
-import './features/qbank.js?v=20260707c';
-import './features/pyq.js?v=20260707c';
-import './features/quiz.js?v=20260707c';
-import './features/chatbot.js?v=20260707c';
-import './features/manage_students.js?v=20260707c';
-import './features/launches.js?v=20260707c';
+import './features/auth.js?v=20260825a';
+import './features/promos.js?v=20260825a';
+import './features/attendance.js?v=20260825a';
+import './features/notes.js?v=20260825a';
+import './features/qbank.js?v=20260825a';
+import './features/pyq.js?v=20260825a';
+import './features/quiz.js?v=20260825a';
+import './features/chatbot.js?v=20260825a';
+import './features/manage_students.js?v=20260825a';
+import './features/launches.js?v=20260825a';
 
 
 console.log('🚀 TechBook App fully initialized');
@@ -398,4 +398,33 @@ function switchLandingTab(tabId) {
 }
 window.switchLandingTab = switchLandingTab;
 
+// Native Android App Scroll Bridge Integration
+function setupNativeScrollBridge() {
+  const updateScroll = () => {
+    const contentEl = document.getElementById('content');
+    const st = contentEl ? contentEl.scrollTop : (window.scrollY || document.documentElement.scrollTop || 0);
+    const isScrolled = st > 5;
+    if (window.Android && typeof window.Android.setScrollState === 'function') {
+      window.Android.setScrollState(isScrolled);
+    }
+    if (window.AndroidBridge && typeof window.AndroidBridge.setScrollState === 'function') {
+      window.AndroidBridge.setScrollState(isScrolled);
+    }
+  };
+
+  const contentEl = document.getElementById('content');
+  if (contentEl) {
+    contentEl.addEventListener('scroll', updateScroll, { passive: true, capture: true });
+  }
+  window.addEventListener('scroll', updateScroll, { passive: true, capture: true });
+  document.addEventListener('scroll', updateScroll, { passive: true, capture: true });
+  window._updateNativeScrollState = updateScroll;
+  updateScroll();
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', setupNativeScrollBridge);
+} else {
+  setupNativeScrollBridge();
+}
 
