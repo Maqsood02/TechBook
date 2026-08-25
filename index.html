@@ -14,7 +14,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <link rel="stylesheet" href="assets/css/style.css?v=20260825d" />
+  <link rel="stylesheet" href="assets/css/style.css?v=20260825e" />
   <style>
     @keyframes blink {
       0%, 100% { opacity: 1; }
@@ -345,15 +345,12 @@
                   <div class="form-group" style="margin-bottom: 16px;">
                     <label style="display:block; font-weight:600; font-size:12.5px; color:#4b5563; margin-bottom:6px;">Syllabus Scheme</label>
                     <select id="reg-scheme" style="width:100%; padding:10px 12px; border:1.5px solid #e5e7eb; border-radius:10px; background:#fff;">
+                      <option value="2027">2027 Scheme</option>
                       <option value="2026">2026 Scheme</option>
                       <option value="2025">2025 Scheme</option>
                       <option value="2024">2024 Scheme</option>
                       <option value="2023">2023 Scheme</option>
                       <option value="2022" selected>2022 Scheme (NEP)</option>
-                      <option value="2021">2021 Scheme</option>
-                      <option value="2018">2018 Scheme</option>
-                      <option value="2017">2017 Scheme</option>
-                      <option value="2015">2015 Scheme</option>
                     </select>
                   </div>
 
@@ -972,15 +969,12 @@
                         <div class="form-group" style="margin:0;"><label style="font-size:10px;">Scheme</label>
                           <select id="sn-scheme" onchange="studentFilterNotes()" style="font-size:12px;">
                             <option value="">All Schemes</option>
+                            <option value="2027">2027 Scheme</option>
                             <option value="2026">2026 Scheme</option>
                             <option value="2025">2025 Scheme</option>
                             <option value="2024">2024 Scheme</option>
                             <option value="2023">2023 Scheme</option>
                             <option value="2022">2022 Scheme (NEP)</option>
-                            <option value="2021">2021 Scheme</option>
-                            <option value="2018">2018 Scheme</option>
-                            <option value="2017">2017 Scheme</option>
-                            <option value="2015">2015 Scheme</option>
                           </select>
                         </div>
                         <div class="form-group" style="margin:0;"><label style="font-size:10px;">Year</label>
@@ -2628,15 +2622,12 @@
                     <div class="form-group" style="margin:0;">
                       <label>Scheme *</label>
                       <select id="adm-scheme">
+                        <option value="2027">2027 Scheme</option>
                         <option value="2026">2026 Scheme</option>
                         <option value="2025">2025 Scheme</option>
                         <option value="2024">2024 Scheme</option>
                         <option value="2023">2023 Scheme</option>
                         <option value="2022" selected>2022 Scheme (NEP)</option>
-                        <option value="2021">2021 Scheme</option>
-                        <option value="2018">2018 Scheme</option>
-                        <option value="2017">2017 Scheme</option>
-                        <option value="2015">2015 Scheme</option>
                         <option value="All">All Schemes (Common)</option>
                       </select>
                     </div>
@@ -2868,15 +2859,12 @@
                     <div class="form-group" style="margin:0;">
                       <label>Scheme *</label>
                       <select id="qbank-scheme">
+                        <option value="2027">2027 Scheme</option>
                         <option value="2026">2026 Scheme</option>
                         <option value="2025">2025 Scheme</option>
                         <option value="2024">2024 Scheme</option>
                         <option value="2023">2023 Scheme</option>
                         <option value="2022" selected>2022 Scheme (NEP)</option>
-                        <option value="2021">2021 Scheme</option>
-                        <option value="2018">2018 Scheme</option>
-                        <option value="2017">2017 Scheme</option>
-                        <option value="2015">2015 Scheme</option>
                         <option value="All">All Schemes (Common)</option>
                       </select>
                     </div>
@@ -3096,15 +3084,12 @@
                     <div class="form-group" style="margin:0;">
                       <label>Scheme *</label>
                       <select id="pyq-scheme">
+                        <option value="2027">2027 Scheme</option>
                         <option value="2026">2026 Scheme</option>
                         <option value="2025">2025 Scheme</option>
                         <option value="2024">2024 Scheme</option>
                         <option value="2023">2023 Scheme</option>
                         <option value="2022" selected>2022 Scheme (NEP)</option>
-                        <option value="2021">2021 Scheme</option>
-                        <option value="2018">2018 Scheme</option>
-                        <option value="2017">2017 Scheme</option>
-                        <option value="2015">2015 Scheme</option>
                         <option value="All">All Schemes (Common)</option>
                       </select>
                     </div>
@@ -3960,8 +3945,8 @@
     <iframe id="pdf-viewer-frame" src="" style="flex:1;width:100%;border:none;background:#525659;"></iframe>
   </div>
 
-  <script type="module" src="js-v2/app.js?v=20260825d"></script>
-  <script type="module" src="js-v2/features/mobile-navigation.js?v=20260825d"></script>
+  <script type="module" src="js-v2/app.js?v=20260825e"></script>
+  <script type="module" src="js-v2/features/mobile-navigation.js?v=20260825e"></script>
 
   <!-- ══ FOUNDER MODAL ══ -->
   <div id="founder-modal"
@@ -4088,6 +4073,21 @@
       <!-- Scheme Cards List -->
       <div style="padding:4px 18px;display:flex;flex-direction:column;gap:9px;max-height:380px;overflow-y:auto;" id="scheme-options-container">
         
+        <!-- Option: 2027 Scheme -->
+        <label class="scheme-option-card" data-scheme="2027" onclick="selectSchemeOption('2027', this)">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:22px;">🔮</span>
+              <div>
+                <div style="font-size:14px;font-weight:800;color:#1e293b;">2027 Scheme</div>
+                <div style="font-size:11px;color:#64748b;">Future &amp; Advanced Framework</div>
+              </div>
+            </div>
+            <span class="scheme-badge" style="background:#f5f3ff;color:#7c3aed;font-size:10px;font-weight:800;padding:3px 8px;border-radius:20px;border:1px solid #ddd6fe;">UPCOMING</span>
+          </div>
+          <input type="radio" name="selected_scheme_radio" value="2027" style="display:none;" />
+        </label>
+
         <!-- Option: 2026 Scheme -->
         <label class="scheme-option-card" data-scheme="2026" onclick="selectSchemeOption('2026', this)">
           <div style="display:flex;align-items:center;justify-content:space-between;">
@@ -4095,10 +4095,10 @@
               <span style="font-size:22px;">🌟</span>
               <div>
                 <div style="font-size:14px;font-weight:800;color:#1e293b;">2026 Scheme</div>
-                <div style="font-size:11px;color:#64748b;">Upcoming &amp; Next-Gen Syllabus</div>
+                <div style="font-size:11px;color:#64748b;">Next-Gen NEP Syllabus</div>
               </div>
             </div>
-            <span class="scheme-badge" style="background:#f5f3ff;color:#7c3aed;font-size:10px;font-weight:800;padding:3px 8px;border-radius:20px;border:1px solid #ddd6fe;">FUTURE</span>
+            <span class="scheme-badge" style="background:#eff6ff;color:#2563eb;font-size:10px;font-weight:800;padding:3px 8px;border-radius:20px;border:1px solid #bfdbfe;">ADVANCED</span>
           </div>
           <input type="radio" name="selected_scheme_radio" value="2026" style="display:none;" />
         </label>
@@ -4110,7 +4110,7 @@
               <span style="font-size:22px;">🚀</span>
               <div>
                 <div style="font-size:14px;font-weight:800;color:#1e293b;">2025 Scheme</div>
-                <div style="font-size:11px;color:#64748b;">Latest 2025 Multi-Disciplinary Scheme</div>
+                <div style="font-size:11px;color:#64748b;">Latest Multi-Disciplinary Scheme</div>
               </div>
             </div>
             <span class="scheme-badge" style="background:#ecfeff;color:#0891b2;font-size:10px;font-weight:800;padding:3px 8px;border-radius:20px;border:1px solid #a5f3fc;">LATEST</span>
@@ -4161,51 +4161,6 @@
             <span class="scheme-badge" style="background:#eff2fe;color:#3d5af1;font-size:10px;font-weight:800;padding:3px 8px;border-radius:20px;border:1px solid #c7d2fe;">RECOMMENDED</span>
           </div>
           <input type="radio" name="selected_scheme_radio" value="2022" checked style="display:none;" />
-        </label>
-
-        <!-- Option: 2021 Scheme -->
-        <label class="scheme-option-card" data-scheme="2021" onclick="selectSchemeOption('2021', this)">
-          <div style="display:flex;align-items:center;justify-content:space-between;">
-            <div style="display:flex;align-items:center;gap:10px;">
-              <span style="font-size:22px;">📖</span>
-              <div>
-                <div style="font-size:14px;font-weight:800;color:#1e293b;">2021 Scheme</div>
-                <div style="font-size:11px;color:#64748b;">CBCS Autonomous / VTU Syllabus</div>
-              </div>
-            </div>
-            <span class="scheme-badge" style="background:#f1f5f9;color:#64748b;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;">CBCS</span>
-          </div>
-          <input type="radio" name="selected_scheme_radio" value="2021" style="display:none;" />
-        </label>
-
-        <!-- Option: 2018 Scheme -->
-        <label class="scheme-option-card" data-scheme="2018" onclick="selectSchemeOption('2018', this)">
-          <div style="display:flex;align-items:center;justify-content:space-between;">
-            <div style="display:flex;align-items:center;gap:10px;">
-              <span style="font-size:22px;">📗</span>
-              <div>
-                <div style="font-size:14px;font-weight:800;color:#1e293b;">2018 Scheme</div>
-                <div style="font-size:11px;color:#64748b;">Standard CBCS Regulation</div>
-              </div>
-            </div>
-            <span class="scheme-badge" style="background:#f1f5f9;color:#64748b;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;">LEGACY</span>
-          </div>
-          <input type="radio" name="selected_scheme_radio" value="2018" style="display:none;" />
-        </label>
-
-        <!-- Option: 2017 & Older Scheme -->
-        <label class="scheme-option-card" data-scheme="2017" onclick="selectSchemeOption('2017', this)">
-          <div style="display:flex;align-items:center;justify-content:space-between;">
-            <div style="display:flex;align-items:center;gap:10px;">
-              <span style="font-size:22px;">📂</span>
-              <div>
-                <div style="font-size:14px;font-weight:800;color:#1e293b;">2017 &amp; Older Schemes</div>
-                <div style="font-size:11px;color:#64748b;">Non-CBCS / Earlier Syllabus Patterns</div>
-              </div>
-            </div>
-            <span class="scheme-badge" style="background:#f1f5f9;color:#64748b;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;">ARCHIVE</span>
-          </div>
-          <input type="radio" name="selected_scheme_radio" value="2017" style="display:none;" />
         </label>
 
       </div>
