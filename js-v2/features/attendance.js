@@ -210,59 +210,107 @@ import { $, val } from '../core/helpers.js';
        ✍️ MARK ATTENDANCE
     =============================== */
     $("btn-mark")?.addEventListener("click", async () => {
+      const btn = $("btn-mark");
       const user = auth.currentUser;
-      if (!user) return;
+      if (!user) {
+        return msg("att-msg", "You must be logged in to mark attendance.", "error");
+      }
 
       const usn = user.email.split('@')[0].toUpperCase();
-      const date = val("att-date");
+      const date = val("att-date") || new Date().toISOString().split('T')[0];
       const remark = val("att-remark");
 
+      if (!date) {
+        return msg("att-msg", "Date is missing. Please refresh and try again.", "error");
+      }
+
+      if (btn) {
+        btn.disabled = true;
+        btn.dataset.origText = btn.innerHTML;
+        btn.innerHTML = "⏳ Marking Attendance...";
+      }
+
       try {
-        // Check if already marked today
         const attId = `${usn}_${date}`;
-        const attDoc = await getDoc(doc(db, "attendance", attId));
 
-        if (attDoc.exists()) {
-          return msg("att-msg", "Attendance already marked for today", "error");
-        }
-
-        // Get student data
-        const studentDoc = await getDoc(doc(db, "students", usn));
-        const studentData = studentDoc.data();
-
-        // Get current session name
-        let sessionName = "Not Set";
+        // 1. Safely check if already marked today
         try {
-          const sessionDoc = await getDoc(doc(db, "settings", "session"));
-          if (sessionDoc.exists()) {
-            sessionName = sessionDoc.data().name || "Not Set";
+          const attDoc = await getDoc(doc(db, "attendance", attId));
+          if (attDoc && attDoc.exists()) {
+            return msg("att-msg", "Attendance already marked for today", "error");
           }
-        } catch (e) {
-          console.log("No session set");
+        } catch (checkErr) {
+          // If Firestore rules fail evaluation on a non-existent document, catch safely and proceed
+          console.warn("Could not check if attendance doc already exists (proceeding with mark):", checkErr.message);
         }
 
-        // Mark attendance
+        // 2. Resolve student data (prefer cached/global data to avoid redundant failing DB calls)
+        let studentData = window._currentStudentData;
+        if (!studentData || !studentData.name) {
+          try {
+            const cachedStr = localStorage.getItem('techbook_student_data');
+            if (cachedStr) studentData = JSON.parse(cachedStr);
+          } catch (_) {}
+        }
+        if (!studentData || !studentData.name) {
+          try {
+            const studentDoc = await getDoc(doc(db, "students", usn));
+            if (studentDoc && studentDoc.exists()) {
+              studentData = studentDoc.data();
+            }
+          } catch (stErr) {
+            console.warn("Could not fetch student doc from Firestore:", stErr.message);
+          }
+        }
+        studentData = studentData || {};
+
+        // 3. Resolve session name
+        let sessionName = $("verified-session")?.textContent?.trim() || "Not Set";
+        if (!sessionName || sessionName === "Not Set") {
+          try {
+            const sessionDoc = await getDoc(doc(db, "settings", "session"));
+            if (sessionDoc && sessionDoc.exists()) {
+              sessionName = sessionDoc.data().name || "Not Set";
+            }
+          } catch (e) {
+            console.log("No session set");
+          }
+        }
+
+        // 4. Mark attendance
         const now = new Date();
+        const verifiedLoc = window.verifiedLocation || $("verified-loc")?.textContent?.trim() || "Not Set";
+
         await setDoc(doc(db, "attendance", attId), {
           usn,
-          name: studentData.name,
-          section: studentData.section,
+          name: studentData.name || usn,
+          section: studentData.section || '',
           sem: studentData.sem || '',
-          year: studentData.year,
+          year: studentData.year || '',
           date,
           time: now.toLocaleTimeString(),
           timestamp: now.toISOString(),
-          remark,
+          remark: remark || '',
           session: sessionName,
-          location: window.verifiedLocation || "Not Set"
+          location: verifiedLoc
         });
 
         msg("att-msg", "✓ Attendance marked successfully!", "success");
-        $("att-remark").value = "";
+        if ($("att-remark")) $("att-remark").value = "";
         loadStudentHistory(usn);
 
       } catch (e) {
-        msg("att-msg", "Error: " + e.message, "error");
+        console.error("Attendance mark failed:", e);
+        if (e.code === 'permission-denied' || e.message?.includes('permission') || e.message?.includes('insufficient')) {
+          msg("att-msg", "⚠️ Permission error: Please ensure Firestore rules in Firebase Console are updated.", "error");
+        } else {
+          msg("att-msg", "Error: " + e.message, "error");
+        }
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = btn.dataset.origText || "✓ Mark Attendance";
+        }
       }
     });
 

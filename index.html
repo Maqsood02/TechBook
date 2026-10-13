@@ -5193,19 +5193,109 @@
     elevenlabs-convai {
       --elevenlabs-convai-widget-width: 340px;
       --elevenlabs-convai-widget-height: 480px;
-      z-index: 999 !important;
+      z-index: 99999 !important;
     }
-    @media (max-width: 600px) {
+    /* On mobile view, position above the 68px fixed bottom navigation bar */
+    @media (max-width: 768px) {
       elevenlabs-convai {
-        bottom: 10px !important;
-        right: 10px !important;
-        transform: scale(0.85);
+        bottom: 78px !important;
+        right: 14px !important;
+        transform: scale(0.9);
         transform-origin: bottom right;
+        z-index: 99999 !important;
+      }
+    }
+    @media (min-width: 769px) {
+      elevenlabs-convai {
+        bottom: 24px !important;
+        right: 24px !important;
+        z-index: 99999 !important;
       }
     }
   </style>
-  <elevenlabs-convai agent-id="agent_3701kxfgmve7fqh93pqd44j6qzdv"></elevenlabs-convai>
+  <elevenlabs-convai agent-id="agent_3701kxfgmve7fqh93pqd44j6qzdv" allow="microphone"></elevenlabs-convai>
   <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
+
+  <!-- ElevenLabs Voice Audio Source & Microphone Permission Helper -->
+  <script>
+    (function() {
+      const widget = document.querySelector('elevenlabs-convai');
+      if (!widget) return;
+
+      let micPromptShown = false;
+
+      function showMicPermissionToast() {
+        if (document.getElementById('techbook-mic-help-toast')) return;
+        const toast = document.createElement('div');
+        toast.id = 'techbook-mic-help-toast';
+        toast.style.cssText = [
+          'position: fixed',
+          'bottom: 86px',
+          'right: 14px',
+          'max-width: 320px',
+          'background: #0f172a',
+          'color: #ffffff',
+          'border-radius: 14px',
+          'padding: 14px 16px',
+          'font-size: 13px',
+          'line-height: 1.45',
+          'box-shadow: 0 12px 30px rgba(0,0,0,0.4)',
+          'z-index: 100000',
+          'border: 1px solid rgba(239, 68, 68, 0.4)',
+          'border-left: 5px solid #ef4444',
+          'font-family: system-ui, -apple-system, sans-serif'
+        ].join(';');
+
+        toast.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
+            <div style="font-weight:700; color:#fca5a5; display:flex; align-items:center; gap:6px;">
+              <span>🎙️</span> Microphone Access Required
+            </div>
+            <button id="close-mic-toast-btn" style="background:none; border:none; color:#94a3b8; font-size:16px; cursor:pointer; padding:0 0 0 8px; line-height:1;">✕</button>
+          </div>
+          <div style="color:#e2e8f0; font-size:12px; margin-bottom:8px;">
+            If you see <em>"Could not start audio source"</em>, tap the lock/tune icon in your browser address bar (or Android App Settings) and set <strong>Microphone</strong> to <strong>Allow</strong>.
+          </div>
+          <div style="background:rgba(255,255,255,0.08); padding:6px 10px; border-radius:8px; font-size:11.5px; color:#93c5fd;">
+            💡 <strong>Tip:</strong> You can also type questions directly in the <em>"Send a message..."</em> box without voice!
+          </div>
+        `;
+
+        document.body.appendChild(toast);
+        document.getElementById('close-mic-toast-btn')?.addEventListener('click', () => toast.remove());
+
+        setTimeout(() => {
+          if (toast && toast.parentNode) toast.remove();
+        }, 14000);
+      }
+
+      // Check microphone permission when call starts
+      widget.addEventListener('elevenlabs-convai:call', async () => {
+        try {
+          if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            stream.getTracks().forEach(track => track.stop());
+          }
+        } catch (err) {
+          console.warn("Microphone not available for ElevenLabs voice call:", err);
+          showMicPermissionToast();
+        }
+      });
+
+      // Also check on click if permission was explicitly denied
+      widget.addEventListener('click', async () => {
+        if (navigator.permissions && navigator.permissions.query) {
+          try {
+            const status = await navigator.permissions.query({ name: 'microphone' });
+            if (status.state === 'denied' && !micPromptShown) {
+              micPromptShown = true;
+              showMicPermissionToast();
+            }
+          } catch (_) {}
+        }
+      });
+    })();
+  </script>
 
 
 
