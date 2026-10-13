@@ -8,6 +8,53 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="TechBook" />
+  <!-- Mobile PWA Build Cache Invalidator -->
+  <script>
+    (function() {
+      const CURRENT_BUILD = 'tb_build_20261013_v41';
+      try {
+        const storedBuild = localStorage.getItem('techbook_build_version');
+        if (storedBuild !== CURRENT_BUILD) {
+          console.warn('🔄 TechBook updated to build:', CURRENT_BUILD, 'from:', storedBuild);
+          localStorage.setItem('techbook_build_version', CURRENT_BUILD);
+
+          // Purge CacheStorage of any previous caches
+          if ('caches' in window) {
+            caches.keys().then(function(keys) {
+              return Promise.all(
+                keys.map(function(k) {
+                  if (k !== 'techbook-cache-v41') {
+                    console.log('🧹 Purging outdated PWA cache:', k);
+                    return caches.delete(k);
+                  }
+                })
+              );
+            }).catch(function(e) { console.error('Cache purge error:', e); });
+          }
+
+          // Force Service Worker to update immediately
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+              registrations.forEach(function(reg) {
+                reg.update();
+                if (reg.waiting) {
+                  reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+                }
+              });
+            }).catch(function(e) { console.error('SW update error:', e); });
+          }
+
+          // Force one-time reload on mobile to discard cached DOM
+          if (storedBuild && !sessionStorage.getItem('tb_reloaded_' + CURRENT_BUILD)) {
+            sessionStorage.setItem('tb_reloaded_' + CURRENT_BUILD, '1');
+            window.location.reload(true);
+          }
+        }
+      } catch (err) {
+        console.error('Build check error:', err);
+      }
+    })();
+  </script>
   <title>Tech Book — It makes you learn easy</title>
   <!-- Libraries -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
@@ -674,19 +721,8 @@
           </div>
         </div>
 
-        <!-- ElevenLabs Conversational AI Widget (Small icon, Home Page ONLY) -->
-        <div id="landing-ai-agent-container">
-          <elevenlabs-convai 
-            id="elevenlabs-agent-widget"
-            agent-id="agent_3701kxfgmve7fqh93pqd44j6qzdv" 
-            allow="microphone"
-            variant="compact"
-            disable-banner="true"
-            action-text=""
-            start-call-text="Call"
-            end-call-text="End">
-          </elevenlabs-convai>
-        </div>
+        <!-- ElevenLabs Conversational AI Widget Container (Dynamically mounted on Home Page ONLY) -->
+        <div id="landing-ai-agent-container"></div>
 
       </div>
 
@@ -5204,41 +5240,51 @@
 
   <!-- ElevenLabs Conversational AI Widget Styling (Small & Home Page Only) -->
   <style>
+    /* Compact launcher widget for Home Page */
     elevenlabs-convai {
-      --elevenlabs-convai-widget-width: 310px;
-      --elevenlabs-convai-widget-height: 440px;
+      --elevenlabs-convai-widget-width: 290px;
+      --elevenlabs-convai-widget-height: 420px;
       position: fixed !important;
-      bottom: 22px !important;
-      right: 20px !important;
-      transform: scale(0.72) !important;
+      bottom: 18px !important;
+      right: 18px !important;
+      transform: scale(0.65) !important;
       transform-origin: bottom right !important;
       z-index: 99999 !important;
-      display: none !important; /* Hidden by default until verified on Home page */
+      display: none !important;
     }
     @media (max-width: 768px) {
       elevenlabs-convai {
-        bottom: 16px !important;
-        right: 14px !important;
-        transform: scale(0.68) !important;
+        bottom: 12px !important;
+        right: 12px !important;
+        transform: scale(0.58) !important;
         transform-origin: bottom right !important;
         z-index: 99999 !important;
       }
     }
-    /* Strictly hide agent widget outside the Home / Landing page */
+    /* Strictly and unconditionally hide agent everywhere outside Landing/Home page */
+    #main-panel elevenlabs-convai,
+    #main-panel ~ elevenlabs-convai,
+    #main-panel ~ * elevenlabs-convai,
+    body:not(.on-home-page) elevenlabs-convai,
+    body:not(.on-home-page) #landing-ai-agent-container,
     #landing-page.hidden elevenlabs-convai,
     #landing-page.hidden #landing-ai-agent-container,
     .mobile-app-mode elevenlabs-convai,
-    body:not(.on-home-page) elevenlabs-convai,
-    #main-panel:not(.hidden) ~ * elevenlabs-convai {
+    #student-view elevenlabs-convai,
+    #admin-view elevenlabs-convai,
+    #cof-view elevenlabs-convai,
+    #about-view elevenlabs-convai {
       display: none !important;
       visibility: hidden !important;
       pointer-events: none !important;
+      opacity: 0 !important;
     }
-    /* Show ONLY when body has on-home-page class and landing-page is active */
+    /* Show ONLY when body has on-home-page class AND landing-page is active */
     body.on-home-page #landing-page:not(.hidden) elevenlabs-convai {
       display: block !important;
       visibility: visible !important;
       pointer-events: auto !important;
+      opacity: 1 !important;
     }
   </style>
   <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
@@ -5246,56 +5292,108 @@
   <!-- ElevenLabs Home-Page-Only Controller & Microphone Helper -->
   <script>
     (function() {
-      function syncAgentWidgetVisibility() {
-        const widget = document.querySelector('elevenlabs-convai');
+      const AGENT_ID = 'agent_3701kxfgmve7fqh93pqd44j6qzdv';
+
+      function isHomePageActive() {
         const landing = document.getElementById('landing-page');
         const mainPanel = document.getElementById('main-panel');
-        const isHomePage = landing && !landing.classList.contains('hidden') && (!mainPanel || mainPanel.classList.contains('hidden'));
+        if (!landing || landing.classList.contains('hidden') || landing.style.display === 'none') {
+          return false;
+        }
+        if (mainPanel && !mainPanel.classList.contains('hidden') && mainPanel.style.display !== 'none') {
+          return false;
+        }
+        // Check if any portal view is open
+        const portalViews = ['student-view', 'admin-view', 'cof-view', 'about-view'];
+        for (let i = 0; i < portalViews.length; i++) {
+          const el = document.getElementById(portalViews[i]);
+          if (el && !el.classList.contains('hidden') && el.style.display !== 'none') {
+            return false;
+          }
+        }
+        return true;
+      }
 
-        if (isHomePage) {
+      function injectCompactShadowStyles(widget) {
+        if (!widget || !widget.shadowRoot) return;
+        try {
+          if (!widget.shadowRoot.getElementById('tb-convai-style')) {
+            const st = document.createElement('style');
+            st.id = 'tb-convai-style';
+            st.textContent = `
+              [class*="preview"], [class*="action-text"], [class*="banner"], [part="preview-card"], [part="banner"] {
+                display: none !important;
+              }
+              button[part="button"], [class*="launcher"], [part="launcher"] {
+                transform: scale(0.85) !important;
+              }
+            `;
+            widget.shadowRoot.appendChild(st);
+          }
+        } catch (_) {}
+      }
+
+      function syncAgentWidget() {
+        const isHome = isHomePageActive();
+
+        if (isHome) {
           document.body.classList.add('on-home-page');
+          const container = document.getElementById('landing-ai-agent-container');
+          let widget = document.querySelector('elevenlabs-convai');
+
+          // Dynamically mount strictly inside home container if missing
+          if (!widget && container) {
+            widget = document.createElement('elevenlabs-convai');
+            widget.setAttribute('agent-id', AGENT_ID);
+            widget.setAttribute('allow', 'microphone');
+            widget.setAttribute('variant', 'compact');
+            widget.setAttribute('disable-banner', 'true');
+            widget.setAttribute('action-text', '');
+            container.appendChild(widget);
+          }
+
           if (widget) {
             widget.style.setProperty('display', 'block', 'important');
-            // Inject style inside shadowRoot if open to keep launcher small and hide giant call cards
-            try {
-              if (widget.shadowRoot && !widget.shadowRoot.getElementById('convai-compact-style')) {
-                const s = document.createElement('style');
-                s.id = 'convai-compact-style';
-                s.textContent = `
-                  [class*="preview"], [class*="action-text"], [class*="banner"], [part="preview-card"], [part="banner"] {
-                    display: none !important;
-                  }
-                `;
-                widget.shadowRoot.appendChild(s);
-              }
-            } catch (_) {}
+            injectCompactShadowStyles(widget);
           }
         } else {
           document.body.classList.remove('on-home-page');
-          if (widget) {
-            widget.style.setProperty('display', 'none', 'important');
-          }
+          // STRICT PURGE: Destroy any and all elevenlabs-convai elements from the DOM
+          document.querySelectorAll('elevenlabs-convai').forEach(el => {
+            try {
+              if (typeof el.endCall === 'function') el.endCall();
+              if (typeof el.close === 'function') el.close();
+            } catch (_) {}
+            el.remove();
+          });
+          // Remove any stray dialogs or popups left by convai
+          document.querySelectorAll('[data-elevenlabs-convai]').forEach(el => el.remove());
         }
       }
 
-      window.syncAgentWidgetVisibility = syncAgentWidgetVisibility;
+      window.syncAgentWidgetVisibility = syncAgentWidget;
 
-      // Watch landing page and main panel DOM mutations
+      // Observers for view changes
       const landingEl = document.getElementById('landing-page');
       if (landingEl) {
-        new MutationObserver(syncAgentWidgetVisibility).observe(landingEl, { attributes: true, attributeFilter: ['class', 'style'] });
+        new MutationObserver(syncAgentWidget).observe(landingEl, { attributes: true, attributeFilter: ['class', 'style'] });
       }
       const mainEl = document.getElementById('main-panel');
       if (mainEl) {
-        new MutationObserver(syncAgentWidgetVisibility).observe(mainEl, { attributes: true, attributeFilter: ['class', 'style'] });
+        new MutationObserver(syncAgentWidget).observe(mainEl, { attributes: true, attributeFilter: ['class', 'style'] });
       }
 
-      // Check on history/role navigation
-      window.addEventListener('popstate', syncAgentWidgetVisibility);
-      window.addEventListener('hashchange', syncAgentWidgetVisibility);
-      document.addEventListener('DOMContentLoaded', syncAgentWidgetVisibility);
-      setTimeout(syncAgentWidgetVisibility, 200);
-      setTimeout(syncAgentWidgetVisibility, 1000);
+      // Observer for body classes
+      new MutationObserver(syncAgentWidget).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+
+      // Routing and navigation hooks
+      window.addEventListener('popstate', syncAgentWidget);
+      window.addEventListener('hashchange', syncAgentWidget);
+      document.addEventListener('DOMContentLoaded', syncAgentWidget);
+      setTimeout(syncAgentWidget, 100);
+      setTimeout(syncAgentWidget, 500);
+      setTimeout(syncAgentWidget, 1500);
+      setInterval(syncAgentWidget, 2000);
 
       // Mic helper
       let micPromptShown = false;
@@ -5309,7 +5407,7 @@
             <strong style="color:#fca5a5;display:flex;align-items:center;gap:6px;"><span>🎙️</span> Microphone Access Required</strong>
             <button onclick="this.closest('#techbook-mic-help-toast').remove()" style="background:none;border:none;color:#94a3b8;font-size:16px;cursor:pointer;">✕</button>
           </div>
-          <div style="color:#e2e8f0;font-size:12px;margin-bottom:6px;">If you see <em>"Could not start audio source"</em>, tap the lock icon in your browser address bar and set <strong>Microphone</strong> to <strong>Allow</strong>.</div>
+          <div style="color:#e2e8f0;font-size:12px;margin-bottom:6px;">If you see <em>"Could not start audio source"</em>, tap the lock/tune icon in your browser address bar and set <strong>Microphone</strong> to <strong>Allow</strong>.</div>
           <div style="background:rgba(255,255,255,0.08);padding:6px 10px;border-radius:8px;font-size:11.5px;color:#93c5fd;">💡 You can also type in the text chat inside the assistant!</div>
         `;
         document.body.appendChild(toast);
