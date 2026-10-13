@@ -1,4 +1,4 @@
-const CACHE_NAME = 'techbook-cache-v36';
+const CACHE_NAME = 'techbook-cache-v42';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',

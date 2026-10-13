@@ -402,6 +402,9 @@ function switchLandingTab(tabId) {
   if (typeof window.updateFloatingBannerVisibility === 'function') {
     window.updateFloatingBannerVisibility();
   }
+  if (typeof window.syncAgentWidgetVisibility === 'function') {
+    window.syncAgentWidgetVisibility();
+  }
 }
 window.switchLandingTab = switchLandingTab;
 

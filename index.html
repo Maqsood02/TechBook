@@ -3959,8 +3959,8 @@
     <iframe id="pdf-viewer-frame" src="" style="flex:1;width:100%;border:none;background:#525659;"></iframe>
   </div>
 
-  <script type="module" src="js-v2/app.js?v=20261013b"></script>
-  <script type="module" src="js-v2/features/mobile-navigation.js?v=20261013b"></script>
+  <script type="module" src="js-v2/app.js?v=20261013c"></script>
+  <script type="module" src="js-v2/features/mobile-navigation.js?v=20261013c"></script>
 
   <!-- ══ FOUNDER MODAL ══ -->
   <div id="founder-modal"
@@ -5204,41 +5204,40 @@
 
   <!-- ElevenLabs Conversational AI Widget Styling (Small & Home Page Only) -->
   <style>
+    #landing-ai-agent-container {
+      pointer-events: none !important;
+    }
     elevenlabs-convai {
-      --elevenlabs-convai-widget-width: 310px;
-      --elevenlabs-convai-widget-height: 440px;
+      --elevenlabs-convai-widget-width: 300px;
+      --elevenlabs-convai-widget-height: 420px;
       position: fixed !important;
-      bottom: 22px !important;
-      right: 20px !important;
-      transform: scale(0.72) !important;
+      bottom: 20px !important;
+      right: 18px !important;
+      transform: scale(0.68) !important;
       transform-origin: bottom right !important;
-      z-index: 99999 !important;
-      display: none !important; /* Hidden by default until verified on Home page */
+      z-index: 9999 !important;
+      display: none !important; /* Hidden by default until verified strictly on Home page */
+      pointer-events: auto !important;
     }
     @media (max-width: 768px) {
       elevenlabs-convai {
         bottom: 16px !important;
         right: 14px !important;
-        transform: scale(0.68) !important;
+        transform: scale(0.60) !important;
         transform-origin: bottom right !important;
-        z-index: 99999 !important;
+        z-index: 9999 !important;
       }
     }
-    /* Strictly hide agent widget outside the Home / Landing page */
+    /* Strictly hide agent widget outside the Home page */
     #landing-page.hidden elevenlabs-convai,
     #landing-page.hidden #landing-ai-agent-container,
+    #home.hidden ~ * elevenlabs-convai,
     .mobile-app-mode elevenlabs-convai,
-    body:not(.on-home-page) elevenlabs-convai,
-    #main-panel:not(.hidden) ~ * elevenlabs-convai {
+    #main-panel:not(.hidden) ~ * elevenlabs-convai,
+    #main-panel:not(.hidden) elevenlabs-convai {
       display: none !important;
       visibility: hidden !important;
       pointer-events: none !important;
-    }
-    /* Show ONLY when body has on-home-page class and landing-page is active */
-    body.on-home-page #landing-page:not(.hidden) elevenlabs-convai {
-      display: block !important;
-      visibility: visible !important;
-      pointer-events: auto !important;
     }
   </style>
   <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
@@ -5249,13 +5248,17 @@
       function syncAgentWidgetVisibility() {
         const widget = document.querySelector('elevenlabs-convai');
         const landing = document.getElementById('landing-page');
+        const homeSection = document.getElementById('home');
         const mainPanel = document.getElementById('main-panel');
-        const isHomePage = landing && !landing.classList.contains('hidden') && (!mainPanel || mainPanel.classList.contains('hidden'));
+        const isHomePage = landing && !landing.classList.contains('hidden') &&
+                           homeSection && !homeSection.classList.contains('hidden') &&
+                           (!mainPanel || mainPanel.classList.contains('hidden'));
 
-        if (isHomePage) {
-          document.body.classList.add('on-home-page');
-          if (widget) {
+        if (widget) {
+          if (isHomePage) {
             widget.style.setProperty('display', 'block', 'important');
+            widget.style.setProperty('visibility', 'visible', 'important');
+            widget.style.setProperty('pointer-events', 'auto', 'important');
             // Inject style inside shadowRoot if open to keep launcher small and hide giant call cards
             try {
               if (widget.shadowRoot && !widget.shadowRoot.getElementById('convai-compact-style')) {
@@ -5269,21 +5272,24 @@
                 widget.shadowRoot.appendChild(s);
               }
             } catch (_) {}
-          }
-        } else {
-          document.body.classList.remove('on-home-page');
-          if (widget) {
+          } else {
             widget.style.setProperty('display', 'none', 'important');
+            widget.style.setProperty('visibility', 'hidden', 'important');
+            widget.style.setProperty('pointer-events', 'none', 'important');
           }
         }
       }
 
       window.syncAgentWidgetVisibility = syncAgentWidgetVisibility;
 
-      // Watch landing page and main panel DOM mutations
+      // Watch landing page, home section, and main panel DOM mutations
       const landingEl = document.getElementById('landing-page');
       if (landingEl) {
         new MutationObserver(syncAgentWidgetVisibility).observe(landingEl, { attributes: true, attributeFilter: ['class', 'style'] });
+      }
+      const homeEl = document.getElementById('home');
+      if (homeEl) {
+        new MutationObserver(syncAgentWidgetVisibility).observe(homeEl, { attributes: true, attributeFilter: ['class', 'style'] });
       }
       const mainEl = document.getElementById('main-panel');
       if (mainEl) {
