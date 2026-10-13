@@ -202,6 +202,9 @@ function selectRole(role) {
   if (typeof window.updateFloatingBannerVisibility === 'function') {
     window.updateFloatingBannerVisibility();
   }
+  if (typeof window.syncAgentWidgetVisibility === 'function') {
+    window.syncAgentWidgetVisibility();
+  }
 }
 
 // Show Landing Page function
@@ -217,6 +220,10 @@ function showLandingPage() {
   // Set default tab to 'home'
   if (window.switchLandingTab) {
     window.switchLandingTab('home');
+  }
+
+  if (typeof window.syncAgentWidgetVisibility === 'function') {
+    window.syncAgentWidgetVisibility();
   }
 
   if (!window._historyNavLock) {

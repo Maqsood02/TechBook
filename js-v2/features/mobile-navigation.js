@@ -74,6 +74,10 @@ function updateMobileNavVisibility() {
     if (studentNav) studentNav.classList.add('hidden');
     if (adminNav) adminNav.classList.add('hidden');
   }
+
+  if (typeof window.syncAgentWidgetVisibility === 'function') {
+    window.syncAgentWidgetVisibility();
+  }
 }
 
 // ─── 4. Student Navigation Handler ───
