@@ -1,4 +1,4 @@
-const CACHE_NAME = 'techbook-cache-v41';
+const CACHE_NAME = 'techbook-cache-v36';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -7,16 +7,8 @@ const ASSETS_TO_CACHE = [
   '/img/logo_cropped.png'
 ];
 
-// Handle SKIP_WAITING message
-self.addEventListener('message', event => {
-  if (event.data && (event.data.type === 'SKIP_WAITING' || event.data === 'skipWaiting')) {
-    self.skipWaiting();
-  }
-});
-
 // Install Service Worker
 self.addEventListener('install', event => {
-  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => cache.addAll(ASSETS_TO_CACHE))
@@ -31,7 +23,6 @@ self.addEventListener('activate', event => {
       return Promise.all(
         keys.map(key => {
           if (key !== CACHE_NAME) {
-            console.log('🧹 Evicting old cache:', key);
             return caches.delete(key);
           }
         })

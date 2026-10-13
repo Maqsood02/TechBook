@@ -70,10 +70,6 @@ function selectRole(role) {
   const mainPanel = document.getElementById('main-panel');
   if (mainPanel) mainPanel.classList.remove('hidden');
 
-  if (typeof window.syncAgentWidgetVisibility === 'function') {
-    window.syncAgentWidgetVisibility();
-  }
-
   // Hide all views first
   const views = ['student-view', 'admin-view', 'cof-view', 'about-view'];
   views.forEach(v => {
