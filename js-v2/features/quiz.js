@@ -92,6 +92,12 @@ window._switchTab = window.switchStudentTab = function (tab) {
 
   if (tab === 'quiz') loadStudentQuizzes();
   if (tab === 'quiz-history') loadStudentQuizHistory();
+  if (tab === 'history') {
+    const usn = window._currentStudentUSN || (auth.currentUser?.email ? auth.currentUser.email.split('@')[0].toUpperCase() : null);
+    if (usn && typeof window.loadStudentHistory === 'function') {
+      window.loadStudentHistory(usn);
+    }
+  }
   if (tab === 'notes') studentLoadNotes();
   if (tab === 'qbank') studentLoadQBank();
   if (tab === 'pyq') studentLoadPYQ();

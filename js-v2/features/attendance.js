@@ -297,6 +297,31 @@ import { $, val } from '../core/helpers.js';
 
         msg("att-msg", "✓ Attendance marked successfully!", "success");
         if ($("att-remark")) $("att-remark").value = "";
+
+        // Rapid Confirmation Details Banner
+        const detailsContainer = $("att-marked-details");
+        if (detailsContainer) {
+          detailsContainer.style.display = "block";
+          detailsContainer.innerHTML = `
+            <div style="background:linear-gradient(135deg,rgba(16,185,129,0.08),rgba(59,130,246,0.08));border:1.5px solid #10b981;border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:0 4px 15px rgba(16,185,129,0.1);">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;border-bottom:1px solid rgba(16,185,129,0.2);padding-bottom:8px;">
+                <strong style="color:#059669;display:flex;align-items:center;gap:6px;font-size:14px;">
+                  <span>✅</span> Attendance Confirmed
+                </strong>
+                <span style="font-size:10.5px;background:#10b981;color:#fff;padding:2px 8px;border-radius:10px;font-weight:700;letter-spacing:0.5px;">RECORDED</span>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(130px, 1fr));gap:10px;font-size:12.5px;">
+                <div><span style="color:#64748b;font-size:11px;display:block;">Student</span><strong>${studentData.name || usn}</strong></div>
+                <div><span style="color:#64748b;font-size:11px;display:block;">USN</span><strong style="color:#3d5af1;">${usn}</strong></div>
+                <div><span style="color:#64748b;font-size:11px;display:block;">Date & Time</span><strong>${date} at ${now.toLocaleTimeString()}</strong></div>
+                <div><span style="color:#64748b;font-size:11px;display:block;">Session</span><strong>${sessionName}</strong></div>
+                <div><span style="color:#64748b;font-size:11px;display:block;">Location</span><strong>${verifiedLoc}</strong></div>
+              </div>
+              ${remark ? `<div style="margin-top:10px;padding-top:8px;border-top:1px dashed rgba(16,185,129,0.2);font-size:12px;color:#475569;"><strong>Remark:</strong> ${remark}</div>` : ''}
+            </div>
+          `;
+        }
+
         loadStudentHistory(usn);
 
       } catch (e) {
@@ -318,53 +343,69 @@ import { $, val } from '../core/helpers.js';
     /* ===============================
        📜 LOAD STUDENT HISTORY
     =============================== */
+    let _studentHistoryUnsub = null;
+
     async function loadStudentHistory(usn) {
+      if (!usn) return;
       try {
         const q = query(
           collection(db, "attendance"),
           where("usn", "==", usn)
         );
 
-        const snapshot = await getDocs(q);
-        const tbody = $("student-history");
-        tbody.innerHTML = "";
-
-        if (snapshot.empty) {
-          tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">No attendance records yet</td></tr>';
-          return;
+        if (_studentHistoryUnsub) {
+          try { _studentHistoryUnsub(); } catch (_) {}
         }
 
-        // Sort manually by timestamp
-        const records = [];
-        snapshot.forEach(doc => {
-          records.push(doc.data());
-        });
-        records.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        _studentHistoryUnsub = onSnapshot(q, (snapshot) => {
+          const tbody = $("student-history");
+          if (!tbody) return;
+          tbody.innerHTML = "";
 
-        records.forEach(data => {
-          const row = tbody.insertRow();
+          if (snapshot.empty) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:16px;color:#64748b;">No attendance records yet</td></tr>';
+            return;
+          }
 
-          const c1 = row.insertCell();
-          c1.textContent = data.date || '';
+          // Sort newest first
+          const records = [];
+          snapshot.forEach(docSnap => {
+            records.push(docSnap.data());
+          });
+          records.sort((a, b) => {
+            const timeB = b.timestamp || (b.date + ' ' + (b.time || ''));
+            const timeA = a.timestamp || (a.date + ' ' + (a.time || ''));
+            return timeB.localeCompare(timeA);
+          });
 
-          const c2 = row.insertCell();
-          c2.textContent = data.time || '';
+          records.forEach(data => {
+            const row = tbody.insertRow();
 
-          const c3 = row.insertCell();
-          c3.innerHTML = data.session || '<span style="color:#f59e0b;">Not Set</span>';
+            const c1 = row.insertCell();
+            c1.textContent = data.date || '';
 
-          const c4 = row.insertCell();
-          c4.innerHTML = data.location || '<span style="color:#f59e0b;">Not Set</span>';
+            const c2 = row.insertCell();
+            c2.textContent = data.time || '';
 
-          const c5 = row.insertCell();
-          c5.textContent = data.remark || '-';
+            const c3 = row.insertCell();
+            c3.innerHTML = data.session || '<span style="color:#f59e0b;">Not Set</span>';
+
+            const c4 = row.insertCell();
+            c4.innerHTML = data.location || '<span style="color:#f59e0b;">Not Set</span>';
+
+            const c5 = row.insertCell();
+            c5.textContent = data.remark || '-';
+          });
+        }, (err) => {
+          console.error("Student history listener error:", err);
+          const tbody = $("student-history");
+          if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#f87171;">Error loading history</td></tr>';
         });
       } catch (e) {
-        console.error("Error loading history:", e);
-        const tbody = $("student-history");
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#f87171;">Error loading history</td></tr>';
+        console.error("Error setting up student history:", e);
       }
     }
+    window.loadStudentHistory = loadStudentHistory;
 
 
     /* ===============================
@@ -491,11 +532,16 @@ import { $, val } from '../core/helpers.js';
       const actions = $("navbar-actions");
       if (actions) actions.innerHTML = "";
 
-      // Clear interval if any
+      // Clear interval & real-time listeners if any
       if (adminRefreshInterval) {
         clearInterval(adminRefreshInterval);
         adminRefreshInterval = null;
       }
+      if (_adminAttListenerUnsub) {
+        try { _adminAttListenerUnsub(); } catch (_) {}
+        _adminAttListenerUnsub = null;
+      }
+      _cachedAttendanceSnapshot = null;
 
       msg("admin-login-msg", "Logged out successfully", "info");
 
@@ -1210,30 +1256,10 @@ import { $, val } from '../core/helpers.js';
         _studentMapCache = {};
         studentsSnapshot.forEach(d => { _studentMapCache[d.id] = d.data(); });
 
-        // Load all attendance
-        console.log("Loading attendance...");
-        const attSnapshot = await getDocs(collection(db, "attendance"));
-        console.log("Attendance records loaded:", attSnapshot.size);
-        $("total-att").textContent = attSnapshot.size;
-        if (document.getElementById("cof-total-att")) {
-          document.getElementById("cof-total-att").textContent = attSnapshot.size;
-        }
-
-        // Count today's attendance
-        const today = new Date().toISOString().split('T')[0];
-        let todayCount = 0;
-        attSnapshot.forEach(doc => {
-          if (doc.data().date === today) todayCount++;
-        });
-        console.log("Today's count:", todayCount);
-        $("today-count").textContent = todayCount;
-        if (document.getElementById("cof-today-count")) {
-          document.getElementById("cof-today-count").textContent = todayCount;
-        }
-
-        // Load attendance table
-        console.log("Loading attendance table...");
-        loadAttendanceTable(attSnapshot);
+        // Load all attendance in real-time
+        console.log("Loading attendance and starting real-time sync...");
+        startAdminAttendanceListener();
+        applyCurrentAttendanceFilter();
 
         // Load current session
         console.log("Loading session info...");
@@ -1386,25 +1412,34 @@ service cloud.firestore {
 
 
     /* ===============================
-       📋 LOAD ATTENDANCE TABLE
+       📋 LOAD ATTENDANCE TABLE & REAL-TIME LISTENER
     =============================== */
-    // Global student map for sem/year lookups in attendance table
     let _studentMapCache = {};
     async function getStudentMap() {
       if (Object.keys(_studentMapCache).length > 0) return _studentMapCache;
-      const snap = await getDocs(collection(db, "students"));
-      snap.forEach(d => { _studentMapCache[d.id] = d.data(); });
+      try {
+        const snap = await getDocs(collection(db, "students"));
+        snap.forEach(d => { _studentMapCache[d.id] = d.data(); });
+      } catch (err) {
+        console.warn("Could not prefetch student map:", err.message);
+      }
       return _studentMapCache;
     }
 
+    let _adminAttListenerUnsub = null;
+    let _cachedAttendanceSnapshot = null;
+
     async function loadAttendanceTable(snapshot) {
-      const tbody = $("att-table").querySelector("tbody");
+      const table = $("att-table");
+      if (!table) return;
+      const tbody = table.querySelector("tbody");
+      if (!tbody) return;
       const countEl = document.getElementById("records-count");
       tbody.innerHTML = "";
 
-      if (snapshot.empty) {
-        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:20px;color:var(--text-secondary);">No records found</td></tr>';
-        if (countEl) countEl.textContent = '';
+      if (!snapshot || snapshot.empty) {
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:24px;color:var(--text-secondary);">No records found</td></tr>';
+        if (countEl) countEl.innerHTML = '<span style="color:#94a3b8;font-size:12px;">0 records</span>';
         return;
       }
 
@@ -1412,29 +1447,126 @@ service cloud.firestore {
 
       // Sort newest first
       const rows = [];
-      snapshot.forEach(doc => rows.push(doc.data()));
-      rows.sort((a, b) => (b.date + (b.time || '')).localeCompare(a.date + (a.time || '')));
+      snapshot.forEach(docSnap => rows.push(docSnap.data()));
+      rows.sort((a, b) => {
+        const timeB = b.timestamp || (b.date + ' ' + (b.time || ''));
+        const timeA = a.timestamp || (a.date + ' ' + (a.time || ''));
+        return timeB.localeCompare(timeA);
+      });
 
-      if (countEl) countEl.innerHTML = `<span style="color:var(--accent-green);">✅ ${rows.length} record${rows.length !== 1 ? 's' : ''} found</span>`;
+      const todayStr = new Date().toISOString().split('T')[0];
+
+      if (countEl) {
+        countEl.innerHTML = `<span style="color:#059669;font-weight:700;">✅ ${rows.length} record${rows.length !== 1 ? 's' : ''} found</span>`;
+      }
 
       rows.forEach((data, i) => {
         const sem = data.sem || studentMap[data.usn]?.sem || '—';
         const year = data.year || studentMap[data.usn]?.year || '—';
+        const isToday = data.date === todayStr;
         const row = tbody.insertRow();
+        if (isToday) {
+          row.style.background = "rgba(16, 185, 129, 0.04)";
+        }
         row.innerHTML = `
           <td style="color:var(--text-secondary);font-size:11px;">${i + 1}</td>
-          <td style="font-weight:600;color:var(--text-primary);">${data.name || '—'}</td>
-          <td style="color:#3d5af1;font-size:12px;">${data.usn || '—'}</td>
-          <td style="text-align:center;">${data.section || '—'}</td>
+          <td style="font-weight:600;color:var(--text-primary);white-space:nowrap;">${data.name || '—'}</td>
+          <td style="color:#3d5af1;font-size:12px;font-weight:600;">${data.usn || '—'}</td>
+          <td style="text-align:center;font-weight:700;color:#f59e0b;">${data.section || '—'}</td>
           <td style="text-align:center;font-weight:700;color:#34d399;">${sem}</td>
           <td style="text-align:center;font-weight:700;color:#60a5fa;">${year}</td>
-          <td>${data.date || '—'}</td>
-          <td style="font-size:12px;">${data.time || '—'}</td>
-          <td style="font-size:12px;max-width:160px;overflow:hidden;text-overflow:ellipsis;" title="${data.session || ''}">${data.session || '<span style="color:#f59e0b;">Not Set</span>'}</td>
+          <td style="white-space:nowrap;">${data.date || '—'}${isToday ? ' <span style="background:rgba(16,185,129,0.15);color:#059669;padding:1px 5px;border-radius:4px;font-size:9.5px;font-weight:700;">TODAY</span>' : ''}</td>
+          <td style="font-size:12px;color:#64748b;white-space:nowrap;">${data.time || '—'}</td>
+          <td style="font-size:12px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${data.session || ''}">${data.session || '<span style="color:#f59e0b;">Not Set</span>'}</td>
           <td style="font-size:12px;color:var(--text-secondary);">${data.remark && data.remark !== '-' ? data.remark : '—'}</td>
         `;
       });
     }
+
+    function applyCurrentAttendanceFilter() {
+      const table = $("att-table");
+      if (!table) return;
+      const tbody = table.querySelector("tbody");
+
+      if (!_cachedAttendanceSnapshot) {
+        if (tbody && tbody.children.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:24px;color:#6366f1;">⏳ Loading attendance records...</td></tr>';
+        }
+        getDocs(collection(db, "attendance")).then(snap => {
+          _cachedAttendanceSnapshot = snap;
+          applyCurrentAttendanceFilter();
+        }).catch(err => {
+          console.error("Error fetching attendance records:", err);
+          if (tbody) tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:20px;color:#ef4444;">Error loading records: ${err.message}</td></tr>`;
+        });
+        return;
+      }
+
+      const filterUsn = (val("filter-usn") || '').toUpperCase().trim();
+      const filterSection = (val("filter-section") || '').toUpperCase().trim();
+      const filterName = (val("filter-name") || '').toLowerCase().trim();
+      const filterDate = (val("filter-date") || '').trim();
+
+      const rows = [];
+      _cachedAttendanceSnapshot.forEach(docSnap => {
+        const d = docSnap.data();
+        if (filterUsn && !(d.usn || '').toUpperCase().includes(filterUsn)) return;
+        if (filterSection && (d.section || '').toUpperCase() !== filterSection) return;
+        if (filterName && !(d.name || '').toLowerCase().includes(filterName)) return;
+        if (filterDate && d.date !== filterDate) return;
+        rows.push(docSnap);
+      });
+
+      const fakeSnap = {
+        empty: rows.length === 0,
+        size: rows.length,
+        forEach: (cb) => rows.forEach(cb)
+      };
+
+      loadAttendanceTable(fakeSnap);
+    }
+
+    function startAdminAttendanceListener() {
+      if (_adminAttListenerUnsub) return;
+
+      console.log("Setting up real-time attendance snapshot listener...");
+      try {
+        _adminAttListenerUnsub = onSnapshot(collection(db, "attendance"), (snapshot) => {
+          _cachedAttendanceSnapshot = snapshot;
+
+          // Rapidly update Total Count
+          if ($("total-att")) $("total-att").textContent = snapshot.size;
+          if (document.getElementById("cof-total-att")) {
+            document.getElementById("cof-total-att").textContent = snapshot.size;
+          }
+
+          // Rapidly update Today's Count
+          const today = new Date().toISOString().split('T')[0];
+          let todayCount = 0;
+          snapshot.forEach(d => {
+            if (d.data().date === today) todayCount++;
+          });
+          if ($("today-count")) $("today-count").textContent = todayCount;
+          if (document.getElementById("cof-today-count")) {
+            document.getElementById("cof-today-count").textContent = todayCount;
+          }
+
+          // Rapidly update records table if records section is visible
+          const recordsSec = document.getElementById("sec-records");
+          if (recordsSec && !recordsSec.classList.contains("hidden") && recordsSec.style.display !== "none") {
+            applyCurrentAttendanceFilter();
+          }
+        }, (err) => {
+          console.warn("Real-time attendance listener warning:", err.message);
+        });
+      } catch (err) {
+        console.warn("Could not bind real-time attendance snapshot listener:", err);
+      }
+    }
+
+    window.startAdminAttendanceListener = startAdminAttendanceListener;
+    window.applyCurrentAttendanceFilter = applyCurrentAttendanceFilter;
+    window.loadAttendanceTable = loadAttendanceTable;
 
 
     /* ===============================
@@ -1495,43 +1627,25 @@ service cloud.firestore {
     /* ===============================
        🔍 FILTER RECORDS
     =============================== */
-    $("btn-filter")?.addEventListener("click", async () => {
-      const filterUsn = val("filter-usn").toUpperCase().trim();
-      const filterSection = val("filter-section").toUpperCase().trim();
-      const filterName = val("filter-name").toLowerCase().trim();
-      const filterDate = val("filter-date").trim();
-
-      try {
-        const snapshot = await getDocs(collection(db, "attendance"));
-        // Filter client-side for flexibility
-        const filtered = { empty: true, forEach: (cb) => { } };
-        const rows = [];
-        snapshot.forEach(doc => {
-          const d = doc.data();
-          if (filterUsn && !(d.usn || '').toUpperCase().includes(filterUsn)) return;
-          if (filterSection && (d.section || '').toUpperCase() !== filterSection) return;
-          if (filterName && !(d.name || '').toLowerCase().includes(filterName)) return;
-          if (filterDate && d.date !== filterDate) return;
-          rows.push(doc);
-        });
-        // Build a fake snapshot-like object
-        const fakeSnap = {
-          empty: rows.length === 0,
-          forEach: (cb) => rows.forEach(cb)
-        };
-        loadAttendanceTable(fakeSnap);
-      } catch (e) {
-        console.error("Filter error:", e);
-      }
+    $("btn-filter")?.addEventListener("click", () => {
+      applyCurrentAttendanceFilter();
     });
 
-    $("btn-clear-filter")?.addEventListener("click", async () => {
-      $("filter-usn").value = "";
-      $("filter-section").value = "";
-      $("filter-name").value = "";
-      $("filter-date").value = "";
-      const snapshot = await getDocs(collection(db, "attendance"));
-      loadAttendanceTable(snapshot);
+    $("btn-clear-filter")?.addEventListener("click", () => {
+      if ($("filter-usn")) $("filter-usn").value = "";
+      if ($("filter-section")) $("filter-section").value = "";
+      if ($("filter-name")) $("filter-name").value = "";
+      if ($("filter-date")) $("filter-date").value = "";
+      applyCurrentAttendanceFilter();
+    });
+
+    // Rapid live-typing filtering
+    ["filter-usn", "filter-section", "filter-name", "filter-date"].forEach(id => {
+      const el = $(id);
+      if (el) {
+        el.addEventListener("input", applyCurrentAttendanceFilter);
+        el.addEventListener("change", applyCurrentAttendanceFilter);
+      }
     });
 
 
@@ -2815,6 +2929,17 @@ service cloud.firestore {
       } else if (sectionId === 'sec-launches') {
         if (typeof window.loadAdminLaunches === 'function') {
           window.loadAdminLaunches();
+        }
+      } else if (sectionId === 'sec-records') {
+        if (typeof window.startAdminAttendanceListener === 'function') {
+          window.startAdminAttendanceListener();
+        }
+        if (typeof window.applyCurrentAttendanceFilter === 'function') {
+          window.applyCurrentAttendanceFilter();
+        }
+      } else if (sectionId === 'sec-stats') {
+        if (typeof window.startAdminAttendanceListener === 'function') {
+          window.startAdminAttendanceListener();
         }
       }
 
