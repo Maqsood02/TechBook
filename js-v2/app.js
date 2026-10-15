@@ -44,18 +44,31 @@ function initNavigation() {
   const mobileToggle = document.getElementById('mobile-toggle');
   const navbarMenu = document.getElementById('navbar-menu');
   if (mobileToggle && navbarMenu) {
-    mobileToggle.addEventListener('click', () => {
-      mobileToggle.classList.toggle('active');
-      navbarMenu.classList.toggle('open');
+    mobileToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = navbarMenu.classList.toggle('open');
+      mobileToggle.classList.toggle('active', isOpen);
+      document.body.style.overflow = isOpen ? 'hidden' : '';
+    });
+
+    // Close when tapping outside the menu on mobile
+    document.addEventListener('click', (e) => {
+      if (navbarMenu.classList.contains('open') && !navbarMenu.contains(e.target) && !mobileToggle.contains(e.target)) {
+        navbarMenu.classList.remove('open');
+        mobileToggle.classList.remove('active');
+        document.body.style.overflow = '';
+      }
     });
   }
 
-  // Close mobile menu when links or buttons are clicked
+  // Close mobile menu and smoothly scroll to top when links or buttons are clicked
   const navItems = document.querySelectorAll('.navbar-link, .navbar-btn');
   navItems.forEach(item => {
     item.addEventListener('click', () => {
       if (mobileToggle) mobileToggle.classList.remove('active');
       if (navbarMenu) navbarMenu.classList.remove('open');
+      document.body.style.overflow = '';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   });
 }

@@ -719,18 +719,18 @@ import { $, base64ToBlob, API_BASE_URL } from '../core/helpers.js';
       uploadBtn.addEventListener('click', window.adminUploadPromo);
     }
     
-    // Load promos on landing page automatically
-    if (document.getElementById('landing-promos-container')) {
-      window.loadLandingPromos();
+    // Load promos on landing page automatically (single run)
+    let _promosLoaded = false;
+    function triggerLandingPromos() {
+      if (_promosLoaded) return;
+      if (document.getElementById('landing-promos-container')) {
+        _promosLoaded = true;
+        window.loadLandingPromos();
+      }
     }
-    window.addEventListener('DOMContentLoaded', () => {
-      if (document.getElementById('landing-promos-container')) {
-        window.loadLandingPromos();
-      }
-    });
-    window.addEventListener('load', () => {
-      if (document.getElementById('landing-promos-container')) {
-        window.loadLandingPromos();
-      }
-    });
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', triggerLandingPromos);
+    } else {
+      triggerLandingPromos();
+    }
 

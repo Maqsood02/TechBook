@@ -516,59 +516,67 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
     $("btn-reset-pass")?.addEventListener("click", async () => {
       const usn = val("forgot-usn").toUpperCase();
       const name = val("forgot-name");
+      const newPass = val("forgot-new-pass");
+      const confirmPass = val("forgot-confirm-pass");
 
       if (!usn || !name) {
-        return msg("forgot-msg", "Please enter USN and Name", "error");
+        return msg("forgot-msg", "Please enter USN and Full Name", "error");
+      }
+      if (!newPass || !confirmPass) {
+        return msg("forgot-msg", "Please enter new password and confirm password", "error");
+      }
+      if (newPass.length < 6) {
+        return msg("forgot-msg", "New password must be at least 6 characters long", "error");
+      }
+      if (newPass !== confirmPass) {
+        return msg("forgot-msg", "Passwords do not match. Please verify", "error");
       }
 
+      // Rate limit reset submissions: max 1 request every 45 seconds per USN
+      const lastResetKey = 'tb_reset_ts_' + usn;
+      const lastResetTime = localStorage.getItem(lastResetKey);
+      if (lastResetTime && Date.now() - parseInt(lastResetTime) < 45000) {
+        return msg("forgot-msg", "Please wait a moment before submitting another reset request.", "error");
+      }
+
+      const btn = $("btn-reset-pass");
+      const origText = btn ? btn.innerText : "🔑 Reset Password";
+      if (btn) { btn.disabled = true; btn.innerText = "Submitting..."; }
+
       try {
-        // Verify student details from Firestore (if allowed)
-        let studentData = null;
-        try {
-          const studentDoc = await getDoc(doc(db, "students", usn));
-          if (studentDoc.exists()) {
-            studentData = studentDoc.data();
-          }
-        } catch (readErr) {
-          console.warn("Client read of student doc restricted during password reset:", readErr);
-        }
+        // Hash the new password using SHA-256
+        const newPasswordHash = CryptoJS.SHA256(newPass).toString();
 
-        if (studentData) {
-          // Verify name — strip spaces, dots, case-insensitive
-          const normalize = str => (str || '').toLowerCase().replace(/[\s.\-_,]/g, '');
-          const nameMatch = normalize(studentData.name) === normalize(name);
-
-          if (!nameMatch) {
-            console.log("Name in DB:", studentData.name, "| Entered:", name);
-            return msg("forgot-msg", "❌ Verification failed. Name doesn't match", "error");
-          }
-        }
-
-        // Create reset request
+        // Create reset request with status pending
         await setDoc(doc(db, "password_reset_requests", usn), {
           usn,
           name,
-          section: studentData.section || 'N/A',
+          newPasswordHash,
           requestedAt: new Date().toISOString(),
           status: 'pending'
         });
 
+        localStorage.setItem(lastResetKey, Date.now().toString());
         console.log("✓ Password reset request submitted for:", usn);
 
-        msg("forgot-msg", "✓ Request submitted! Admin will verify and send a reset link to your email.", "success");
+        msg("forgot-msg", "✓ Password reset request submitted! Admin will approve it shortly.", "success");
 
         setTimeout(() => {
-          $("back-to-login").click();
+          $("back-to-login")?.click();
+          const backLinks = document.querySelectorAll(".unified-back-to-login");
+          backLinks.forEach(l => l.click());
           // Clear form
           $("forgot-usn").value = "";
           $("forgot-name").value = "";
           if ($("forgot-new-pass")) $("forgot-new-pass").value = "";
           if ($("forgot-confirm-pass")) $("forgot-confirm-pass").value = "";
-        }, 3000);
+          if (btn) { btn.disabled = false; btn.innerText = origText; }
+        }, 2200);
 
       } catch (e) {
         console.error("Password reset request error:", e);
-        msg("forgot-msg", "❌ Error: " + e.message, "error");
+        msg("forgot-msg", "❌ Error: " + (e.message || "Failed to submit request"), "error");
+        if (btn) { btn.disabled = false; btn.innerText = origText; }
       }
     });
 
@@ -1080,64 +1088,36 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
     window.loadPasswordResetRequests = loadPasswordResetRequests;
 
     async function approvePasswordReset(usn) {
-      if (!confirm(`Approve password reset for ${usn}?\n\nA password reset email will be sent automatically.`)) return;
+      if (!confirm(`Approve password reset for ${usn}?`)) return;
 
       try {
-        // Get the student document to find their email
-        const studentDoc = await getDoc(doc(db, "students", usn));
+        // 1. Get the reset request to retrieve newPasswordHash
+        const reqDoc = await getDoc(doc(db, "password_reset_requests", usn));
+        const reqData = reqDoc.exists() ? reqDoc.data() : {};
+        const newPasswordHash = reqData.newPasswordHash;
 
-        if (!studentDoc.exists()) {
-          return msg("reset-requests-msg", `Error: Student record not found for ${usn}`, "error");
+        // 2. Update student document with approved password hash
+        const studentRef = doc(db, "students", usn);
+        const updateData = {
+          passwordResetAt: new Date().toISOString()
+        };
+        if (newPasswordHash) {
+          updateData.passwordHash = newPasswordHash;
         }
+        await setDoc(studentRef, updateData, { merge: true });
 
-        const studentEmail = (studentDoc.data().email || `${usn.toLowerCase()}@techbook.ac.in`).toLowerCase();
-        console.log("Attempting to send password reset email to:", studentEmail);
-
-        // Send password reset email with proper configuration
-        try {
-          // Use ActionCodeSettings to handle the reset in our app
-          // handleCodeInApp=true means the code stays in the app URL and we handle it
-          const actionCodeSettings = {
-            url: window.location.origin,
-            handleCodeInApp: true
-          };
-
-          console.log("ActionCodeSettings configured:", actionCodeSettings);
-          await sendPasswordResetEmail(auth, studentEmail, actionCodeSettings);
-          console.log("✓ Password reset email sent successfully to:", studentEmail);
-        } catch (emailError) {
-          console.error("Email send failed with error:", emailError);
-          console.error("Error code:", emailError.code);
-          console.error("Error message:", emailError.message);
-
-          if (emailError.code === 'auth/user-not-found') {
-            throw new Error(`Student account not found for ${studentEmail}. The student may not have completed registration yet.`);
-          } else if (emailError.code === 'auth/invalid-email') {
-            throw new Error(`Invalid email format: ${studentEmail}`);
-          } else if (emailError.code === 'auth/too-many-requests') {
-            throw new Error('Too many reset attempts. Please try again later.');
-          } else if (emailError.code === 'auth/unauthorized-continue-uri') {
-            throw new Error('Domain authorization failed. Add your domain to Firebase > Authentication > Authorized domains. Current domain: ' + window.location.origin);
-          } else {
-            throw new Error(`Email error: ${emailError.message} (Code: ${emailError.code})`);
-          }
-        }
-
-        // Mark request as approved and sent
+        // 3. Mark request as approved
         const now = new Date();
         await setDoc(doc(db, "password_reset_requests", usn), {
           status: 'approved',
-          approvedAt: now.toISOString(),
-          emailSent: true,
-          emailSentAt: now.toISOString()
+          approvedAt: now.toISOString()
         }, { merge: true });
 
-        console.log("✓ Database updated for:", usn);
-        msg("reset-requests-msg", `✓ Password reset approved! Email sent to ${studentEmail}. Student will receive a password reset link.`, "success");
+        console.log("✓ Password reset approved and synced for:", usn);
+        msg("reset-requests-msg", `✓ Password reset approved for ${usn}! The student can now log in with their new password.`, "success");
         loadPasswordResetRequests();
       } catch (e) {
         console.error("❌ Approve error:", e.message);
-        console.error("Full error:", e);
         msg("reset-requests-msg", "❌ Error: " + e.message, "error");
       }
     }
@@ -1381,12 +1361,31 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
             console.log('✓ Firebase Auth login successful');
           } catch (authError) {
             console.log('Firebase Auth failed:', authError.code);
-            if (authError.code === 'auth/wrong-password' || authError.code === 'auth/invalid-credential') {
-              throw new Error('Incorrect password');
-            } else if (authError.code === 'auth/user-not-found') {
-              throw new Error('This USN is not registered.');
-            } else {
-              throw authError;
+
+            // Check if password matches approved reset password hash in Firestore
+            let matchedFallback = false;
+            try {
+              if (authError.code === 'auth/wrong-password' || authError.code === 'auth/invalid-credential') {
+                const passHash = CryptoJS.SHA256(pass).toString();
+                const tempCred = await signInAnonymously(auth);
+                const sDoc = await getDoc(doc(db, 'students', usn));
+                if (sDoc.exists() && (sDoc.data().passwordHash === passHash || sDoc.data().password === pass)) {
+                  matchedFallback = true;
+                  console.log('✓ Student verified via approved reset password hash');
+                }
+              }
+            } catch (fallbackCheckErr) {
+              console.warn('Fallback verification error:', fallbackCheckErr.message);
+            }
+
+            if (!matchedFallback) {
+              if (authError.code === 'auth/wrong-password' || authError.code === 'auth/invalid-credential') {
+                throw new Error('Incorrect password');
+              } else if (authError.code === 'auth/user-not-found') {
+                throw new Error('This USN is not registered.');
+              } else {
+                throw authError;
+              }
             }
           }
 

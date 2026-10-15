@@ -809,7 +809,19 @@ async function callAI(apiKey, prompt) {
 window.callAI = callAI;
 
 
+let _lastQuizGenTime = 0;
+
 document.getElementById('btn-generate-quiz')?.addEventListener('click', async () => {
+  const now = Date.now();
+  const cooldownMs = 6000;
+  if (now - _lastQuizGenTime < cooldownMs) {
+    const waitSec = Math.ceil((cooldownMs - (now - _lastQuizGenTime)) / 1000);
+    const msgEl = document.getElementById('qz-create-msg');
+    if (msgEl) msgEl.innerHTML = `<span style="color:#fbbf24;">⏳ Rate limit: Please wait ${waitSec}s before generating another quiz.</span>`;
+    return;
+  }
+  _lastQuizGenTime = now;
+
   const subject = document.getElementById('qz-subject')?.value.trim();
   const topic = document.getElementById('qz-topic')?.value.trim();
   const count = parseInt(document.getElementById('qz-count')?.value || '10');

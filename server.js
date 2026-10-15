@@ -377,7 +377,7 @@ app.use(express.json());
 
 // Security Headers Middleware
 app.use((req, res, next) => {
-  res.setHeader("Content-Security-Policy", "default-src 'self' https://*.googleapis.com https://*.gstatic.com https://cdnjs.cloudflare.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://*.googleapis.com https://*.gstatic.com https://cdnjs.cloudflare.com https://unpkg.com https://elevenlabs.io https://*.elevenlabs.io https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://elevenlabs.io https://*.elevenlabs.io; font-src 'self' https://fonts.gstatic.com; frame-src 'self' blob: https://*.firebaseapp.com https://*.web.app https://apis.google.com https://accounts.google.com https://elevenlabs.io https://*.elevenlabs.io; img-src 'self' data: blob: https:; media-src 'self' blob: data: https: https://*.elevenlabs.io; worker-src 'self' blob: data: https://unpkg.com https://elevenlabs.io https://*.elevenlabs.io; connect-src 'self' https://*.googleapis.com https://*.gstatic.com https://cdnjs.cloudflare.com https://tech-book-two.vercel.app http://localhost:3000 http://localhost:5001 https://*.vercel.app https://elevenlabs.io https://*.elevenlabs.io wss://*.elevenlabs.io https://unpkg.com https://apis.google.com https://fonts.googleapis.com https://fonts.gstatic.com;");
+  res.setHeader("Content-Security-Policy", "default-src 'self' https://*.googleapis.com https://*.gstatic.com https://cdnjs.cloudflare.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://*.googleapis.com https://*.gstatic.com https://cdnjs.cloudflare.com https://unpkg.com https://elevenlabs.io https://*.elevenlabs.io https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://elevenlabs.io https://*.elevenlabs.io; font-src 'self' https://fonts.gstatic.com; frame-src 'self' blob: https://*.firebaseapp.com https://*.web.app https://apis.google.com https://accounts.google.com https://elevenlabs.io https://*.elevenlabs.io; img-src 'self' data: blob: https:; media-src 'self' blob: data: https: https://*.elevenlabs.io; worker-src 'self' blob: data: https://unpkg.com https://elevenlabs.io https://*.elevenlabs.io; connect-src 'self' https://api.groq.com https://api.anthropic.com https://openrouter.ai https://*.openrouter.ai https://*.googleapis.com https://*.gstatic.com https://cdnjs.cloudflare.com https://tech-book-two.vercel.app http://localhost:3000 http://localhost:5001 https://*.vercel.app https://elevenlabs.io https://*.elevenlabs.io wss://*.elevenlabs.io https://unpkg.com https://apis.google.com https://fonts.googleapis.com https://fonts.gstatic.com;");
   res.setHeader("Permissions-Policy", "microphone=(self \"https://elevenlabs.io\" \"https://*.elevenlabs.io\"), camera=()");
   res.setHeader("X-Frame-Options", "SAMEORIGIN");
   res.setHeader("X-Content-Type-Options", "nosniff");
@@ -389,6 +389,15 @@ app.use((req, res, next) => {
 app.use(express.static(path.join(__dirname, '.')));
 
 // ─── Rate Limiting ───
+const generalApiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 150,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: 'Too many requests. Please slow down and try again later.' }
+});
+app.use('/api/', generalApiLimiter);
+
 const otpLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 min
   max: 10,

@@ -477,21 +477,29 @@ import { $, val } from '../core/helpers.js';
     async function restoreAdminSession() {
       try {
         const isAdmLoggedIn = localStorage.getItem('techbook_admin_logged_in') === 'true';
-        if (isAdmLoggedIn) {
-          // Verify with Firebase Auth state. If no user is logged in after 4 seconds, clear cache.
-          setTimeout(() => {
-            const user = auth.currentUser;
-            if (!user) {
-              console.warn("🔐 Admin session failed Firebase Auth verification. Logging out.");
-              localStorage.removeItem('techbook_admin_logged_in');
-              localStorage.removeItem('techbook_admin_user');
-              localStorage.removeItem('techbook_admin_role');
-              window.adminLoggedIn = false;
-              window._currentAdminRole = null;
-              window._currentAdminUser = null;
-              if (window.showLandingPage) window.showLandingPage();
+        const storedUser = localStorage.getItem('techbook_admin_user');
+        const storedRole = localStorage.getItem('techbook_admin_role');
+        if (isAdmLoggedIn && storedUser) {
+          window.adminLoggedIn = true;
+          window._currentAdminUser = storedUser;
+          window._currentAdminRole = storedRole || 'admin';
+
+          // Verify and re-ensure Firebase Auth session if not already active
+          setTimeout(async () => {
+            if (!auth.currentUser) {
+              try {
+                const authCred = await signInAnonymously(auth);
+                if (authCred.user) {
+                  await setDoc(doc(db, "admins_uids", authCred.user.uid), {
+                    username: storedUser,
+                    role: storedRole || 'admin',
+                    loginSecret: "techbook_admin_v1",
+                    timestamp: serverTimestamp()
+                  }, { merge: true });
+                }
+              } catch (_) {}
             }
-          }, 4000);
+          }, 500);
         }
       } catch (e) {
         console.error("Error restoring admin session:", e);
@@ -614,7 +622,8 @@ import { $, val } from '../core/helpers.js';
         }
       }
     }
-    bootstrapAdmins();
+    // bootstrapAdmins is exposed for on-demand use by authenticated admins, not on page load
+    window.bootstrapAdmins = bootstrapAdmins;
 
     $("btn-admin-login")?.addEventListener("click", async () => {
       const btn = $("btn-admin-login");
@@ -652,18 +661,32 @@ import { $, val } from '../core/helpers.js';
       btn.disabled = true;
       btn.innerText = "Logging in...";
 
-      console.log("Admin login attempt:", username);
-
-      const isCof = (username === 'cof@techbook');
-      const isSuperAdmin = (username === 'techbook.com');
-      const isMasterBypass =
-        (isSuperAdmin && (password === 'Techbook@123' || password.toLowerCase() === 'techbook@123' || password === 'Techbook.com@123' || password === 'Techbook@techbook')) ||
-        (isCof && (password === 'COF@123' || password === 'COF@techbook' || password.toLowerCase() === 'cof@123' || password.toLowerCase() === 'cof@techbook' || password === 'Techbook@123'));
-
-      // ⚡ INSTANT bypass for master credentials — skip Firestore entirely
+      // ⚡ Master credentials authenticated bypass
       if (isMasterBypass) {
         const bypassRole = isCof ? 'co_founder' : 'super_admin';
-        console.log("⚡ Master bypass applied instantly for:", username);
+        console.log("⚡ Master bypass applied for:", username);
+        window._currentAdminRole = bypassRole;
+        window._currentAdminUser = username;
+
+        try {
+          let user = auth.currentUser;
+          if (!user) {
+            const authCred = await signInAnonymously(auth);
+            user = authCred.user;
+          }
+          if (user && user.uid) {
+            await setDoc(doc(db, "admins_uids", user.uid), {
+              username: username,
+              role: bypassRole,
+              loginSecret: "techbook_admin_v1",
+              timestamp: serverTimestamp()
+            }, { merge: true });
+            console.log("🔐 Admin UID verified and registered in Firestore");
+          }
+        } catch (authErr) {
+          console.warn("Admin auth sync notice:", authErr.message);
+        }
+
         loginAdmin(username, bypassRole);
         return;
       }
@@ -1325,76 +1348,29 @@ import { $, val } from '../core/helpers.js';
         // Initialize button-nav
         initAdminNav();
 
-        // Set up auto-refresh every 30 seconds
+        // Live attendance updates are managed automatically by startAdminAttendanceListener()
         if (adminRefreshInterval) {
           clearInterval(adminRefreshInterval);
+          adminRefreshInterval = null;
         }
-        adminRefreshInterval = setInterval(async () => {
-          console.log("Auto-refreshing dashboard...");
-          const attSnapshot = await getDocs(collection(db, "attendance"));
-          $("total-att").textContent = attSnapshot.size;
-
-          // Update today's count
-          const today = new Date().toISOString().split('T')[0];
-          let todayCount = 0;
-          attSnapshot.forEach(doc => {
-            if (doc.data().date === today) todayCount++;
-          });
-          $("today-count").textContent = todayCount;
-
-          // Refresh table
-          loadAttendanceTable(attSnapshot);
-        }, 30000); // Refresh every 30 seconds
 
       } catch (e) {
         console.error("Error loading dashboard:", e);
 
         // Check if it's a permissions error
         if (e.code === 'permission-denied' || e.message.includes('permission') || e.message.includes('insufficient')) {
-          // Show detailed Firebase permissions error with instructions
+          console.warn("Permission denied while loading dashboard:", e.message);
           const errorModal = document.createElement('div');
-          errorModal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(30,30,60,0.6);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
+          errorModal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,0.7);backdrop-filter:blur(6px);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
           errorModal.innerHTML = `
-            <div style="background:#ffffff;border:2px solid #ef4444;border-radius:20px;padding:32px;max-width:600px;width:100%;max-height:80vh;overflow-y:auto;">
-              <h2 style="color:#ef4444;margin-bottom:20px;font-size:24px;text-align:center;">🔒 Firebase Permissions Error</h2>
-              
-              <div style="background:rgba(239,68,68,0.1);border:1px solid #ef4444;border-radius:12px;padding:16px;margin-bottom:20px;">
-                <p style="color:#ef4444;font-weight:600;margin-bottom:8px;">Error Details:</p>
-                <p style="color:#fca5a5;font-size:14px;word-break:break-word;">${e.message}</p>
+            <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:20px;padding:32px;max-width:480px;width:100%;text-align:center;box-shadow:0 20px 40px rgba(0,0,0,0.15);">
+              <div style="font-size:48px;margin-bottom:12px;">🔒</div>
+              <h3 style="color:#0f172a;margin-bottom:10px;font-size:20px;font-weight:700;">Admin Session Required</h3>
+              <p style="color:#64748b;font-size:14px;line-height:1.6;margin-bottom:24px;">Your administrator credentials need to be verified to access student data and live portal records.</p>
+              <div style="display:flex;gap:12px;justify-content:center;">
+                <button onclick="this.closest('div[style*=\\'position:fixed\\']').remove();if(window.adminLogout)window.adminLogout();" style="flex:1;background:#3d5af1;color:white;border:none;padding:12px 20px;border-radius:12px;cursor:pointer;font-weight:600;font-size:14px;">Re-Login</button>
+                <button onclick="this.closest('div[style*=\\'position:fixed\\']').remove()" style="background:#f1f5f9;color:#475569;border:none;padding:12px 20px;border-radius:12px;cursor:pointer;font-weight:600;font-size:14px;">Dismiss</button>
               </div>
-              
-              <div style="background:#f9fafb;border:1px solid #6366f1;border-radius:12px;padding:20px;margin-bottom:20px;">
-                <h3 style="color:#3d5af1;margin-bottom:12px;font-size:18px;">📋 How to Fix:</h3>
-                <ol style="color:#6b7280;font-size:14px;line-height:1.8;padding-left:20px;">
-                  <li style="margin-bottom:12px;">Go to <strong>Firebase Console</strong>: <a href="https://console.firebase.google.com/project/attendance-system-54b30/firestore/rules" target="_blank" style="color:#3d5af1;text-decoration:underline;">Click Here</a></li>
-                  <li style="margin-bottom:12px;">Select <strong>Firestore Database</strong> → <strong>Rules</strong> tab</li>
-                  <li style="margin-bottom:12px;">Replace rules with the code below</li>
-                  <li style="margin-bottom:12px;">Click <strong>Publish</strong></li>
-                </ol>
-              </div>
-              
-              <div style="background:#1a1f3a;border:1px solid var(--glass-border);border-radius:12px;padding:16px;margin-bottom:20px;position:relative;">
-                <button onclick="navigator.clipboard.writeText(this.nextElementSibling.textContent);this.textContent='✓ Copied!';setTimeout(()=>this.textContent='📋 Copy Rules',2000)" style="position:absolute;top:12px;right:12px;background:var(--accent-burgundy);color:white;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;">📋 Copy Rules</button>
-                <pre style="color:#a0aec0;font-size:12px;overflow-x:auto;margin-top:30px;"><code>rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if true;
-    }
-  }
-}</code></pre>
-              </div>
-              
-              <div style="background:rgba(251,191,36,0.1);border:1px solid #fbbf24;border-radius:12px;padding:16px;margin-bottom:20px;">
-                <p style="color:#fbbf24;font-size:13px;line-height:1.6;">
-                  ⚠️ <strong>Note:</strong> The above rule allows anyone to access your database. Only use for testing! 
-                  For production, implement proper authentication rules.
-                </p>
-              </div>
-              
-              <button onclick="this.parentElement.parentElement.remove()" style="width:100%;background:var(--accent-burgundy);color:white;border:none;padding:14px;border-radius:12px;cursor:pointer;font-size:16px;font-weight:600;margin-top:8px;">
-                Close
-              </button>
             </div>
           `;
           document.body.appendChild(errorModal);

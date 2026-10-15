@@ -2,83 +2,111 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions
+    // ── Helper Functions ──
     function signedIn() {
       return request.auth != null;
     }
 
+    function hasEmail() {
+      return signedIn() && request.auth.token != null && ('email' in request.auth.token) && request.auth.token.email != null;
+    }
+
+    function userEmail() {
+      return hasEmail() ? request.auth.token.email.lower() : '';
+    }
+
     function getUsername() {
-      return request.auth.token.email.split('@')[0] == 'cof.techbook' ? 'cof@techbook' : request.auth.token.email.split('@')[0];
+      return !hasEmail() ? '' :
+        (userEmail().split('@')[0] == 'cof.techbook' ? 'cof@techbook' : userEmail().split('@')[0]);
     }
 
     function isAdmin() {
-      return signedIn() && exists(/databases/$(database)/documents/admins/$(getUsername()));
+      return signedIn() && (
+        exists(/databases/$(database)/documents/admins_uids/$(request.auth.uid)) ||
+        (hasEmail() && exists(/databases/$(database)/documents/admins/$(getUsername()))) ||
+        (hasEmail() && exists(/databases/$(database)/documents/admins/$(userEmail()))) ||
+        (hasEmail() && (
+          userEmail() == 'techbook.com@techbook.ac.in' ||
+          userEmail() == 'cof.techbook@techbook.ac.in' ||
+          userEmail() == 'techbook.ac.in@gmail.com'
+        ))
+      );
     }
 
     function isOwner(studentId) {
-      return signedIn() && request.auth.token.email.lower() == studentId.lower() + '@techbook.ac.in';
+      return signedIn() && hasEmail() && (
+        userEmail() == studentId.lower() + '@techbook.ac.in' ||
+        userEmail() == studentId.lower()
+      );
     }
 
+    // ── Students Collection ──
     match /students/{studentId} {
       allow read, write: if isAdmin() || isOwner(studentId);
-      allow create: if signedIn() && !exists(/databases/$(database)/documents/admins/$(studentId.lower())) && request.auth.token.email.lower() == studentId.lower() + '@techbook.ac.in';
+      allow create: if signedIn() && !exists(/databases/$(database)/documents/admins/$(studentId.lower())) && isOwner(studentId);
     }
 
+    // ── Attendance Collection ──
     match /attendance/{attendanceId} {
-      allow read: if isAdmin() || (signedIn() && (
+      allow read: if isAdmin() || (signedIn() && hasEmail() && (
         resource == null ||
-        attendanceId.split('_')[0].lower() + '@techbook.ac.in' == request.auth.token.email.lower() ||
-        resource.data.usn == request.auth.token.email.split('@')[0].upper() ||
-        resource.data.usn == request.auth.token.email.split('@')[0] ||
-        resource.data.usn.lower() + '@techbook.ac.in' == request.auth.token.email.lower()
+        attendanceId.split('_')[0].lower() + '@techbook.ac.in' == userEmail() ||
+        resource.data.usn.lower() == userEmail().split('@')[0] ||
+        resource.data.usn.lower() + '@techbook.ac.in' == userEmail()
       ));
       allow create: if signedIn() && (
-        isAdmin() ||
-        request.resource.data.usn.lower() + '@techbook.ac.in' == request.auth.token.email.lower() ||
-        attendanceId.split('_')[0].lower() + '@techbook.ac.in' == request.auth.token.email.lower()
+        isAdmin() || (hasEmail() && (
+          request.resource.data.usn.lower() + '@techbook.ac.in' == userEmail() ||
+          attendanceId.split('_')[0].lower() + '@techbook.ac.in' == userEmail()
+        ))
       );
-      allow update, delete: if isAdmin() || (signedIn() && (
-        attendanceId.split('_')[0].lower() + '@techbook.ac.in' == request.auth.token.email.lower() ||
-        (resource != null && resource.data.usn.lower() + '@techbook.ac.in' == request.auth.token.email.lower())
+      allow update, delete: if isAdmin() || (signedIn() && hasEmail() && (
+        attendanceId.split('_')[0].lower() + '@techbook.ac.in' == userEmail() ||
+        (resource != null && resource.data.usn.lower() + '@techbook.ac.in' == userEmail())
       ));
     }
 
+    // ── Attendance Codes ──
     match /attendance_codes/{codeId} {
       allow read: if signedIn();
       allow write: if isAdmin();
     }
 
+    // ── Password Reset Requests ──
     match /password_reset_requests/{id} {
       allow create: if true;
-      allow read, write: if isAdmin();
+      allow read, update, delete: if isAdmin();
     }
 
+    // ── Settings ──
     match /settings/{settingId} {
       allow read: if signedIn();
       allow write: if isAdmin();
     }
 
+    // ── Quizzes & Results ──
     match /quizzes/{id} {
       allow read: if signedIn();
       allow write: if isAdmin();
     }
 
     match /quiz_results/{id} {
-      allow read: if isAdmin() || (signedIn() && (
+      allow read: if isAdmin() || (signedIn() && hasEmail() && (
         resource == null ||
-        id.split('_')[0].lower() + '@techbook.ac.in' == request.auth.token.email.lower() ||
-        resource.data.usn == request.auth.token.email.split('@')[0].upper() ||
-        resource.data.usn == request.auth.token.email.split('@')[0] ||
-        resource.data.usn.lower() + '@techbook.ac.in' == request.auth.token.email.lower()
+        id.split('_')[0].lower() + '@techbook.ac.in' == userEmail() ||
+        resource.data.usn.lower() == userEmail().split('@')[0] ||
+        resource.data.usn.lower() + '@techbook.ac.in' == userEmail()
       ));
       allow create: if signedIn() && (
-        isAdmin() ||
-        request.resource.data.usn.lower() + '@techbook.ac.in' == request.auth.token.email.lower() ||
-        id.split('_')[0].lower() + '@techbook.ac.in' == request.auth.token.email.lower()
+        isAdmin() || (hasEmail() && (
+          request.resource.data.usn.lower() + '@techbook.ac.in' == userEmail() ||
+          id.split('_')[0].lower() + '@techbook.ac.in' == userEmail()
+        ))
       );
       allow update, delete: if isAdmin();
     }
 
+    // ── Lecture Notes & Chunks ──
     match /techbook_notes/{id} {
       allow read: if signedIn();
       allow write: if isAdmin();
@@ -88,6 +116,7 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // ── Question Bank & Chunks ──
     match /qbank_papers/{id} {
       allow read: if signedIn();
       allow write: if isAdmin();
@@ -97,6 +126,7 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // ── PYQ Papers & Chunks ──
     match /pyq_papers/{id} {
       allow read: if signedIn();
       allow write: if isAdmin();
@@ -106,29 +136,33 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // ── Help Threads & Messages ──
     match /help_threads/{tid} {
-      allow read, write: if isAdmin() || (signedIn() && tid.split('_')[0].lower() + '@techbook.ac.in' == request.auth.token.email.lower());
+      allow read, write: if isAdmin() || (signedIn() && hasEmail() && tid.split('_')[0].lower() + '@techbook.ac.in' == userEmail());
     }
     match /help_messages/{tid}/msgs/{msgId} {
-      allow read, write: if isAdmin() || (signedIn() && tid.split('_')[0].lower() + '@techbook.ac.in' == request.auth.token.email.lower());
+      allow read, write: if isAdmin() || (signedIn() && hasEmail() && tid.split('_')[0].lower() + '@techbook.ac.in' == userEmail());
     }
 
+    // ── Admin Profiles & UIDs ──
     match /admins/{adminId} {
-      allow read, write: if isAdmin() || (signedIn() && request.auth.token.email.lower() == adminId.lower() + '@techbook.ac.in');
+      allow read, write: if isAdmin() || (signedIn() && hasEmail() && userEmail() == adminId.lower() + '@techbook.ac.in');
     }
 
     match /admins_uids/{uid} {
       allow read, write: if isAdmin() || (signedIn() && request.auth.uid == uid);
     }
 
+    // ── Promos (Public view, Admin manage) ──
     match /promos/{id} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
+    // ── User Sessions & Tracking ──
     match /user_sessions/{sessionId} {
       allow read: if isAdmin();
-      allow write: if isAdmin() || (signedIn() && sessionId.lower() == request.auth.token.email.split('@')[0].lower());
+      allow write: if isAdmin() || (signedIn() && (request.auth.uid == sessionId || (hasEmail() && sessionId.lower() == userEmail().split('@')[0])));
     }
 
     match /user_activities/{activityId} {
@@ -136,10 +170,12 @@ service cloud.firestore {
       allow write: if signedIn();
     }
 
+    // ── Founder Messages ──
     match /founder_messages/{id} {
       allow read, write: if isAdmin();
     }
 
+    // ── Launches ──
     match /launches/{id} {
       allow read: if true;
       allow write: if isAdmin();
