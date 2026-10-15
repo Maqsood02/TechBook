@@ -639,7 +639,7 @@ window.getAiKey = getAiKey;
 
 function updateAiKeyStatus(type, message) {
   const statusEl = document.getElementById('ai-key-status');
-  if (statusEl) statusEl.innerHTML = `<span style="color:#34d399;">✅ ${type} key loaded</span>${message ? ' <span style="color:#d1d5db;">' + message + '</span>' : ''}`;
+  if (statusEl) statusEl.innerHTML = `<span style="color:#34d399;">✅ ${type} key loaded</span>${message ? ' <span style="color:#64748b;">' + message + '</span>' : ''}`;
 }
 
 async function saveAIKey() {
@@ -650,18 +650,40 @@ async function saveAIKey() {
     if (statusEl) statusEl.innerHTML = '<span style="color:#f87171;">⚠️ Paste your API key first.</span>';
     return;
   }
+  
+  if (statusEl) statusEl.innerHTML = '<span style="color:#3d5af1;">⏳ Validating key…</span>';
+
+  // Quick check for Groq keys
+  if (key.startsWith('gsk_')) {
+    try {
+      const testRes = await fetch('https://api.groq.com/openai/v1/models', {
+        headers: { 'Authorization': 'Bearer ' + key }
+      });
+      if (testRes.status === 401) {
+        if (statusEl) statusEl.innerHTML = '<span style="color:#f87171;">❌ Invalid Groq API key. Check console.groq.com/keys.</span>';
+        return;
+      }
+    } catch (e) {
+      console.warn('Network check skipped during key save:', e);
+    }
+  }
+
   try {
+    _aiApiKey = key;
+    try { localStorage.setItem('tb_ai_api_key', key); } catch (e) {}
+
     await setDoc(doc(db, 'settings', 'ai_api_key'), {
       key,
       updatedAt: serverTimestamp(),
       updatedBy: window._currentAdminId || 'admin'
     });
-    _aiApiKey = key;
     if (inputEl) inputEl.value = key;
     const type = key.startsWith('gsk_') ? 'Groq' : key.startsWith('sk-or-') ? 'OpenRouter' : 'API';
-    if (statusEl) statusEl.innerHTML = `<span style="color:#34d399;">✅ ${type} key saved</span> <span style="color:#d1d5db;">Saved in admin settings.</span>`;
+    if (statusEl) statusEl.innerHTML = `<span style="color:#34d399;">✅ ${type} key saved successfully!</span> <span style="color:#64748b;">Ready for quiz & assistant.</span>`;
   } catch (err) {
-    if (statusEl) statusEl.innerHTML = `<span style="color:#f87171;">Error saving key: ${err.message}</span>`;
+    // If Firestore write fails (e.g. network/rules), key is still remembered in localStorage
+    const type = key.startsWith('gsk_') ? 'Groq' : key.startsWith('sk-or-') ? 'OpenRouter' : 'API';
+    if (statusEl) statusEl.innerHTML = `<span style="color:#34d399;">✅ ${type} key saved locally!</span> <span style="color:#f59e0b;">(Cloud sync note: ${err.message})</span>`;
   }
 }
 window.saveAIKey = saveAIKey;
@@ -669,47 +691,61 @@ window.saveAIKey = saveAIKey;
 async function loadAIKey() {
   const el = document.getElementById('ai-api-key');
   const statusEl = document.getElementById('ai-key-status');
+
+  // Instant local restore
+  let localKey = '';
+  try { localKey = localStorage.getItem('tb_ai_api_key') || ''; } catch (e) {}
+  if (localKey && !_aiApiKey) {
+    _aiApiKey = localKey;
+    if (el && !el.value) el.value = localKey;
+    const type = localKey.startsWith('gsk_') ? 'Groq' : localKey.startsWith('sk-or-') ? 'OpenRouter' : 'API';
+    if (statusEl) statusEl.innerHTML = `<span style="color:#34d399;">✅ ${type} key loaded</span> <span style="color:#64748b;">Ready.</span>`;
+  }
+
   try {
     const snap = await getDoc(doc(db, 'settings', 'ai_api_key'));
     if (snap.exists() && snap.data().key) {
       _aiApiKey = snap.data().key;
+      try { localStorage.setItem('tb_ai_api_key', _aiApiKey); } catch (e) {}
       if (el) el.value = _aiApiKey;
       const type = _aiApiKey.startsWith('gsk_') ? 'Groq' : _aiApiKey.startsWith('sk-or-') ? 'OpenRouter' : 'API';
-      if (statusEl) statusEl.innerHTML = `<span style="color:#34d399;">✅ ${type} key loaded</span> <span style="color:#d1d5db;">Loaded from admin settings.</span>`;
+      if (statusEl) statusEl.innerHTML = `<span style="color:#34d399;">✅ ${type} key active</span> <span style="color:#64748b;">Synced from settings.</span>`;
       return;
     }
   } catch (err) {
-    if (statusEl) statusEl.innerHTML = `<span style="color:#f87171;">Error loading AI key: ${err.message}</span>`;
+    console.warn('Could not load AI key from Firestore:', err);
     return;
   }
-  _aiApiKey = '';
-  if (el) el.value = '';
-  if (statusEl) statusEl.innerHTML = '<span style="color:#fbbf24;">⚠️ No AI key saved yet. Admin can add one above.</span>';
+
+  if (!localKey) {
+    _aiApiKey = '';
+    if (el) el.value = '';
+    if (statusEl) statusEl.innerHTML = '<span style="color:#f59e0b;">⚠️ No AI key saved yet. Enter your Groq key above and click Save.</span>';
+  }
 }
 window.loadAIKey = loadAIKey;
+
+// Auto-load AI key on auth state or DOM ready
+if (typeof onAuthStateChanged === 'function' && auth) {
+  onAuthStateChanged(auth, user => {
+    if (user) loadAIKey();
+  });
+}
+setTimeout(loadAIKey, 1000);
 
 async function callAnthropicAI(prompt, maxTok) {
   // Use the Cloudflare Worker AI Proxy URL if defined in window.AI_PROXY
   const proxyUrl = window.AI_PROXY;
-
-  const endpoint = proxyUrl || 'https://api.anthropic.com/v1/messages';
-  const headers = { 'Content-Type': 'application/json' };
-  let body;
-
-  if (proxyUrl) {
-    body = JSON.stringify({
-      system: 'You are TechBook Bot, a helpful academic assistant.',
-      messages: [{ role: 'user', content: prompt }]
-    });
-  } else {
-    headers['anthropic-version'] = '2023-06-01';
-    headers['anthropic-dangerous-direct-browser-access'] = 'true';
-    body = JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: maxTok || 4000,
-      messages: [{ role: 'user', content: prompt }]
-    });
+  if (!proxyUrl) {
+    throw new Error('Anthropic direct access is not configured. Please enter and save a valid Groq API key (starts with gsk_) in the AI Setup box above.');
   }
+
+  const endpoint = proxyUrl;
+  const headers = { 'Content-Type': 'application/json' };
+  const body = JSON.stringify({
+    system: 'You are TechBook Bot, a helpful academic assistant.',
+    messages: [{ role: 'user', content: prompt }]
+  });
 
   const res = await fetch(endpoint, {
     method: 'POST',
@@ -718,30 +754,79 @@ async function callAnthropicAI(prompt, maxTok) {
   });
 
   const data = await res.json();
-  if (!res.ok) throw new Error(data.error?.message || 'AI Proxy/API error ' + res.status);
-
-  if (proxyUrl) {
-    return data.reply || '';
-  }
-  return data.content?.[0]?.text || '';
+  if (!res.ok) throw new Error(data.error?.message || 'AI Proxy error ' + res.status);
+  return data.reply || '';
 }
 
-
 async function callAI(apiKey, prompt) {
-  // If no external key, use Anthropic API directly
+  // If no external key, use proxy if available
   if (!apiKey) {
-    return callAnthropicAI(prompt);
+    if (window.AI_PROXY) {
+      return callAnthropicAI(prompt);
+    }
+    throw new Error('AI key missing. Please paste and save your Groq API key (starts with gsk_) in the AI Setup box above.');
   }
-  // Groq — extremely fast, free, full CORS support
+
+  // Groq — ultra-fast, free tier, OpenAI-compatible endpoint
   if (apiKey.startsWith('gsk_')) {
-    // Try Groq models from largest to smallest; if one isn't available, continue to the next
-    const groqModels = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'llama3-8b-8192', 'mixtral-8x7b-32768', 'gemma2-9b-it'];
+    // 1. Fetch available models from Groq for this key
+    let groqModels = [];
+    try {
+      const modelsRes = await fetch('https://api.groq.com/openai/v1/models', {
+        headers: { 'Authorization': 'Bearer ' + apiKey }
+      });
+      if (modelsRes.ok) {
+        const modelsData = await modelsRes.json();
+        const activeIds = (modelsData.data || [])
+          .map(m => m.id)
+          .filter(id => !id.includes('whisper') && !id.includes('vision') && !id.includes('safeguard') && !id.includes('tts'));
+
+        // Rank by quality and speed
+        const preferred = [
+          'llama-3.3-70b-versatile',
+          'llama-3.1-8b-instant',
+          'llama-3.2-3b-preview',
+          'llama-3.2-1b-preview',
+          'qwen-2.5-32b',
+          'deepseek-r1-distill-llama-70b'
+        ];
+        for (const pref of preferred) {
+          if (activeIds.includes(pref) && !groqModels.includes(pref)) {
+            groqModels.push(pref);
+          }
+        }
+        for (const id of activeIds) {
+          if (!groqModels.includes(id)) {
+            groqModels.push(id);
+          }
+        }
+      } else if (modelsRes.status === 401) {
+        throw new Error('Invalid Groq API Key. Please verify your key at console.groq.com/keys.');
+      }
+    } catch (e) {
+      if (e.message && e.message.includes('Invalid Groq API Key')) throw e;
+      console.warn('Could not query Groq models dynamically, using curated list:', e);
+    }
+
+    // Curated active models as fallback (no decommissioned gemma2 or llama3-8b-8192)
+    if (groqModels.length === 0) {
+      groqModels = [
+        'llama-3.3-70b-versatile',
+        'llama-3.1-8b-instant',
+        'llama-3.2-3b-preview',
+        'llama-3.2-1b-preview'
+      ];
+    }
+
     let lastErr = '';
     for (const gModel of groqModels) {
       try {
         const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + apiKey
+          },
           body: JSON.stringify({
             model: gModel,
             messages: [{ role: 'user', content: prompt }],
@@ -749,62 +834,86 @@ async function callAI(apiKey, prompt) {
             temperature: 0.7
           })
         });
+
         const data = await res.json();
         if (res.status === 429) {
-          // Extract wait time from error message and wait before trying next model
           const msg = data.error?.message || '';
           const waitMatch = msg.match(/try again in ([\d.]+)s/);
           const waitMs = waitMatch ? Math.ceil(parseFloat(waitMatch[1]) * 1000) + 500 : 3000;
-          console.warn(`Groq 429 on ${gModel}, waiting ${waitMs}ms before next model…`);
+          console.warn(`Groq 429 rate limit on ${gModel}, waiting ${waitMs}ms before trying next model…`);
           await new Promise(r => setTimeout(r, waitMs));
           lastErr = msg;
-          continue; // try next model
+          continue;
         }
-        if (!res.ok) { lastErr = data.error?.message || 'Groq error ' + res.status; continue; }
+
+        if (!res.ok) {
+          lastErr = data.error?.message || 'Groq error ' + res.status;
+          continue;
+        }
+
         const gText = data.choices?.[0]?.message?.content || '';
         if (gText) return gText;
         lastErr = 'Empty response from ' + gModel;
-      } catch (e) { lastErr = e.message; continue; }
+      } catch (e) {
+        lastErr = e.message;
+        continue;
+      }
     }
-    console.warn('All Groq models failed, falling back to Anthropic:', lastErr); return callAnthropicAI(prompt);
+
+    if (window.AI_PROXY) {
+      console.warn('All Groq models failed, falling back to AI Proxy:', lastErr);
+      return callAnthropicAI(prompt);
+    }
+    throw new Error('Groq generation error: ' + (lastErr || 'All active Groq models failed. Check your Groq quota or try a simpler topic.'));
   }
 
-  // OpenRouter — support the fastest free models first
-  const models = [
-    'mistralai/mistral-7b-instruct:free',
-    'microsoft/phi-3-mini-128k-instruct:free',
-    'qwen/qwen-2-7b-instruct:free',
-    'meta-llama/llama-3.1-8b-instruct:free',
-  ];
-  let lastErr = '';
-  for (const model of models) {
-    try {
-      const controller = new AbortController();
-      const tid = setTimeout(() => controller.abort(), 18000);
-      const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        signal: controller.signal,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + apiKey,
-          'HTTP-Referer': location.href,
-          'X-Title': 'Quiz Generator'
-        },
-        body: JSON.stringify({ model, messages: [{ role: 'user', content: prompt }], max_tokens: 3200, temperature: 0.7 })
-      });
-      clearTimeout(tid);
-      const data = await res.json();
-      if (!res.ok) { lastErr = data.error?.message || 'HTTP ' + res.status; continue; }
-      const text = data.choices?.[0]?.message?.content || '';
-      if (text) return text;
-      lastErr = 'Empty response from ' + model;
-    } catch (e) {
-      lastErr = e.name === 'AbortError' ? 'Timeout on ' + model : e.message;
+  // OpenRouter — free and fast models
+  if (apiKey.startsWith('sk-or-')) {
+    const models = [
+      'mistralai/mistral-7b-instruct:free',
+      'meta-llama/llama-3.1-8b-instruct:free',
+      'qwen/qwen-2-7b-instruct:free',
+      'google/gemma-2-9b-it:free'
+    ];
+    let lastErr = '';
+    for (const model of models) {
+      try {
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 18000);
+        const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          signal: controller.signal,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + apiKey,
+            'HTTP-Referer': location.href,
+            'X-Title': 'TechBook Quiz Generator'
+          },
+          body: JSON.stringify({ model, messages: [{ role: 'user', content: prompt }], max_tokens: 3200, temperature: 0.7 })
+        });
+        clearTimeout(tid);
+        const data = await res.json();
+        if (!res.ok) { lastErr = data.error?.message || 'HTTP ' + res.status; continue; }
+        const text = data.choices?.[0]?.message?.content || '';
+        if (text) return text;
+        lastErr = 'Empty response from ' + model;
+      } catch (e) {
+        lastErr = e.name === 'AbortError' ? 'Timeout on ' + model : e.message;
+      }
     }
+
+    if (window.AI_PROXY) {
+      console.warn('All OpenRouter models failed, falling back to AI Proxy:', lastErr);
+      return callAnthropicAI(prompt);
+    }
+    throw new Error('OpenRouter generation error: ' + (lastErr || 'Could not generate quiz with OpenRouter.'));
   }
-  // All OpenRouter models failed — fall back to Anthropic
-  console.warn('OpenRouter failed, falling back to Anthropic:', lastErr);
-  return callAnthropicAI(prompt);
+
+  // Any other key
+  if (window.AI_PROXY) {
+    return callAnthropicAI(prompt);
+  }
+  throw new Error('Unsupported API key format. Please use a Groq API key (starts with gsk_) or an OpenRouter key (starts with sk-or-).');
 }
 window.callAI = callAI;
 
@@ -833,9 +942,21 @@ document.getElementById('btn-generate-quiz')?.addEventListener('click', async ()
 
   if (!subject || !topic) { msgEl.innerHTML = '<span style="color:#f87171;">⚠️ Enter Subject and Topic.</span>'; return; }
 
-  const apiKey = document.getElementById('ai-api-key')?.value.trim() || _aiApiKey || '';
+  const inputKey = document.getElementById('ai-api-key')?.value.trim();
+  let localSavedKey = '';
+  try { localSavedKey = localStorage.getItem('tb_ai_api_key') || ''; } catch (e) {}
+  const apiKey = inputKey || _aiApiKey || localSavedKey || '';
+  if (apiKey && apiKey !== _aiApiKey) {
+    _aiApiKey = apiKey;
+    try { localStorage.setItem('tb_ai_api_key', apiKey); } catch (e) {}
+  }
 
   const btn = document.getElementById('btn-generate-quiz');
+  if (!apiKey && !window.AI_PROXY) {
+    msgEl.innerHTML = '<span style="color:#f87171;">⚠️ AI key missing. Paste your Groq API key (starts with <code>gsk_</code>) into the AI Setup box above and click Save.</span>';
+    return;
+  }
+
   btn.disabled = true;
   document.getElementById('qz-preview-box').style.display = 'none';
 

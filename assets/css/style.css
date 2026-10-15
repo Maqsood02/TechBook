@@ -3972,9 +3972,15 @@
     }
 
     @media (max-width: 768px) {
+      .landing-navbar {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+      }
+
       /* Mobile Navbar Drawer */
       .mobile-menu-toggle {
         display: flex;
+        z-index: 100001 !important;
       }
 
       .navbar-menu {
@@ -3996,7 +4002,7 @@
         pointer-events: none !important;
         transform: translateY(-8px) scale(0.99) !important;
         transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s !important;
-        z-index: 99998 !important;
+        z-index: 99999 !important;
         box-shadow: 0 20px 50px rgba(0,0,0,0.15) !important;
         overflow-y: auto !important;
         -webkit-overflow-scrolling: touch;
@@ -4967,9 +4973,12 @@
         height: auto !important;
         min-height: 56px !important;
         background: #ffffff !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
         box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
         position: sticky !important;
         top: 0 !important;
+        z-index: 100000 !important;
         padding-top: calc(env(safe-area-inset-top, 0px) + 12px) !important;
       }
       .navbar-container {
@@ -4986,15 +4995,7 @@
       }
       .mobile-menu-toggle {
         display: flex !important;
-      }
-      /* Mobile menu z-index and container fix */
-      .landing-navbar {
-        position: sticky !important;
-        top: 0 !important;
-        z-index: 99999 !important;
-      }
-      .mobile-menu-toggle {
-        z-index: 100000 !important;
+        z-index: 100001 !important;
       }
 
       /* Hero Section Mobile Polish */

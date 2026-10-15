@@ -2917,6 +2917,13 @@ import { $, val } from '../core/helpers.js';
         if (typeof window.startAdminAttendanceListener === 'function') {
           window.startAdminAttendanceListener();
         }
+      } else if (sectionId === 'sec-quiz-admin') {
+        if (typeof window.loadAIKey === 'function') {
+          window.loadAIKey();
+        }
+        if (typeof window.loadAdminQuizzes === 'function') {
+          window.loadAdminQuizzes();
+        }
       }
 
       document.querySelectorAll(".admin-section").forEach(sec => {

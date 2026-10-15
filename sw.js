@@ -1,4 +1,4 @@
-const CACHE_NAME = 'techbook-cache-v43';
+const CACHE_NAME = 'techbook-cache-v44';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -46,11 +46,12 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Network-First strategy for HTML navigation and JS requests to prevent stale PWA cache lock
+  // Network-First strategy for HTML navigation, JS, and CSS requests to prevent stale PWA cache lock
   if (
     event.request.mode === 'navigate' || 
     url.endsWith('.html') || 
     url.includes('.js') || 
+    url.includes('.css') || 
     url === self.location.origin + '/'
   ) {
     event.respondWith(
