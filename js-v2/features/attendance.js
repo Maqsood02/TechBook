@@ -1304,16 +1304,18 @@ import { $, val } from '../core/helpers.js';
 
         // Load all students
         console.log("Loading students...");
-        const studentsSnapshot = await getDocs(collection(db, "students"));
-        console.log("Students loaded:", studentsSnapshot.size);
-        $("total-users").textContent = studentsSnapshot.size;
-        if (document.getElementById("cof-total-users")) {
-          document.getElementById("cof-total-users").textContent = studentsSnapshot.size;
+        try {
+          const studentsSnapshot = await getDocs(collection(db, "students"));
+          console.log("Students loaded:", studentsSnapshot.size);
+          if ($("total-users")) $("total-users").textContent = studentsSnapshot.size;
+          if (document.getElementById("cof-total-users")) {
+            document.getElementById("cof-total-users").textContent = studentsSnapshot.size;
+          }
+          _studentMapCache = {};
+          studentsSnapshot.forEach(d => { _studentMapCache[d.id] = d.data(); });
+        } catch (studErr) {
+          console.warn("Could not load initial students snapshot:", studErr.message);
         }
-
-        // Cache student map to avoid a duplicate query in loadAttendanceTable
-        _studentMapCache = {};
-        studentsSnapshot.forEach(d => { _studentMapCache[d.id] = d.data(); });
 
         // Load all attendance in real-time
         console.log("Loading attendance and starting real-time sync...");
@@ -1322,18 +1324,15 @@ import { $, val } from '../core/helpers.js';
 
         // Load current session
         console.log("Loading session info...");
-        const sessionDoc = await getDoc(doc(db, "settings", "session"));
-        if (sessionDoc.exists()) {
-          const sessionName = sessionDoc.data().name || "No session set";
-          $("current-session-display").textContent = sessionName;
+        try {
+          const sessionDoc = await getDoc(doc(db, "settings", "session"));
+          const sessionName = (sessionDoc && sessionDoc.exists()) ? (sessionDoc.data().name || "No session set") : "No session set";
+          if ($("current-session-display")) $("current-session-display").textContent = sessionName;
           if (document.getElementById("cof-current-session")) {
             document.getElementById("cof-current-session").textContent = sessionName;
           }
-        } else {
-          $("current-session-display").textContent = "No session set";
-          if (document.getElementById("cof-current-session")) {
-            document.getElementById("cof-current-session").textContent = "No session set";
-          }
+        } catch (sessErr) {
+          console.warn("Could not load session info:", sessErr.message);
         }
 
         // Setup Real-time Online Users count listener for Co-Founder Dashboard
@@ -1390,6 +1389,12 @@ import { $, val } from '../core/helpers.js';
           adminRefreshInterval = null;
         }
 
+        // If online, clear any offline banner
+        if (navigator.onLine) {
+          const banner = document.getElementById("offline-toast-banner");
+          if (banner) banner.remove();
+        }
+
       } catch (e) {
         console.error("Error loading dashboard:", e);
         if (!window.adminLoggedIn) return; // Do NOT show modal if admin logged out!
@@ -1415,8 +1420,8 @@ import { $, val } from '../core/helpers.js';
           `;
           document.body.appendChild(errorModal);
         } else if (e.message && (e.message.includes('offline') || e.code === 'unavailable')) {
-          console.warn("Firestore client is offline. Running with persistent local cache.");
-          if (typeof window.showOfflineBanner === 'function') {
+          console.warn("Firestore client sync delayed. Persistent cache active.");
+          if (!navigator.onLine && typeof window.showOfflineBanner === 'function') {
             window.showOfflineBanner();
           }
         } else {
@@ -2997,6 +3002,11 @@ import { $, val } from '../core/helpers.js';
     }
 
     window.showOfflineBanner = function() {
+      if (navigator.onLine) {
+        const existing = document.getElementById("offline-toast-banner");
+        if (existing) existing.remove();
+        return;
+      }
       let banner = document.getElementById("offline-toast-banner");
       if (!banner) {
         banner = document.createElement("div");

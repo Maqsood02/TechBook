@@ -1,4 +1,4 @@
-const CACHE_NAME = 'techbook-cache-v45';
+const CACHE_NAME = 'techbook-cache-v46';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -35,14 +35,13 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const url = event.request.url;
   
-  // Skip non-GET requests or Firebase APIs
-  if (
-    event.request.method !== 'GET' || 
-    url.includes('/api/') || 
-    url.includes('firestore.googleapis.com') ||
-    url.includes('googleapis.com') ||
-    url.includes('gstatic.com')
-  ) {
+  // NEVER intercept cross-origin / third-party requests (Google, Firebase, Groq, Anthropic, ElevenLabs, etc.)
+  if (!url.startsWith(self.location.origin)) {
+    return;
+  }
+
+  // Skip non-GET requests or local API routes
+  if (event.request.method !== 'GET' || url.includes('/api/')) {
     return;
   }
 
