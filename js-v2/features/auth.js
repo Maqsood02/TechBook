@@ -312,7 +312,7 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
         const otpRes = await fetch(`${API_BASE_URL}/api/send-otp`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ usn, email: personalEmail, name })
+          body: JSON.stringify({ usn, email: personalEmail, name, type: 'register' })
         });
         const otpData = await otpRes.json();
         if (!otpData.success) {
@@ -330,11 +330,18 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
       otpContainer.id = 'reg-otp-container';
       otpContainer.style.cssText = 'background:#eff2fe;border:1.5px solid #c7d2fe;border-radius:16px;padding:18px;margin-top:16px;box-shadow:0 4px 12px rgba(99,102,241,0.08);';
       otpContainer.innerHTML = `
-        <label style="display:block;color:#1f2937;font-size:13.5px;font-weight:600;margin-bottom:8px;font-family:'Poppins',sans-serif;text-align:left;">
+        <label style="display:block;color:#1f2937;font-size:13.5px;font-weight:600;margin-bottom:12px;font-family:'Poppins',sans-serif;text-align:center;">
           Enter 6-Digit OTP sent to <span style="color:#3d5af1;">${personalEmail}</span>
         </label>
-        <input id="reg-otp-field" type="text" maxlength="6" placeholder="••••••" autocomplete="one-time-code"
-          style="width:100%;padding:14px;background:#ffffff;border:1.5px solid #c7d2fe;border-radius:12px;color:#111827;font-size:24px;font-weight:700;letter-spacing:12px;text-align:center;box-sizing:border-box;outline:none;transition:border-color 0.2s, box-shadow 0.2s;" />
+        <div id="reg-otp-boxes" style="display:flex;justify-content:center;gap:8px;margin-bottom:14px;">
+          <input class="reg-digit-box" type="text" inputmode="numeric" maxlength="1" style="width:44px;height:52px;border:1.5px solid #c7d2fe;border-radius:12px;font-size:22px;font-weight:700;text-align:center;color:#0f172a;outline:none;background:#ffffff;box-sizing:border-box;transition:all 0.2s;" />
+          <input class="reg-digit-box" type="text" inputmode="numeric" maxlength="1" style="width:44px;height:52px;border:1.5px solid #c7d2fe;border-radius:12px;font-size:22px;font-weight:700;text-align:center;color:#0f172a;outline:none;background:#ffffff;box-sizing:border-box;transition:all 0.2s;" />
+          <input class="reg-digit-box" type="text" inputmode="numeric" maxlength="1" style="width:44px;height:52px;border:1.5px solid #c7d2fe;border-radius:12px;font-size:22px;font-weight:700;text-align:center;color:#0f172a;outline:none;background:#ffffff;box-sizing:border-box;transition:all 0.2s;" />
+          <input class="reg-digit-box" type="text" inputmode="numeric" maxlength="1" style="width:44px;height:52px;border:1.5px solid #c7d2fe;border-radius:12px;font-size:22px;font-weight:700;text-align:center;color:#0f172a;outline:none;background:#ffffff;box-sizing:border-box;transition:all 0.2s;" />
+          <input class="reg-digit-box" type="text" inputmode="numeric" maxlength="1" style="width:44px;height:52px;border:1.5px solid #c7d2fe;border-radius:12px;font-size:22px;font-weight:700;text-align:center;color:#0f172a;outline:none;background:#ffffff;box-sizing:border-box;transition:all 0.2s;" />
+          <input class="reg-digit-box" type="text" inputmode="numeric" maxlength="1" style="width:44px;height:52px;border:1.5px solid #c7d2fe;border-radius:12px;font-size:22px;font-weight:700;text-align:center;color:#0f172a;outline:none;background:#ffffff;box-sizing:border-box;transition:all 0.2s;" />
+        </div>
+        <input id="reg-otp-field" type="hidden" />
         
         <div style="display:flex;gap:8px;margin-top:12px;">
           <button id="reg-otp-verify-btn"
@@ -362,18 +369,60 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
       const registerBtn = $("btn-register");
       if (registerBtn) registerBtn.after(otpContainer);
 
-      // Add input focus effects
-      const otpField = document.getElementById('reg-otp-field');
-      if (otpField) {
-        otpField.addEventListener('focus', () => {
-          otpField.style.borderColor = '#3d5af1';
-          otpField.style.boxShadow = '0 0 0 3px rgba(61,90,241,0.15)';
+      // Setup 6-digit box handlers
+      const regBoxes = otpContainer.querySelectorAll('.reg-digit-box');
+      function updateRegOtpCombined() {
+        let combined = '';
+        regBoxes.forEach(b => combined += b.value);
+        const hiddenField = document.getElementById('reg-otp-field');
+        if (hiddenField) hiddenField.value = combined;
+        return combined;
+      }
+
+      regBoxes.forEach((box, idx) => {
+        box.addEventListener('input', () => {
+          const val = box.value.replace(/\D/g, '').slice(-1);
+          box.value = val;
+          const fullOtp = updateRegOtpCombined();
+          if (val && idx < regBoxes.length - 1) {
+            regBoxes[idx + 1].focus();
+          } else if (fullOtp.length === 6) {
+            document.getElementById('reg-otp-verify-btn')?.focus();
+          }
         });
-        otpField.addEventListener('blur', () => {
-          otpField.style.borderColor = '#c7d2fe';
-          otpField.style.boxShadow = 'none';
+        box.addEventListener('keydown', (e) => {
+          if (e.key === 'Backspace' && !box.value && idx > 0) {
+            regBoxes[idx - 1].focus();
+          } else if (e.key === 'Enter') {
+            document.getElementById('reg-otp-verify-btn')?.click();
+          }
+        });
+        box.addEventListener('focus', () => {
+          box.style.borderColor = '#3d5af1';
+          box.style.boxShadow = '0 0 0 3px rgba(61,90,241,0.15)';
+        });
+        box.addEventListener('blur', () => {
+          box.style.borderColor = '#c7d2fe';
+          box.style.boxShadow = 'none';
+        });
+      });
+
+      const regBoxesWrapper = document.getElementById('reg-otp-boxes');
+      if (regBoxesWrapper) {
+        regBoxesWrapper.addEventListener('paste', (e) => {
+          e.preventDefault();
+          const text = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6);
+          if (!text) return;
+          regBoxes.forEach((box, i) => {
+            box.value = text[i] || '';
+          });
+          updateRegOtpCombined();
+          const targetIdx = Math.min(text.length, regBoxes.length - 1);
+          regBoxes[targetIdx]?.focus();
         });
       }
+
+      setTimeout(() => { regBoxes[0]?.focus(); }, 150);
 
       // Timer & resend logic
       let resendTimer = null;
@@ -408,7 +457,7 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
           const otpRes = await fetch(`${API_BASE_URL}/api/send-otp`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ usn, email: personalEmail, name })
+            body: JSON.stringify({ usn, email: personalEmail, name, type: 'register' })
           });
           const otpData = await otpRes.json();
           if (otpData.success) {
@@ -717,7 +766,31 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
        👤 AUTH STATE
     =============================== */
     onAuthStateChanged(auth, async (user) => {
-      console.log("Auth state changed:", user ? "Logged in" : "Logged out");
+      console.log("Auth state changed:", user ? (user.isAnonymous ? "Anonymous User" : user.email) : "Logged out");
+
+      // Handle Anonymous Auth sessions (used by Admin Dashboard for Firestore Security Rules)
+      if (user && user.isAnonymous) {
+        const storedAdmin = localStorage.getItem('techbook_admin_user');
+        const storedRole = localStorage.getItem('techbook_admin_role');
+        const isAdmLoggedIn = localStorage.getItem('techbook_admin_logged_in') === 'true';
+        if (storedAdmin && isAdmLoggedIn) {
+          window.adminLoggedIn = true;
+          window._currentAdminUser = storedAdmin;
+          window._currentAdminRole = storedRole || 'admin';
+          try {
+            await setDoc(doc(db, "admins_uids", user.uid), {
+              username: storedAdmin,
+              role: storedRole || 'admin',
+              loginSecret: "techbook_admin_v1",
+              timestamp: serverTimestamp()
+            }, { merge: true });
+            console.log("🔐 Admin UID verified and registered in Firestore for anonymous session");
+          } catch (syncErr) {
+            console.warn("Could not register admin UID in Firestore:", syncErr.message);
+          }
+        }
+        return; // NEVER clear admin session when user is anonymous!
+      }
 
       if (user && user.email) {
         const email = user.email.toLowerCase();
@@ -790,10 +863,13 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
         }
       } else {
         // Logged out or no active Firebase user
+        // If an admin session is currently active in localStorage, do NOT purge admin session!
+        if (localStorage.getItem('techbook_admin_logged_in') === 'true') {
+          console.log("Preserving active admin session despite Firebase Auth state transition");
+          return;
+        }
+
         try {
-          localStorage.removeItem('techbook_admin_logged_in');
-          localStorage.removeItem('techbook_admin_user');
-          localStorage.removeItem('techbook_admin_role');
           localStorage.removeItem('techbook_student_logged_in');
           localStorage.removeItem('techbook_student_usn');
           localStorage.removeItem('techbook_student_data');

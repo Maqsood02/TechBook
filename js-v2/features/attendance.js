@@ -416,7 +416,36 @@ import { $, val } from '../core/helpers.js';
     window.adminLoggedIn = false;
     window.loginAdmin = loginAdmin;
 
-    function loginAdmin(username, role) {
+    async function ensureAdminAuth() {
+      if (!window.adminLoggedIn) return false;
+      const storedUser = window._currentAdminUser || localStorage.getItem('techbook_admin_user') || 'admin';
+      const storedRole = window._currentAdminRole || localStorage.getItem('techbook_admin_role') || 'admin';
+      try {
+        let user = auth.currentUser;
+        if (!user) {
+          const authCred = await Promise.race([
+            signInAnonymously(auth),
+            new Promise((_, reject) => setTimeout(() => reject(new Error("Anonymous Auth Timeout")), 4000))
+          ]);
+          user = authCred.user;
+        }
+        if (user && user.uid) {
+          await setDoc(doc(db, "admins_uids", user.uid), {
+            username: storedUser,
+            role: storedRole,
+            loginSecret: "techbook_admin_v1",
+            timestamp: serverTimestamp()
+          }, { merge: true });
+          return true;
+        }
+      } catch (err) {
+        console.warn("ensureAdminAuth notice:", err.message);
+      }
+      return false;
+    }
+    window.ensureAdminAuth = ensureAdminAuth;
+
+    async function loginAdmin(username, role) {
       if (window.adminLoggedIn && window._currentAdminUser === username && window._currentAdminRole === role) {
         return;
       }
@@ -454,7 +483,7 @@ import { $, val } from '../core/helpers.js';
         window.trackUserActivity(portalText, true);
       }
 
-      // Add Logout button immediately to avoid waiting for database loads
+      // Add Logout button immediately
       const actions = $("navbar-actions");
       if (actions) {
         actions.innerHTML = `
@@ -468,7 +497,10 @@ import { $, val } from '../core/helpers.js';
         `;
       }
 
-      loadAdminDashboard();
+      await ensureAdminAuth();
+      if (window.adminLoggedIn) {
+        loadAdminDashboard();
+      }
       if (typeof window.updateNavbarLoginBtn === 'function') {
         window.updateNavbarLoginBtn();
       }
@@ -484,22 +516,12 @@ import { $, val } from '../core/helpers.js';
           window._currentAdminUser = storedUser;
           window._currentAdminRole = storedRole || 'admin';
 
-          // Verify and re-ensure Firebase Auth session if not already active
-          setTimeout(async () => {
-            if (!auth.currentUser) {
-              try {
-                const authCred = await signInAnonymously(auth);
-                if (authCred.user) {
-                  await setDoc(doc(db, "admins_uids", authCred.user.uid), {
-                    username: storedUser,
-                    role: storedRole || 'admin',
-                    loginSecret: "techbook_admin_v1",
-                    timestamp: serverTimestamp()
-                  }, { merge: true });
-                }
-              } catch (_) {}
+          // Ensure Firebase Auth is verified and ready before triggering dashboard load
+          ensureAdminAuth().then(() => {
+            if (window.adminLoggedIn && window._currentAdminRole !== 'co_founder') {
+              loadAdminDashboard();
             }
-          }, 500);
+          });
         }
       } catch (e) {
         console.error("Error restoring admin session:", e);
@@ -526,21 +548,7 @@ import { $, val } from '../core/helpers.js';
         console.warn("Could not clear admin session from localStorage:", e);
       }
 
-      try {
-        await signOut(auth);
-      } catch (authErr) {
-        console.warn("Firebase Auth signOut failed:", authErr.message);
-      }
-
-      // Reset UI state
-      $("admin-area").classList.add("hidden");
-      $("admin-login-block").classList.remove("hidden");
-
-      // Clear navbar actions
-      const actions = $("navbar-actions");
-      if (actions) actions.innerHTML = "";
-
-      // Clear interval & real-time listeners if any
+      // Unsubscribe all active Firestore listeners
       if (adminRefreshInterval) {
         clearInterval(adminRefreshInterval);
         adminRefreshInterval = null;
@@ -549,18 +557,40 @@ import { $, val } from '../core/helpers.js';
         try { _adminAttListenerUnsub(); } catch (_) {}
         _adminAttListenerUnsub = null;
       }
+      if (window._cofOnlineUnsub) {
+        try { window._cofOnlineUnsub(); } catch (_) {}
+        window._cofOnlineUnsub = null;
+      }
+      if (typeof window.stopLiveMonitor === 'function') {
+        window.stopLiveMonitor();
+      }
       _cachedAttendanceSnapshot = null;
 
-      msg("admin-login-msg", "Logged out successfully", "info");
+      // Clean up any session/error modals from the DOM and restore body overflow
+      document.querySelectorAll('.admin-session-modal, div[id*="admin-session"]').forEach(m => m.remove());
+      document.body.style.overflow = '';
 
-      // Clear Firebase Auth anonymous sign-in
-      signOut(auth).catch(err => console.warn("Firebase Admin SignOut failed:", err));
+      try {
+        await signOut(auth);
+      } catch (authErr) {
+        console.warn("Firebase Auth signOut failed:", authErr.message);
+      }
+
+      // Reset UI state
+      $("admin-area")?.classList.add("hidden");
+      $("admin-login-block")?.classList.remove("hidden");
+
+      // Clear navbar actions
+      const actions = $("navbar-actions");
+      if (actions) actions.innerHTML = "";
+
+      msg("admin-login-msg", "Logged out successfully", "info");
 
       if (typeof window.updateNavbarLoginBtn === 'function') {
         window.updateNavbarLoginBtn();
       }
 
-      // Optional: go back to landing page
+      // Go back to landing page
       showLandingPage();
     };
 
@@ -1032,6 +1062,12 @@ import { $, val } from '../core/helpers.js';
     let adminRefreshInterval = null; // Store interval ID
 
     async function loadAdminDashboard() {
+      if (!window.adminLoggedIn) {
+        console.log("loadAdminDashboard: skipped because admin is not logged in");
+        return;
+      }
+      await ensureAdminAuth();
+      if (!window.adminLoggedIn) return;
       console.log("Loading admin dashboard...");
       try {
         const role = window._currentAdminRole || 'admin';
@@ -1356,11 +1392,15 @@ import { $, val } from '../core/helpers.js';
 
       } catch (e) {
         console.error("Error loading dashboard:", e);
+        if (!window.adminLoggedIn) return; // Do NOT show modal if admin logged out!
 
         // Check if it's a permissions error
         if (e.code === 'permission-denied' || e.message.includes('permission') || e.message.includes('insufficient')) {
           console.warn("Permission denied while loading dashboard:", e.message);
+          if (document.querySelector('.admin-session-modal')) return;
+
           const errorModal = document.createElement('div');
+          errorModal.className = 'admin-session-modal';
           errorModal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,0.7);backdrop-filter:blur(6px);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
           errorModal.innerHTML = `
             <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:20px;padding:32px;max-width:480px;width:100%;text-align:center;box-shadow:0 20px 40px rgba(0,0,0,0.15);">
@@ -1368,8 +1408,8 @@ import { $, val } from '../core/helpers.js';
               <h3 style="color:#0f172a;margin-bottom:10px;font-size:20px;font-weight:700;">Admin Session Required</h3>
               <p style="color:#64748b;font-size:14px;line-height:1.6;margin-bottom:24px;">Your administrator credentials need to be verified to access student data and live portal records.</p>
               <div style="display:flex;gap:12px;justify-content:center;">
-                <button onclick="this.closest('div[style*=\\'position:fixed\\']').remove();if(window.adminLogout)window.adminLogout();" style="flex:1;background:#3d5af1;color:white;border:none;padding:12px 20px;border-radius:12px;cursor:pointer;font-weight:600;font-size:14px;">Re-Login</button>
-                <button onclick="this.closest('div[style*=\\'position:fixed\\']').remove()" style="background:#f1f5f9;color:#475569;border:none;padding:12px 20px;border-radius:12px;cursor:pointer;font-weight:600;font-size:14px;">Dismiss</button>
+                <button onclick="this.closest('.admin-session-modal').remove();document.body.style.overflow='';if(window.adminLogout)window.adminLogout();" style="flex:1;background:#3d5af1;color:white;border:none;padding:12px 20px;border-radius:12px;cursor:pointer;font-weight:600;font-size:14px;">Re-Login</button>
+                <button onclick="this.closest('.admin-session-modal').remove();document.body.style.overflow='';" style="background:#f1f5f9;color:#475569;border:none;padding:12px 20px;border-radius:12px;cursor:pointer;font-weight:600;font-size:14px;">Dismiss</button>
               </div>
             </div>
           `;
@@ -2939,7 +2979,12 @@ import { $, val } from '../core/helpers.js';
       }
     };
 
+    let _adminNavDebounce = false;
     function handleNavClick(e) {
+      if (_adminNavDebounce) return;
+      _adminNavDebounce = true;
+      setTimeout(() => { _adminNavDebounce = false; }, 250);
+
       const btn = e.currentTarget;
       const sectionId = btn.getAttribute("data-section");
       if (sectionId) {
@@ -2950,15 +2995,6 @@ import { $, val } from '../core/helpers.js';
     function handleBackClick() {
       window.switchAdminSection(null);
     }
-
-    // Call loadAdminDashboard if admin session is already active (to handle page reloads where auth.js fired before attendance.js was fully loaded)
-    setTimeout(() => {
-      if (window.adminLoggedIn && window._currentAdminRole !== 'co_founder') {
-        if (typeof window.loadAdminDashboard === 'function') {
-          window.loadAdminDashboard();
-        }
-      }
-    }, 100);
 
     window.showOfflineBanner = function() {
       let banner = document.getElementById("offline-toast-banner");

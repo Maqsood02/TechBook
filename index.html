@@ -101,6 +101,58 @@
   <script>
     window.API_BASE_URL = 'https://tech-book-two.vercel.app';
     window.AI_PROXY = ''; // Paste your Cloudflare Worker URL here (e.g. 'https://techbook-ai-proxy.YOUR.workers.dev')
+
+    window.switchLandingTab = function(tabId) {
+      const sections = ['home', 'features-section', 'login-section', 'about-section'];
+      sections.forEach(s => {
+        const el = document.getElementById(s);
+        if (el) {
+          if (s === tabId) {
+            el.classList.remove('hidden');
+            el.style.display = '';
+          } else {
+            el.classList.add('hidden');
+          }
+        }
+      });
+
+      // Clear any scroll lock on body & smoothly scroll to top
+      document.body.style.overflow = '';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      if (tabId === 'login-section') {
+        if (typeof window.selectLoginRole === 'function') {
+          window.selectLoginRole('student');
+        }
+        setTimeout(() => {
+          document.getElementById('unified-username')?.focus();
+        }, 150);
+      }
+
+      const linksMap = {
+        'home': 'nav-link-home',
+        'features-section': 'nav-link-features',
+        'about-section': 'nav-link-about',
+        'login-section': 'navbar-login-btn'
+      };
+      Object.keys(linksMap).forEach(key => {
+        const el = document.getElementById(linksMap[key]);
+        if (el) {
+          if (key === tabId) el.classList.add('active-nav-link');
+          else el.classList.remove('active-nav-link');
+        }
+      });
+
+      const navbarMenu = document.getElementById('navbar-menu');
+      const mobileToggle = document.getElementById('mobile-toggle');
+      if (navbarMenu && navbarMenu.classList.contains('open')) {
+        navbarMenu.classList.remove('open');
+        if (mobileToggle) mobileToggle.classList.remove('active');
+      }
+
+      if (typeof window.updateFloatingBannerVisibility === 'function') window.updateFloatingBannerVisibility();
+      if (typeof window.syncAgentWidgetVisibility === 'function') window.syncAgentWidgetVisibility();
+    };
   </script>
 </head>
 
@@ -151,8 +203,8 @@
                 An all-in-one educational platform designed to streamline college attendance, quizzes, subject-wise notes, and question banks. Log in now to access your personalized portal.
               </p>
               <div class="hero-ctas">
-                <button onclick="if (window.switchLandingTab) window.switchLandingTab('login-section')" class="btn btn-hero btn-primary">Get Started</button>
-                <button onclick="if (window.switchLandingTab) window.switchLandingTab('features-section')" class="btn btn-hero btn-secondary">Explore Features</button>
+                <button id="btn-get-started" onclick="window.switchLandingTab ? window.switchLandingTab('login-section') : (document.getElementById('home')?.classList.add('hidden'), document.getElementById('login-section')?.classList.remove('hidden'), window.scrollTo({top:0, behavior:'smooth'}))" class="btn btn-hero btn-primary" style="position: relative; z-index: 10; cursor: pointer; touch-action: manipulation;">Get Started</button>
+                <button id="btn-explore-features" onclick="window.switchLandingTab ? window.switchLandingTab('features-section') : (document.getElementById('home')?.classList.add('hidden'), document.getElementById('features-section')?.classList.remove('hidden'), window.scrollTo({top:0, behavior:'smooth'}))" class="btn btn-hero btn-secondary" style="position: relative; z-index: 10; cursor: pointer; touch-action: manipulation;">Explore Features</button>
               </div>
             </div>
             <div class="hero-illustration">
@@ -4999,12 +5051,17 @@
             <p style="color:#6b7280;font-size:12px;margin:0 0 4px;font-family:Poppins,sans-serif;">OTP sent to</p>
             <p id="verify-email-display" style="color:#3d5af1;font-size:14px;font-weight:700;margin:0;font-family:Poppins,sans-serif;"></p>
           </div>
-          <div style="text-align:left;margin-bottom:14px;">
-            <label style="display:block;color:#111827;font-size:13px;font-weight:600;margin-bottom:6px;font-family:Poppins,sans-serif;">ENTER 6-DIGIT OTP</label>
-            <input id="verify-otp-input" type="text" maxlength="6" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;"
-              style="width:100%;padding:14px;background:#f7f8fc;border:1.5px solid #e5e7eb;border-radius:12px;color:#111827;font-size:22px;font-weight:700;letter-spacing:10px;text-align:center;outline:none;box-sizing:border-box;font-family:Poppins,sans-serif;transition:border-color 0.2s;"
-              onfocus="this.style.borderColor='#3d5af1'" onblur="this.style.borderColor='#e5e7eb'"
-              onkeydown="if(event.key==='Enter') verifyModalVerifyOTP()" />
+          <div style="text-align:left;margin-bottom:18px;">
+            <label style="display:block;color:#111827;font-size:11px;font-weight:700;letter-spacing:0.08em;margin-bottom:8px;font-family:Poppins,sans-serif;text-align:center;text-transform:uppercase;">ENTER 6-DIGIT OTP</label>
+            <div id="verify-otp-boxes" style="display:flex;justify-content:center;gap:8px;" onpaste="handleVerifyOtpPaste(event)">
+              <input class="verify-digit-box" type="text" inputmode="numeric" maxlength="1" style="width:44px;height:52px;border:1.5px solid #c7d2fe;border-radius:12px;font-size:22px;font-weight:700;text-align:center;color:#0f172a;outline:none;background:#f8fafc;box-sizing:border-box;transition:all 0.2s;" />
+              <input class="verify-digit-box" type="text" inputmode="numeric" maxlength="1" style="width:44px;height:52px;border:1.5px solid #c7d2fe;border-radius:12px;font-size:22px;font-weight:700;text-align:center;color:#0f172a;outline:none;background:#f8fafc;box-sizing:border-box;transition:all 0.2s;" />
+              <input class="verify-digit-box" type="text" inputmode="numeric" maxlength="1" style="width:44px;height:52px;border:1.5px solid #c7d2fe;border-radius:12px;font-size:22px;font-weight:700;text-align:center;color:#0f172a;outline:none;background:#f8fafc;box-sizing:border-box;transition:all 0.2s;" />
+              <input class="verify-digit-box" type="text" inputmode="numeric" maxlength="1" style="width:44px;height:52px;border:1.5px solid #c7d2fe;border-radius:12px;font-size:22px;font-weight:700;text-align:center;color:#0f172a;outline:none;background:#f8fafc;box-sizing:border-box;transition:all 0.2s;" />
+              <input class="verify-digit-box" type="text" inputmode="numeric" maxlength="1" style="width:44px;height:52px;border:1.5px solid #c7d2fe;border-radius:12px;font-size:22px;font-weight:700;text-align:center;color:#0f172a;outline:none;background:#f8fafc;box-sizing:border-box;transition:all 0.2s;" />
+              <input class="verify-digit-box" type="text" inputmode="numeric" maxlength="1" style="width:44px;height:52px;border:1.5px solid #c7d2fe;border-radius:12px;font-size:22px;font-weight:700;text-align:center;color:#0f172a;outline:none;background:#f8fafc;box-sizing:border-box;transition:all 0.2s;" />
+            </div>
+            <input id="verify-otp-input" type="hidden" />
           </div>
           <button id="verify-otp-btn" onclick="verifyModalVerifyOTP()"
             style="width:100%;padding:13px;background:linear-gradient(135deg,#3d5af1,#6366f1);color:#ffffff;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:Poppins,sans-serif;margin-bottom:12px;letter-spacing:0.3px;">
@@ -5031,6 +5088,61 @@
     window._verifyModalUSN = null;
     window._verifyModalName = null;
     window._verifyResendCooldown = null;
+
+    function initVerifyOtpBoxes() {
+      const boxes = document.querySelectorAll('#verify-otp-boxes .verify-digit-box');
+      boxes.forEach((box, idx) => {
+        box.value = '';
+        box.oninput = () => {
+          const val = box.value.replace(/\D/g, '').slice(-1);
+          box.value = val;
+          updateVerifyOtpCombined();
+          if (val && idx < boxes.length - 1) {
+            boxes[idx + 1].focus();
+          }
+        };
+        box.onkeydown = (e) => {
+          if (e.key === 'Backspace' && !box.value && idx > 0) {
+            boxes[idx - 1].focus();
+          } else if (e.key === 'Enter') {
+            verifyModalVerifyOTP();
+          }
+        };
+        box.onfocus = () => {
+          box.style.borderColor = '#3d5af1';
+          box.style.boxShadow = '0 0 0 3px rgba(61,90,241,0.15)';
+          box.style.background = '#ffffff';
+        };
+        box.onblur = () => {
+          box.style.borderColor = '#c7d2fe';
+          box.style.boxShadow = 'none';
+          box.style.background = '#f8fafc';
+        };
+      });
+      setTimeout(() => { if (boxes[0]) boxes[0].focus(); }, 100);
+    }
+
+    window.handleVerifyOtpPaste = function(e) {
+      e.preventDefault();
+      const text = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6);
+      if (!text) return;
+      const boxes = document.querySelectorAll('#verify-otp-boxes .verify-digit-box');
+      boxes.forEach((box, i) => {
+        box.value = text[i] || '';
+      });
+      updateVerifyOtpCombined();
+      const targetIdx = Math.min(text.length, boxes.length - 1);
+      if (boxes[targetIdx]) boxes[targetIdx].focus();
+    };
+
+    function updateVerifyOtpCombined() {
+      const boxes = document.querySelectorAll('#verify-otp-boxes .verify-digit-box');
+      let combined = '';
+      boxes.forEach(b => combined += b.value);
+      const hiddenInput = document.getElementById('verify-otp-input');
+      if (hiddenInput) hiddenInput.value = combined;
+      return combined;
+    }
 
     function showVerifyModal(usn, name) {
       window._verifyModalUSN = usn;
@@ -5085,7 +5197,7 @@
         const res = await fetch((window.API_BASE_URL || '') + '/api/send-otp', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ usn, email, name })
+          body: JSON.stringify({ usn, email, name, type: 'verify' })
         });
         const data = await res.json();
 
@@ -5095,6 +5207,7 @@
           document.getElementById('verify-step-2').style.display = 'block';
           const emailDisplay = document.getElementById('verify-email-display');
           if (emailDisplay) emailDisplay.textContent = email;
+          initVerifyOtpBoxes();
           startResendCooldown(60);
         } else {
           verifyModalSetMsg('&#10006; ' + (data.error || 'Failed to send OTP.'), 'error');
@@ -5107,8 +5220,7 @@
     }
 
     async function verifyModalVerifyOTP() {
-      const otpInput = document.getElementById('verify-otp-input');
-      const otp = otpInput ? otpInput.value.trim() : '';
+      const otp = updateVerifyOtpCombined();
       const usn = window._verifyModalUSN;
 
       if (!otp || otp.length !== 6) {

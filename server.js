@@ -390,7 +390,7 @@ app.use(express.static(path.join(__dirname, '.')));
 // ─── Rate Limiting ───
 const generalApiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 150,
+  max: 300,
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, error: 'Too many requests. Please slow down and try again later.' }
@@ -555,7 +555,7 @@ function generateOTP() {
  * Generates a 6-digit OTP, stores it in server memory, and sends it by email.
  */
 app.post('/api/send-otp', otpLimiter, async (req, res) => {
-  const { usn, email, name } = req.body;
+  const { usn, email, name, type } = req.body;
 
   if (!usn || !email) {
     return res.status(400).json({ success: false, error: 'USN and email are required.' });
@@ -568,9 +568,12 @@ app.post('/api/send-otp', otpLimiter, async (req, res) => {
   const emailLower = email.trim().toLowerCase();
 
   try {
-    const isAlreadyReg = await firestoreCheckStudentExists(usnUpper);
-    if (isAlreadyReg) {
-      return res.status(400).json({ success: false, error: 'This USN is already registered. Please login instead.' });
+    // Only verify USN uniqueness if explicitly registering a new account
+    if (type === 'register') {
+      const isAlreadyReg = await firestoreCheckStudentExists(usnUpper);
+      if (isAlreadyReg) {
+        return res.status(400).json({ success: false, error: 'This USN is already registered. Please login instead.' });
+      }
     }
 
     const otp = generateOTP();
@@ -690,6 +693,38 @@ app.post('/api/verify-otp', verifyLimiter, async (req, res) => {
   // ✅ OTP is correct — remove from store and return verified email
   const verifiedEmail = record.email;
   await firestoreDeleteOTP(usnUpper);
+
+  // Directly update student document in Firestore
+  try {
+    const token = await getFirebaseIdToken();
+    const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/students/${usnUpper}?updateMask.fieldPaths=email&updateMask.fieldPaths=email_verified&key=${FIREBASE_API_KEY}`;
+    const urlObj = new URL(url);
+    const patchBody = JSON.stringify({
+      fields: {
+        email: { stringValue: verifiedEmail },
+        email_verified: { booleanValue: true }
+      }
+    });
+    const patchOpt = {
+      hostname: urlObj.hostname,
+      path: urlObj.pathname + urlObj.search,
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(patchBody),
+        'Authorization': `Bearer ${token}`
+      }
+    };
+    await new Promise((resolve) => {
+      const pr = https.request(patchOpt, () => resolve());
+      pr.on('error', () => resolve());
+      pr.write(patchBody);
+      pr.end();
+    });
+    console.log(`✅ Student ${usnUpper} email verified in Firestore directly`);
+  } catch (syncErr) {
+    console.warn(`Could not sync student email in Firestore directly:`, syncErr.message);
+  }
 
   console.log(`✅ OTP verified for USN ${usnUpper}`);
   res.json({

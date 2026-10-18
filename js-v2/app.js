@@ -394,6 +394,19 @@ function switchLandingTab(tabId) {
     }
   });
 
+  // Clear any overflow lock on body and smoothly scroll to top
+  document.body.style.overflow = '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  if (tabId === 'login-section') {
+    if (typeof window.selectLoginRole === 'function') {
+      window.selectLoginRole('student');
+    }
+    setTimeout(() => {
+      document.getElementById('unified-username')?.focus();
+    }, 150);
+  }
+
   // Update active state in nav bar links
   const linksMap = {
     'home': 'nav-link-home',
@@ -412,6 +425,14 @@ function switchLandingTab(tabId) {
       }
     }
   });
+
+  const navbarMenu = document.getElementById('navbar-menu');
+  const mobileToggle = document.getElementById('mobile-toggle');
+  if (navbarMenu && navbarMenu.classList.contains('open')) {
+    navbarMenu.classList.remove('open');
+    if (mobileToggle) mobileToggle.classList.remove('active');
+  }
+
   if (typeof window.updateFloatingBannerVisibility === 'function') {
     window.updateFloatingBannerVisibility();
   }
