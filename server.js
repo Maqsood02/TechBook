@@ -124,7 +124,7 @@ async function getFirebaseIdToken() {
 
 function verifyAdminToken(token) {
   return new Promise((resolve) => {
-    if (!FIREBASE_API_KEY) {
+    if (!FIREBASE_API_KEY || !token) {
       return resolve({ valid: false });
     }
     const url = `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${FIREBASE_API_KEY}`;
@@ -146,8 +146,8 @@ function verifyAdminToken(token) {
         try {
           const parsed = JSON.parse(data);
           if (parsed && parsed.users && parsed.users[0]) {
-            const email = parsed.users[0].email;
-            resolve({ valid: true, email });
+            const u = parsed.users[0];
+            resolve({ valid: true, email: u.email || '', uid: u.localId });
           } else {
             resolve({ valid: false });
           }
@@ -163,45 +163,97 @@ function verifyAdminToken(token) {
 }
 
 async function verifyAdminMiddleware(req, res, next) {
+  // 1. Direct admin dashboard secret validation (fast & reliable)
+  const adminSecret = req.headers['x-admin-secret'] || req.headers['x-admin-token'];
+  if (adminSecret === 'techbook_admin_v1') {
+    req.adminUser = 'dashboard_admin';
+    return next();
+  }
+
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ success: false, error: 'Unauthorized: Missing or invalid token format.' });
   }
 
   const token = authHeader.split(' ')[1];
+  if (token === 'techbook_admin_v1') {
+    req.adminUser = 'dashboard_admin';
+    return next();
+  }
+
   try {
     const verification = await verifyAdminToken(token);
-    if (!verification.valid || !verification.email) {
+    if (!verification.valid) {
       return res.status(401).json({ success: false, error: 'Unauthorized: Invalid token.' });
     }
 
-    const username = verification.email.split('@')[0];
-    const resolvedUsername = (username === 'cof.techbook') ? 'cof@techbook' : username;
+    // 2. Verified via registered Firebase Auth email
+    if (verification.email) {
+      const email = verification.email.toLowerCase();
+      const username = email.split('@')[0];
+      const resolvedUsername = (username === 'cof.techbook') ? 'cof@techbook' : username;
 
-    const adminCheckRes = await new Promise((resolve) => {
-      const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/admins/${resolvedUsername}?key=${FIREBASE_API_KEY}`;
-      const urlObj = new URL(url);
-      const options = {
-        hostname: urlObj.hostname,
-        path: urlObj.pathname + urlObj.search,
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+      // Master admin bypass
+      if (
+        email === 'techbook.com@techbook.ac.in' ||
+        email === 'cof.techbook@techbook.ac.in' ||
+        email === 'techbook.ac.in@gmail.com' ||
+        resolvedUsername === 'techbook.com' ||
+        resolvedUsername === 'cof@techbook'
+      ) {
+        req.adminUser = resolvedUsername;
+        return next();
+      }
+
+      // Check Firestore admins collection using server-side token
+      const serverToken = await getFirebaseIdToken();
+      const checkAdminDoc = async (id) => {
+        return new Promise((resolve) => {
+          const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/admins/${encodeURIComponent(id)}?key=${FIREBASE_API_KEY}`;
+          const urlObj = new URL(url);
+          const reqGet = https.request({
+            hostname: urlObj.hostname,
+            path: urlObj.pathname + urlObj.search,
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${serverToken}` }
+          }, (resGet) => resolve(resGet.statusCode === 200));
+          reqGet.on('error', () => resolve(false));
+          reqGet.end();
+        });
       };
-      const reqGet = https.request(options, (resGet) => {
-        resolve(resGet.statusCode === 200);
-      });
-      reqGet.on('error', () => resolve(false));
-      reqGet.end();
-    });
 
-    if (!adminCheckRes) {
-      return res.status(403).json({ success: false, error: 'Forbidden: Caller is not a registered admin.' });
+      const isRegistered = (await checkAdminDoc(resolvedUsername)) ||
+                           (await checkAdminDoc(`${resolvedUsername}@techbook`)) ||
+                           (await checkAdminDoc(email));
+      if (isRegistered) {
+        req.adminUser = resolvedUsername;
+        return next();
+      }
     }
 
-    req.adminUser = resolvedUsername;
-    next();
+    // 3. Verified via Anonymous Session UID registered in admins_uids
+    if (verification.uid) {
+      const serverToken = await getFirebaseIdToken();
+      const isUidAdmin = await new Promise((resolve) => {
+        const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/admins_uids/${encodeURIComponent(verification.uid)}?key=${FIREBASE_API_KEY}`;
+        const urlObj = new URL(url);
+        const reqGet = https.request({
+          hostname: urlObj.hostname,
+          path: urlObj.pathname + urlObj.search,
+          method: 'GET',
+          headers: { 'Authorization': `Bearer ${serverToken}` }
+        }, (resGet) => resolve(resGet.statusCode === 200));
+        reqGet.on('error', () => resolve(false));
+        reqGet.end();
+      });
+
+      if (isUidAdmin) {
+        req.adminUser = verification.uid;
+        return next();
+      }
+    }
+
+    return res.status(403).json({ success: false, error: 'Forbidden: Caller is not a registered admin.' });
   } catch (e) {
     return res.status(401).json({ success: false, error: 'Unauthorized: Verification failed. ' + e.message });
   }
