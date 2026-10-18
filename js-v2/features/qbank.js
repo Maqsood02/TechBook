@@ -806,15 +806,17 @@ let lastQbankFetchTime = 0;
       });
 
       const renderQBankCard = (n) =>
-        '<div style="display:flex;align-items:center;gap:10px;background:#ecfeff;border:1px solid #a5f3fc;border-radius:12px;padding:12px 14px;margin-bottom:8px;flex-wrap:wrap;border-left:3px solid ' + col.text + ';">' +
-        '<div style="flex:1;min-width:0;">' +
-        '<div style="font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:5px;">' + esc(n.title) + '</div>' +
-        '<div style="font-size:11px;color:var(--text-secondary);margin-bottom:6px;">Year ' + esc(n.year) + ' \u00b7 Sem ' + esc(n.sem) + (n.fileSize ? ' \u00b7 ' + (n.fileSize / 1024).toFixed(0) + ' KB' : '') + '</div>' +
-        '<span style="padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;background:' + col.bg + ';border:1px solid ' + col.border + ';color:' + col.text + ';">' + ((n.section || 'all') === 'all' ? 'All Sections' : 'Section ' + n.section) + '</span></div>' +
-        '<div style="display:flex;gap:6px;flex-shrink:0;">' +
-        '<button onclick="qbankAdmView(\'' + n.id + '\')" id="qbank-view-adm-' + n.id + '" style="padding:7px 12px;background:' + col.bg + ';border:1.5px solid ' + col.border + ';border-radius:9px;color:' + col.text + ';font-weight:700;font-size:12px;cursor:pointer;">👁️ View</button>' +
-        '<button onclick="qbankAdmEditTitle(\'' + n.id + '\',\'' + n.title.replace(/'/g, "\\'") + '\',' + colorIdx + ')" style="padding:7px 12px;background:' + col.bg + ';border:1.5px solid ' + col.border + ';border-radius:9px;color:' + col.text + ';font-weight:700;font-size:12px;cursor:pointer;">✏️ Edit</button>' +
-        '<button onclick="qbankAdmDelete(\'' + n.id + '\')" style="padding:7px 12px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:9px;color:#f87171;font-weight:700;font-size:12px;cursor:pointer;">🗑️ Delete</button>' +
+        '<div style="box-sizing:border-box;width:100%;max-width:100%;background:#ecfeff;border:1px solid #a5f3fc;border-radius:14px;padding:14px;margin-bottom:12px;border-left:4px solid ' + col.text + ';display:flex;flex-direction:column;gap:10px;overflow:hidden;">' +
+        '<div style="width:100%;min-width:0;">' +
+        '<div style="font-size:13.5px;font-weight:700;color:var(--text-primary);margin-bottom:4px;word-break:break-word;overflow-wrap:anywhere;line-height:1.4;">' + esc(n.title) + '</div>' +
+        '<div style="font-size:11.5px;color:var(--text-secondary);margin-bottom:8px;line-height:1.4;">Year ' + esc(n.year) + ' \u00b7 Sem ' + esc(n.sem) + (n.fileSize ? ' \u00b7 ' + (n.fileSize / 1024).toFixed(0) + ' KB' : '') + '</div>' +
+        '<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">' +
+        '<span style="padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;background:' + col.bg + ';border:1px solid ' + col.border + ';color:' + col.text + ';">' + ((n.section || 'all') === 'all' ? 'All Sections' : 'Section ' + n.section) + '</span>' +
+        '</div></div>' +
+        '<div style="display:flex;gap:8px;width:100%;margin-top:2px;">' +
+        '<button onclick="qbankAdmView(\'' + n.id + '\')" id="qbank-view-adm-' + n.id + '" style="flex:1;min-width:0;padding:8px 6px;background:' + col.bg + ';border:1.5px solid ' + col.border + ';border-radius:10px;color:' + col.text + ';font-weight:700;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;touch-action:manipulation;">👁️ View</button>' +
+        '<button onclick="qbankAdmEditTitle(\'' + n.id + '\',\'' + n.title.replace(/'/g, "\\'") + '\',' + colorIdx + ')" style="flex:1;min-width:0;padding:8px 6px;background:' + col.bg + ';border:1.5px solid ' + col.border + ';border-radius:10px;color:' + col.text + ';font-weight:700;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;touch-action:manipulation;">✏️ Edit</button>' +
+        '<button onclick="qbankAdmDelete(\'' + n.id + '\')" style="flex:1;min-width:0;padding:8px 6px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:10px;color:#ef4444;font-weight:700;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;touch-action:manipulation;">🗑️ Delete</button>' +
         '</div></div>';
 
       let html = '';

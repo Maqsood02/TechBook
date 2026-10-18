@@ -434,16 +434,18 @@ let lastNotesFetchTime = 0;
       });
 
       const renderNoteCard = (n) =>
-        '<div style="display:flex;align-items:center;gap:10px;background:#f7f8fc;border:1px solid #e5e7eb;border-radius:12px;padding:12px 14px;margin-bottom:8px;flex-wrap:wrap;border-left:3px solid ' + col.text + ';">' +
-        '<div style="flex:1;min-width:0;">' +
-        '<div style="font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:5px;">' + esc(n.title) + '</div>' +
-        '<div style="font-size:11px;color:var(--text-secondary);margin-bottom:6px;">Year ' + esc(n.year) + ' \u00b7 Sem ' + esc(n.sem) + (n.scheme ? ' \u00b7 ' + esc(n.scheme) + ' Scheme' : '') + (n.fileSize ? ' \u00b7 ' + (n.fileSize / 1024).toFixed(0) + ' KB' : '') + '</div>' +
-        '<span style="padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;background:' + col.bg + ';border:1px solid ' + col.border + ';color:' + col.text + ';">' + ((n.section || 'all') === 'all' ? 'All Sections' : 'Section ' + n.section) + '</span>' +
-        (n.scheme ? '<span style="margin-left:4px;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;background:#eff2fe;border:1px solid #c7d2fe;color:#3d5af1;">' + esc(n.scheme) + ' Scheme</span>' : '') + '</div>' +
-        '<div style="display:flex;gap:6px;flex-shrink:0;">' +
-        '<button onclick="admViewNote(\'' + n.id + '\')" id="view-adm-' + n.id + '" style="padding:7px 12px;background:' + col.bg + ';border:1.5px solid ' + col.border + ';border-radius:99px;color:' + col.text + ';font-weight:700;font-size:12px;cursor:pointer;">👁️ View</button>' +
-        '<button onclick="admEditNoteTitle(\'' + n.id + '\',\'' + n.title.replace(/'/g, "\\'") + '\',' + colorIdx + ')" style="padding:7px 12px;background:' + col.bg + ';border:1.5px solid ' + col.border + ';border-radius:9px;color:' + col.text + ';font-weight:700;font-size:12px;cursor:pointer;">✏️ Edit</button>' +
-        '<button onclick="admDeleteNote(\'' + n.id + '\',\'' + n.title.replace(/'/g, "\\'") + '\')" style="padding:7px 12px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:9px;color:#f87171;font-weight:700;font-size:12px;cursor:pointer;">🗑️ Delete</button>' +
+        '<div style="box-sizing:border-box;width:100%;max-width:100%;background:#f7f8fc;border:1px solid #e5e7eb;border-radius:14px;padding:14px;margin-bottom:12px;border-left:4px solid ' + col.text + ';display:flex;flex-direction:column;gap:10px;overflow:hidden;">' +
+        '<div style="width:100%;min-width:0;">' +
+        '<div style="font-size:13.5px;font-weight:700;color:var(--text-primary);margin-bottom:4px;word-break:break-word;overflow-wrap:anywhere;line-height:1.4;">' + esc(n.title) + '</div>' +
+        '<div style="font-size:11.5px;color:var(--text-secondary);margin-bottom:8px;line-height:1.4;">Year ' + esc(n.year) + ' \u00b7 Sem ' + esc(n.sem) + (n.scheme ? ' \u00b7 ' + esc(n.scheme) + ' Scheme' : '') + (n.fileSize ? ' \u00b7 ' + (n.fileSize / 1024).toFixed(0) + ' KB' : '') + '</div>' +
+        '<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">' +
+        '<span style="padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;background:' + col.bg + ';border:1px solid ' + col.border + ';color:' + col.text + ';">' + ((n.section || 'all') === 'all' ? 'All Sections' : 'Section ' + n.section) + '</span>' +
+        (n.scheme ? '<span style="padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;background:#eff2fe;border:1px solid #c7d2fe;color:#3d5af1;">' + esc(n.scheme) + ' Scheme</span>' : '') +
+        '</div></div>' +
+        '<div style="display:flex;gap:8px;width:100%;margin-top:2px;">' +
+        '<button onclick="admViewNote(\'' + n.id + '\')" id="view-adm-' + n.id + '" style="flex:1;min-width:0;padding:8px 6px;background:' + col.bg + ';border:1.5px solid ' + col.border + ';border-radius:10px;color:' + col.text + ';font-weight:700;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;touch-action:manipulation;">👁️ View</button>' +
+        '<button onclick="admEditNoteTitle(\'' + n.id + '\',\'' + n.title.replace(/'/g, "\\'") + '\',' + colorIdx + ')" style="flex:1;min-width:0;padding:8px 6px;background:' + col.bg + ';border:1.5px solid ' + col.border + ';border-radius:10px;color:' + col.text + ';font-weight:700;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;touch-action:manipulation;">✏️ Edit</button>' +
+        '<button onclick="admDeleteNote(\'' + n.id + '\',\'' + n.title.replace(/'/g, "\\'") + '\')" style="flex:1;min-width:0;padding:8px 6px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:10px;color:#ef4444;font-weight:700;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;touch-action:manipulation;">🗑️ Delete</button>' +
         '</div></div>';
 
       let html = '';
@@ -786,7 +788,6 @@ let lastNotesFetchTime = 0;
       document.getElementById('sn-detail-title').style.color = col.text;
       document.getElementById('sn-detail-sub').textContent = notes.length + ' note' + (notes.length > 1 ? 's' : '') + ' available';
 
-      const detailList = document.getElementById('sn-detail-list');
       const nowMs = Date.now();
       const thresholdMs = 3 * 24 * 60 * 60 * 1000; // 3 days
 
@@ -797,17 +798,17 @@ let lastNotesFetchTime = 0;
       });
 
       const renderNoteCard = (n) => `
-      <div style="background:rgba(255,255,255,0.7);border:1.5px solid ${col.border};border-radius:14px;
+      <div style="box-sizing:border-box;width:100%;max-width:100%;background:rgba(255,255,255,0.7);border:1.5px solid ${col.border};border-radius:14px;
         padding:16px;margin-bottom:12px;position:relative;overflow:hidden;">
         <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:${col.text};border-radius:4px 0 0 4px;opacity:0.8;"></div>
-        <div style="padding-left:12px;">
+        <div style="padding-left:8px;">
           <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
-            <div style="font-size:15px;font-weight:800;color:var(--text-primary);">${esc(n.title)}</div>
-            ${n.uploadedAt ? `<div style="font-size:10px;color:rgba(139,168,204,0.4);white-space:nowrap;">
+            <div style="font-size:15px;font-weight:800;color:var(--text-primary);word-break:break-word;overflow-wrap:anywhere;line-height:1.4;">${esc(n.title)}</div>
+            ${n.uploadedAt ? `<div style="font-size:10px;color:rgba(139,168,204,0.6);white-space:nowrap;">
               🕐 ${new Date(n.uploadedAt.seconds * 1000).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
             </div>`: ''}
           </div>
-          ${n.desc ? `<div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px;line-height:1.5;">${esc(n.desc)}</div>` : ''}
+          ${n.desc ? `<div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px;line-height:1.5;word-break:break-word;overflow-wrap:anywhere;">${esc(n.desc)}</div>` : ''}
           <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;">
             <span style="padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;background:${col.bg};border:1px solid ${col.border};color:${col.text};">Year ${esc(n.year)}</span>
             <span style="padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;background:${col.bg};border:1px solid ${col.border};color:${col.text};">Sem ${esc(n.sem)}</span>
@@ -818,17 +819,18 @@ let lastNotesFetchTime = 0;
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <button onclick="studentViewNote('${n.id}','${jsEsc(n.fileName || 'note.pdf')}')" data-note-id="${n.id}"
               id="view-btn-${n.id}"
-              style="display:inline-flex;align-items:center;gap:6px;padding:9px 18px;
+              style="flex:1;min-width:120px;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 16px;
                 background:${col.bg};border:1.5px solid ${col.border};
-                border-radius:10px;color:${col.text};font-weight:700;font-size:13px;cursor:pointer;">
+                border-radius:10px;color:${col.text};font-weight:700;font-size:13px;cursor:pointer;touch-action:manipulation;">
               👁️ View PDF
             </button>
             <button onclick="studentDownloadNote('${n.id}','${jsEsc(n.fileName || 'note.pdf')}')" data-note-id="${n.id}"
               id="dl-btn-${n.id}"
-              style="display:inline-flex;align-items:center;gap:6px;padding:9px 18px;
+              style="flex:1;min-width:120px;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 16px;
                 background:linear-gradient(135deg,#3d5af1,#6366f1);border:none;
-                border-radius:10px;color:#f5f6fa;font-weight:700;font-size:13px;cursor:pointer;">
+                border-radius:10px;color:#f5f6fa;font-weight:700;font-size:13px;cursor:pointer;touch-action:manipulation;">
               ⬇️ Download
+            </button>
           </div>
         </div>
       </div>`;

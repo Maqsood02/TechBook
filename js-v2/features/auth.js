@@ -902,13 +902,23 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
        🚪 LOGOUT
     =============================== */
     document.addEventListener('click', async (e) => {
-      if (e.target && e.target.id === 'btn-logout') {
-        try {
-          await signOut(auth);
-          window._currentStudentUSN = null;
-          msg('login-msg', 'Logged out successfully', 'info');
-          switchStudentTab('attendance');
-        } catch (err) { console.error('Logout error:', err); }
+      const logoutBtn = e.target && e.target.closest ? e.target.closest('#btn-logout') : null;
+      if (logoutBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (typeof window.studentLogout === 'function') {
+          await window.studentLogout();
+        } else {
+          try {
+            await signOut(auth);
+            window._currentStudentUSN = null;
+            localStorage.removeItem('techbook_student_logged_in');
+            localStorage.removeItem('techbook_student_usn');
+            localStorage.removeItem('techbook_student_data');
+            if (typeof window.showLandingPage === 'function') window.showLandingPage();
+            msg('login-msg', 'Logged out successfully', 'info');
+          } catch (err) { console.error('Logout error:', err); }
+        }
       }
     });
 

@@ -184,7 +184,10 @@ function selectRole(role) {
   // Update navbar actions (Logout button) dynamically based on role and login state
   const navbarActions = document.getElementById('navbar-actions');
   if (navbarActions) {
-    if (role === 'student' && window._currentStudentUSN) {
+    const isStudLoggedIn = localStorage.getItem('techbook_student_logged_in') === 'true' || !!window._currentStudentUSN;
+    const isAdmLoggedIn = localStorage.getItem('techbook_admin_logged_in') === 'true' || !!window.adminLoggedIn;
+
+    if (role === 'student' && isStudLoggedIn) {
       navbarActions.innerHTML = `
         <button id="btn-logout" onclick="window.studentLogout && window.studentLogout()"
           style="display:flex;align-items:center;gap:6px;padding:8px 14px;background:#f9fafb;border:1px solid rgba(57,255,180,0.25);border-radius:10px;color:#3d5af1;font-weight:700;font-size:13px;cursor:pointer;transition:all 0.2s;"
@@ -194,7 +197,7 @@ function selectRole(role) {
           Logout
         </button>
       `;
-    } else if ((role === 'admin' || role === 'cof') && window.adminLoggedIn) {
+    } else if ((role === 'admin' || role === 'cof') && isAdmLoggedIn) {
       navbarActions.innerHTML = `
         <button onclick="window.adminLogout && window.adminLogout()" 
           style="display:flex;align-items:center;gap:6px;padding:8px 14px;background:#f9fafb;border:1px solid rgba(57,255,180,0.25);border-radius:10px;color:#3d5af1;font-weight:700;font-size:13px;cursor:pointer;transition:all 0.2s;"

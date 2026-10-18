@@ -83,7 +83,7 @@ window._switchTab = window.switchStudentTab = function (tab) {
 
   // Hide nav, show content
   if (navGrid) navGrid.style.display = 'none';
-  if (logoutBtn) logoutBtn.style.display = 'none';
+  if (logoutBtn) logoutBtn.style.display = ''; // Keep logout button visible when student dashboard is open
   if (tabContent) tabContent.style.display = '';
   ['attendance', 'quiz', 'quiz-history', 'history', 'notes', 'qbank', 'pyq', 'ia-timetable'].forEach(t => {
     const c = document.getElementById('stab-content-' + t);
@@ -140,9 +140,24 @@ window._studentLogout = window.studentLogout = async function () {
       window._featureUnsubscribe();
       window._featureUnsubscribe = null;
     }
-    switchStudentTab(null);
+    
+    // Cleanly reset student view without triggering restricted tab checks
+    window._studentHistoryNavLock = true;
+    document.getElementById('student-area')?.classList.add('hidden');
+    document.getElementById('student-auth')?.classList.remove('hidden');
+    const navGrid = document.getElementById('student-nav-grid');
+    const tabContent = document.getElementById('student-tab-content');
+    if (navGrid) navGrid.style.display = 'grid';
+    if (tabContent) tabContent.style.display = 'none';
+    ['attendance', 'quiz', 'quiz-history', 'history', 'notes', 'qbank', 'pyq', 'ia-timetable'].forEach(t => {
+      const c = document.getElementById('stab-content-' + t);
+      if (c) c.style.display = 'none';
+    });
+    window._studentHistoryNavLock = false;
+
     msg('login-msg', 'Logged out successfully', 'info');
     if (typeof showLandingPage === 'function') showLandingPage();
+    window.location.hash = '';
   } catch (e) { console.error('Logout error:', e); }
 };
 
