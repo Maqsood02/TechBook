@@ -112,7 +112,7 @@ let lastNotesFetchTime = 0;
       const subject = document.getElementById('adm-subject').value.trim();
       const titleInput = document.getElementById('adm-title').value.trim();
       const desc = document.getElementById('adm-desc').value.trim();
-      const scheme = document.getElementById('adm-scheme')?.value || '2022';
+      const scheme = document.getElementById('adm-scheme')?.value || 'All';
       const year = document.getElementById('adm-year').value;
       const sem = document.getElementById('adm-sem').value;
       const dept = document.getElementById('adm-dept').value;
@@ -188,11 +188,11 @@ let lastNotesFetchTime = 0;
       setTimeout(() => { pw.style.display = 'none'; setProgBar(0); }, 800);
 
       if (failCount === 0) {
-        admShowMsg(`✅ ${successCount} note${successCount > 1 ? 's' : ''} uploaded successfully!`, '#3d5af1');
+        admShowMsg(`✅ ${successCount} note${successCount > 1 ? 's' : ''} uploaded. ⏳ Sending notifications...`, '#3d5af1');
 
         // ── Send email notifications to eligible students ──
         try {
-          const dept = document.getElementById('adm-dept')?.value || '';
+          const dept = document.getElementById('adm-dept')?.value || 'All';
           const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
           fetch(`${API_BASE_URL}/api/notify-upload`, {
             method: 'POST',
@@ -212,9 +212,15 @@ let lastNotesFetchTime = 0;
             })
           }).then(r => r.json()).then(d => {
             if (d.success && d.sentCount > 0) {
-              admShowMsg(`✅ ${successCount} note${successCount > 1 ? 's' : ''} uploaded. 📧 ${d.sentCount} students notified!`, '#3d5af1');
+              admShowMsg(`✅ ${successCount} note${successCount > 1 ? 's' : ''} uploaded. 📧 ${d.sentCount} verified students notified!`, '#10b981');
+            } else if (d.success && d.sentCount === 0) {
+              admShowMsg(`✅ ${successCount} note${successCount > 1 ? 's' : ''} uploaded. ⚠️ 0 students notified (no verified students matched criteria).`, '#f59e0b');
+            } else {
+              admShowMsg(`✅ ${successCount} note${successCount > 1 ? 's' : ''} uploaded. ⚠️ Notification status: ${d.error || 'Done'}`, '#f59e0b');
             }
-          }).catch(() => {});
+          }).catch(err => {
+            console.warn('Notify upload fetch error:', err);
+          });
         } catch (e) { /* silent fail */ }
 
       } else {
@@ -224,6 +230,56 @@ let lastNotesFetchTime = 0;
       admResetForm();
       btn.disabled = false; btn.textContent = '🚀 Upload Note';
       if (typeof admLoadAllNotes === 'function') admLoadAllNotes();
+    };
+
+    // ── Live Match Preview for Note Upload Form ──
+    let _matchPreviewTimer = null;
+    window.admUpdateUploadMatchPreview = () => {
+      const sem = document.getElementById('adm-sem')?.value;
+      const year = document.getElementById('adm-year')?.value;
+      const dept = document.getElementById('adm-dept')?.value;
+      const scheme = document.getElementById('adm-scheme')?.value || 'All';
+      const badge = document.getElementById('adm-upload-match-badge');
+      if (!badge) return;
+
+      if (!sem) {
+        badge.style.display = 'none';
+        return;
+      }
+
+      badge.style.display = 'block';
+      badge.style.background = '#f1f5f9';
+      badge.style.border = '1px solid #cbd5e1';
+      badge.style.color = '#475569';
+      badge.innerHTML = `<span>⏳ Checking matching verified students...</span>`;
+
+      if (_matchPreviewTimer) clearTimeout(_matchPreviewTimer);
+      _matchPreviewTimer = setTimeout(async () => {
+        try {
+          const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
+          const res = await fetch(`${API_BASE_URL}/api/check-matching-students`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ sem, year, dept, scheme })
+          });
+          const data = await res.json();
+          if (data.success) {
+            if (data.count > 0) {
+              badge.style.background = '#eff6ff';
+              badge.style.border = '1.5px solid #bfdbfe';
+              badge.style.color = '#1e40af';
+              badge.innerHTML = `<span>👥 <strong>${data.count} verified student${data.count > 1 ? 's' : ''}</strong> in Sem ${sem} (${scheme === 'All' ? 'All Schemes' : scheme + ' Scheme'}) will receive email notification.</span>`;
+            } else {
+              badge.style.background = '#fffbeb';
+              badge.style.border = '1.5px solid #fde68a';
+              badge.style.color = '#92400e';
+              badge.innerHTML = `<span>⚠️ <strong>0 verified students</strong> currently match Scheme '${scheme}' in Sem ${sem}.<br><span style="font-size:11px;font-weight:400;">Tip: If 1st sem students registered under 2026/2022 Scheme, select <strong>"All Schemes (Common)"</strong> to notify all of them.</span></span>`;
+            }
+          }
+        } catch (_) {
+          badge.style.display = 'none';
+        }
+      }, 400);
     };
 
     function setProgBar(val) {
@@ -444,11 +500,18 @@ let lastNotesFetchTime = 0;
         '</div></div>' +
         '<div style="display:flex;gap:8px;width:100%;margin-top:2px;">' +
         '<button onclick="admViewNote(\'' + n.id + '\')" id="view-adm-' + n.id + '" style="flex:1;min-width:0;padding:8px 6px;background:' + col.bg + ';border:1.5px solid ' + col.border + ';border-radius:10px;color:' + col.text + ';font-weight:700;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;touch-action:manipulation;">👁️ View</button>' +
-        '<button onclick="admEditNoteTitle(\'' + n.id + '\',\'' + n.title.replace(/'/g, "\\'") + '\',' + colorIdx + ')" style="flex:1;min-width:0;padding:8px 6px;background:' + col.bg + ';border:1.5px solid ' + col.border + ';border-radius:10px;color:' + col.text + ';font-weight:700;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;touch-action:manipulation;">✏️ Edit</button>' +
+        '<button onclick="admOpenEditNoteModal(\'' + n.id + '\',' + colorIdx + ')" style="flex:1;min-width:0;padding:8px 6px;background:' + col.bg + ';border:1.5px solid ' + col.border + ';border-radius:10px;color:' + col.text + ';font-weight:700;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;touch-action:manipulation;">✏️ Edit</button>' +
         '<button onclick="admDeleteNote(\'' + n.id + '\',\'' + n.title.replace(/'/g, "\\'") + '\')" style="flex:1;min-width:0;padding:8px 6px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:10px;color:#ef4444;font-weight:700;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;touch-action:manipulation;">🗑️ Delete</button>' +
         '</div></div>';
 
       let html = '';
+      // Header action bar to notify students directly
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;background:#ffffff;border:1.5px solid #c7d2fe;border-radius:14px;padding:12px 16px;margin-bottom:16px;flex-wrap:wrap;gap:10px;box-shadow:0 2px 8px rgba(61,90,241,0.06);">' +
+        '<div><div style="font-weight:800;font-size:13.5px;color:#1e293b;display:flex;align-items:center;gap:6px;">📢 Student Notification</div>' +
+        '<div style="font-size:11.5px;color:#64748b;">Notify or update verified students for <strong>' + esc(subj) + '</strong></div></div>' +
+        '<button onclick="admPromptNotifySubject(\'' + subj.replace(/'/g, "\\'") + '\',' + colorIdx + ')" style="padding:9px 16px;background:linear-gradient(135deg,#3d5af1,#6366f1);color:#fff;border:none;border-radius:10px;font-weight:800;font-size:12.5px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(61,90,241,0.25);transition:opacity 0.2s;">' +
+        '📧 Notify Verified Students</button></div>';
+
       if (latest.length > 0) {
         html += '<div style="font-size:12px;font-weight:800;color:' + col.text + ';margin:5px 0 12px;display:flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:0.5px;">✨ Latest Uploads <span style="background:' + col.bg + ';padding:1px 8px;border-radius:10px;font-size:10px;border:1px solid ' + col.border + ';color:' + col.text + ';">' + latest.length + '</span></div>';
         html += latest.map(renderNoteCard).join('');
@@ -460,25 +523,198 @@ let lastNotesFetchTime = 0;
       detailList.innerHTML = html || '<p style="text-align:center;padding:20px;color:var(--text-secondary);">No notes available for this selection.</p>';
     };
 
-    window.admEditNoteTitle = async (id, currentTitle, colorIdx) => {
-      const newTitle = prompt("Edit Note Title:", currentTitle);
-      if (newTitle === null) return;
-      const trimmed = newTitle.trim();
-      if (!trimmed) return alert("Title cannot be empty!");
+    // ── Open Note Edit Modal with Scheme & Notify options ──
+    window._admCurrentColorIdx = 0;
+    window.admOpenEditNoteModal = (id, colorIdx) => {
+      window._admCurrentColorIdx = colorIdx;
+      const note = (window._admAllNotes || []).find(n => n.id === id);
+      if (!note) return;
+
+      document.getElementById('adm-edit-note-id').value = id;
+      document.getElementById('adm-edit-note-subj').value = note.subject || '';
+      document.getElementById('adm-edit-note-title').value = note.title || '';
+      document.getElementById('adm-edit-note-scheme').value = note.scheme || 'All';
+      document.getElementById('adm-edit-note-sem').value = note.sem || '1';
+      document.getElementById('adm-edit-note-year').value = note.year || '1';
+      document.getElementById('adm-edit-note-dept').value = note.dept || 'All';
+      document.getElementById('adm-edit-note-sec').value = note.section || 'all';
+      document.getElementById('adm-edit-note-notify').checked = true;
+
+      const msg = document.getElementById('adm-edit-note-msg');
+      if (msg) msg.innerHTML = '';
+
+      document.getElementById('adm-edit-note-modal').style.display = 'flex';
+    };
+
+    window.admSaveNoteDetails = async () => {
+      const id = document.getElementById('adm-edit-note-id').value;
+      const subj = document.getElementById('adm-edit-note-subj').value.trim();
+      const title = document.getElementById('adm-edit-note-title').value.trim();
+      const scheme = document.getElementById('adm-edit-note-scheme').value;
+      const sem = document.getElementById('adm-edit-note-sem').value;
+      const year = document.getElementById('adm-edit-note-year').value;
+      const dept = document.getElementById('adm-edit-note-dept').value;
+      const sec = document.getElementById('adm-edit-note-sec').value.trim() || 'all';
+      const shouldNotify = document.getElementById('adm-edit-note-notify').checked;
+      const btn = document.getElementById('btn-save-edit-note');
+      const msg = document.getElementById('adm-edit-note-msg');
+
+      if (!title || !subj) {
+        if (msg) msg.innerHTML = '<span style="color:#ef4444;font-size:12px;">⚠️ Subject and Title are required.</span>';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = '⏳ Saving...';
+
       try {
         const noteRef = doc(db, 'techbook_notes', id);
-        await setDoc(noteRef, { title: trimmed }, { merge: true });
+        const updates = { subject: subj, title, scheme, sem, year, dept, section: sec };
+        await setDoc(noteRef, updates, { merge: true });
+
+        // Update in memory
         if (window._admAllNotes) {
           const idx = window._admAllNotes.findIndex(n => n.id === id);
-          if (idx !== -1) window._admAllNotes[idx].title = trimmed;
+          if (idx !== -1) Object.assign(window._admAllNotes[idx], updates);
         }
-        alert("✓ Title updated successfully!");
-        const note = window._admAllNotes ? window._admAllNotes.find(n => n.id === id) : null;
-        if (note) {
-          window.admOpenSubject(note.subject || 'General', colorIdx);
+
+        // Notify students if checkbox is checked
+        let notifyText = '';
+        if (shouldNotify) {
+          try {
+            const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
+            const notifyRes = await fetch(`${API_BASE_URL}/api/notify-upload`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+              body: JSON.stringify({
+                contentType: 'Notes',
+                subject: subj,
+                title,
+                dept: dept || 'All',
+                year,
+                sem,
+                scheme,
+                section: sec,
+                isUpdate: true
+              })
+            });
+            const d = await notifyRes.json();
+            if (d.success && d.sentCount > 0) {
+              notifyText = ` 📧 ${d.sentCount} students notified of update!`;
+            } else if (d.sentCount === 0) {
+              notifyText = ` (0 students matched criteria for email).`;
+            }
+          } catch (ne) {
+            console.warn('Update notify error:', ne);
+          }
         }
+
+        if (msg) msg.innerHTML = `<span style="color:#10b981;font-size:12px;">✅ Note updated successfully!${notifyText}</span>`;
+        setTimeout(() => {
+          document.getElementById('adm-edit-note-modal').style.display = 'none';
+          window.admOpenSubject(subj, window._admCurrentColorIdx || 0);
+        }, 1200);
+
       } catch (err) {
-        alert("Error updating title: " + err.message);
+        if (msg) msg.innerHTML = `<span style="color:#ef4444;font-size:12px;">❌ Error: ${err.message}</span>`;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Save & Update Note';
+      }
+    };
+
+    // ── Prompt Broadcast Notification for Subject ──
+    window.admPromptNotifySubject = async (subj, colorIdx) => {
+      window._admCurrentColorIdx = colorIdx;
+      const papers = (window._admAllNotes || []).filter(n => (n.subject || 'General') === subj);
+      const sem = papers[0]?.sem || '1';
+      const year = papers[0]?.year || '1';
+      const scheme = papers[0]?.scheme || 'All';
+      const dept = papers[0]?.dept || 'All';
+
+      document.getElementById('adm-notify-subj-name').value = subj;
+      document.getElementById('adm-notify-subj-title').textContent = `${subj} (${papers.length} notes)`;
+      document.getElementById('adm-notify-target-sem').textContent = `Sem ${sem} (Year ${year})`;
+      document.getElementById('adm-notify-target-scheme').textContent = scheme === 'All' ? 'All Schemes (Common)' : `${scheme} Scheme`;
+      document.getElementById('adm-notify-custom-title').value = `${papers.length} Lecture Notes Available`;
+
+      const countEl = document.getElementById('adm-notify-target-count');
+      countEl.textContent = 'Checking...';
+      countEl.style.color = '#3d5af1';
+
+      const msgEl = document.getElementById('adm-notify-subject-msg');
+      if (msgEl) msgEl.innerHTML = '';
+
+      document.getElementById('adm-notify-subject-modal').style.display = 'flex';
+
+      try {
+        const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
+        const res = await fetch(`${API_BASE_URL}/api/check-matching-students`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ sem, year, dept, scheme })
+        });
+        const d = await res.json();
+        if (d.success) {
+          countEl.textContent = `${d.count} verified student${d.count > 1 ? 's' : ''}`;
+          countEl.style.color = d.count > 0 ? '#10b981' : '#f59e0b';
+        }
+      } catch (_) {
+        countEl.textContent = 'Unknown';
+      }
+    };
+
+    window.admExecuteSubjectNotification = async () => {
+      const subj = document.getElementById('adm-notify-subj-name').value;
+      const customTitle = document.getElementById('adm-notify-custom-title').value.trim() || subj;
+      const papers = (window._admAllNotes || []).filter(n => (n.subject || 'General') === subj);
+      const sem = papers[0]?.sem || '1';
+      const year = papers[0]?.year || '1';
+      const scheme = papers[0]?.scheme || 'All';
+      const dept = papers[0]?.dept || 'All';
+
+      const btn = document.getElementById('btn-confirm-notify-subject');
+      const msg = document.getElementById('adm-notify-subject-msg');
+
+      btn.disabled = true;
+      btn.textContent = '⏳ Sending Emails...';
+      if (msg) msg.innerHTML = '<span style="color:#3d5af1;font-size:12px;">⏳ Dispatching email notifications...</span>';
+
+      try {
+        const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
+        const res = await fetch(`${API_BASE_URL}/api/notify-upload`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({
+            contentType: 'Notes',
+            subject: subj,
+            title: customTitle,
+            dept: dept || 'All',
+            year,
+            sem,
+            scheme,
+            section: 'all',
+            isUpdate: true
+          })
+        });
+        const d = await res.json();
+        if (d.success) {
+          if (d.sentCount > 0) {
+            if (msg) msg.innerHTML = `<span style="color:#10b981;font-size:13px;font-weight:700;">✅ Success! ${d.sentCount} verified students notified!</span>`;
+            setTimeout(() => {
+              document.getElementById('adm-notify-subject-modal').style.display = 'none';
+            }, 1800);
+          } else {
+            if (msg) msg.innerHTML = `<span style="color:#f59e0b;font-size:12px;">⚠️ No verified students matched Scheme '${scheme}' in Sem ${sem}.</span>`;
+          }
+        } else {
+          if (msg) msg.innerHTML = `<span style="color:#ef4444;font-size:12px;">❌ Error: ${d.error || 'Failed to send'}</span>`;
+        }
+      } catch (e) {
+        if (msg) msg.innerHTML = `<span style="color:#ef4444;font-size:12px;">❌ Connection error: ${e.message}</span>`;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🚀 Send Notification Now';
       }
     };
 
@@ -671,7 +907,16 @@ let lastNotesFetchTime = 0;
       const filtered = allStudentNotes.filter(n => {
         if (year && n.year !== year) return false;
         if (sem && n.sem !== sem) return false;
-        if (scheme && n.scheme && n.scheme !== 'All' && n.scheme !== 'all' && n.scheme !== scheme) return false;
+        if (scheme && n.scheme && n.scheme !== 'All' && n.scheme !== 'all') {
+          const targetSchemes = String(n.scheme).split(',').map(s => s.trim().toLowerCase());
+          const userScheme = String(scheme).trim().toLowerCase();
+          const matches = targetSchemes.includes(userScheme) || targetSchemes.includes('all') || targetSchemes.includes('common');
+          // Cohort compatibility for 1st sem (2025/2026/2022)
+          const isSem1Cohort = (String(sem) === '1' || String(n.sem) === '1') &&
+            ['2022', '2025', '2026'].includes(userScheme) &&
+            targetSchemes.some(ts => ['2022', '2025', '2026'].includes(ts));
+          if (!matches && !isSem1Cohort) return false;
+        }
         if (sec) {
           // n.section can be 'all', 'A', 'B', or 'A,B,C' (comma-separated)
           const noteSecs = (n.section || 'all').split(',').map(s => s.trim());
@@ -774,7 +1019,15 @@ let lastNotesFetchTime = 0;
         if ((n.subject || 'General') !== subj) return false;
         if (year && n.year !== year) return false;
         if (sem && n.sem !== sem) return false;
-        if (scheme && n.scheme && n.scheme !== 'All' && n.scheme !== 'all' && n.scheme !== scheme) return false;
+        if (scheme && n.scheme && n.scheme !== 'All' && n.scheme !== 'all') {
+          const targetSchemes = String(n.scheme).split(',').map(s => s.trim().toLowerCase());
+          const userScheme = String(scheme).trim().toLowerCase();
+          const matches = targetSchemes.includes(userScheme) || targetSchemes.includes('all') || targetSchemes.includes('common');
+          const isSem1Cohort = (String(sem) === '1' || String(n.sem) === '1') &&
+            ['2022', '2025', '2026'].includes(userScheme) &&
+            targetSchemes.some(ts => ['2022', '2025', '2026'].includes(ts));
+          if (!matches && !isSem1Cohort) return false;
+        }
         const nSec = (n.section || 'all').toLowerCase().trim();
         if (nSec === 'all') return true;
         if (!sec) return true;

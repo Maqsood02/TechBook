@@ -171,7 +171,8 @@ import { $, val } from '../core/helpers.js';
           window._currentStudentScheme = studentScheme;
           try { localStorage.setItem('techbook_student_scheme', studentScheme); } catch (_) {}
         } else {
-          window._currentStudentScheme = '2022';
+          const sem = String(data.sem || data.semester || '');
+          window._currentStudentScheme = (sem === '1' || sem === '2') ? '2026' : '2022';
         }
 
         if (!isSchemeConfirmed) {
@@ -3050,7 +3051,7 @@ import { $, val } from '../core/helpers.js';
       const closeBtn = document.getElementById('btn-close-scheme-modal');
       if (closeBtn) closeBtn.style.display = isStrict ? 'none' : 'flex';
 
-      const currentScheme = window._currentStudentScheme || localStorage.getItem('techbook_student_scheme') || '2022';
+      const currentScheme = window._currentStudentScheme || localStorage.getItem('techbook_student_scheme') || '2026';
       document.querySelectorAll('.scheme-option-card').forEach(card => {
         if (card.getAttribute('data-scheme') === currentScheme) {
           card.classList.add('active');
@@ -3080,7 +3081,7 @@ import { $, val } from '../core/helpers.js';
 
     window.saveStudentSchemeSelection = async function() {
       const activeCard = document.querySelector('.scheme-option-card.active');
-      const selectedScheme = activeCard ? activeCard.getAttribute('data-scheme') : '2022';
+      const selectedScheme = activeCard ? activeCard.getAttribute('data-scheme') : '2026';
 
       const btn = document.getElementById('btn-save-scheme');
       if (btn) { btn.disabled = true; btn.innerHTML = '⏳ Saving…'; }

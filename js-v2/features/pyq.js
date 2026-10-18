@@ -822,7 +822,7 @@ let lastPyqFetchTime = 0;
       
       const subject = val('pyq-subject');
       const examYear = val('pyq-exam-year');
-      const scheme = val('pyq-scheme') || '2022';
+      const scheme = val('pyq-scheme') || 'All';
       const year = val('pyq-adm-year');
       const sem = val('pyq-adm-sem');
       const sec = pyqGetSelectedSections();

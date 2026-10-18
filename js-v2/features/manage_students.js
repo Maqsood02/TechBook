@@ -198,6 +198,7 @@ function initStudentManagement() {
       const dept = document.getElementById("edit-student-dept").value;
       const year = document.getElementById("edit-student-year").value;
       const sem = document.getElementById("edit-student-sem").value;
+      const scheme = document.getElementById("edit-student-scheme") ? document.getElementById("edit-student-scheme").value : '2026';
       const email = document.getElementById("edit-student-email").value.trim().toLowerCase();
       const verified = document.getElementById("edit-student-verified").value === "true";
       const msgEl = document.getElementById("edit-student-msg");
@@ -217,6 +218,7 @@ function initStudentManagement() {
           dept,
           year,
           sem,
+          scheme,
           email,
           email_verified: verified
         });
@@ -232,6 +234,7 @@ function initStudentManagement() {
             list[idx].dept = dept;
             list[idx].year = year;
             list[idx].sem = sem;
+            list[idx].scheme = scheme;
             list[idx].email = email;
             list[idx].email_verified = verified;
           }
@@ -267,9 +270,10 @@ function initStudentManagement() {
       const newYear = val("bulk-new-year");
       const newDept = val("bulk-new-dept");
       const newCourse = val("bulk-new-course");
+      const newScheme = val("bulk-new-scheme");
       const bulkMsg = document.getElementById("bulk-update-msg");
 
-      if (!newSem && !newYear && !newDept && !newCourse) {
+      if (!newSem && !newYear && !newDept && !newCourse && !newScheme) {
         if (bulkMsg) bulkMsg.innerHTML = '<span style="color:#f87171;">⚠️ Select at least one field to change.</span>';
         return;
       }
@@ -290,6 +294,7 @@ function initStudentManagement() {
           if (newYear) updates.year = newYear;
           if (newDept) updates.dept = newDept;
           if (newCourse) updates.course = newCourse;
+          if (newScheme) updates.scheme = newScheme;
 
           await updateDoc(doc(db, "students", student.id), updates);
           success++;
@@ -415,6 +420,9 @@ function openEditStudentModal(student) {
   document.getElementById("edit-student-dept").value = student.dept || "CSE";
   document.getElementById("edit-student-year").value = student.year || "1";
   document.getElementById("edit-student-sem").value = student.sem || "1";
+  if (document.getElementById("edit-student-scheme")) {
+    document.getElementById("edit-student-scheme").value = student.scheme || "2026";
+  }
   document.getElementById("edit-student-email").value = student.email || "";
   document.getElementById("edit-student-verified").value = String(student.email_verified === true);
   

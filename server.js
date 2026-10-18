@@ -739,56 +739,103 @@ app.post('/api/verify-otp', verifyLimiter, async (req, res) => {
  * Sends content upload notification emails to eligible students.
  */
 app.post('/api/notify-upload', verifyAdminMiddleware, async (req, res) => {
-  const { contentType, subject, title, dept, year, sem, section, scheme } = req.body;
+  const { contentType, subject, title, dept, year, sem, section, scheme, isUpdate } = req.body;
 
   if (!contentType || !subject || !dept || !year || !sem) {
     return res.status(400).json({ success: false, error: 'Missing required fields.' });
   }
 
   try {
-    const filters = [
-      { fieldFilter: { field: { fieldPath: 'year' }, op: 'EQUAL', value: { stringValue: String(year) } } },
-      { fieldFilter: { field: { fieldPath: 'sem' }, op: 'EQUAL', value: { stringValue: String(sem) } } },
-      { fieldFilter: { field: { fieldPath: 'email_verified' }, op: 'EQUAL', value: { booleanValue: true } } }
-    ];
-
-    if (dept && dept !== 'All' && dept !== 'all') {
-      filters.push({ fieldFilter: { field: { fieldPath: 'dept' }, op: 'EQUAL', value: { stringValue: dept } } });
-    }
-
+    // 1. Fetch verified students (querying by email_verified single-field filter avoids Firestore composite index errors)
     const queryResult = await firestoreRunQuery({
       structuredQuery: {
         from: [{ collectionId: 'students' }],
-        where: { compositeFilter: { op: 'AND', filters } }
+        where: {
+          fieldFilter: {
+            field: { fieldPath: 'email_verified' },
+            op: 'EQUAL',
+            value: { booleanValue: true }
+          }
+        }
       }
     });
 
-    if (!Array.isArray(queryResult.data)) return res.json({ success: true, sentCount: 0 });
+    if (!Array.isArray(queryResult.data)) {
+      console.error('Failed to query students:', queryResult.data);
+      return res.status(500).json({ success: false, error: 'Failed to query student records from database.' });
+    }
 
     const students = queryResult.data
       .filter(r => r.document)
       .map(r => parseDoc(r.document));
 
+    console.log(`🔍 Total verified students fetched: ${students.length}`);
+
+    // 2. Filter students by Semester, Year, Department, Section, and Scheme
     const targetStudents = students.filter(s => {
-      // 1. Scheme criteria filter:
-      if (scheme && scheme !== 'all' && scheme !== 'All') {
-        const studentScheme = String(s.scheme || '2022').trim().toLowerCase();
-        const targetScheme = String(scheme).trim().toLowerCase();
-        if (studentScheme !== targetScheme) return false;
+      // Semester filter (required)
+      const studentSem = String(s.sem || '').trim();
+      const targetSem = String(sem).trim();
+      if (studentSem !== targetSem) return false;
+
+      // Year filter (if specified)
+      if (year && year !== 'all' && year !== 'All') {
+        const studentYear = String(s.year || '').trim();
+        const targetYear = String(year).trim();
+        if (studentYear && targetYear && studentYear !== targetYear) return false;
       }
 
-      // 2. Section criteria filter:
-      if (!section || section === 'all' || section === 'All') return true;
-      const targetSecs = section.split(',').map(x => x.trim().toLowerCase());
-      if (targetSecs.includes('all')) return true;
+      // Department filter
+      if (dept && dept !== 'all' && dept !== 'All') {
+        const studentDept = String(s.dept || '').trim().toLowerCase();
+        const targetDept = String(dept).trim().toLowerCase();
+        if (studentDept !== targetDept && studentDept !== 'all') return false;
+      }
 
-      const studentSec = String(s.section || '').trim().toLowerCase();
-      return targetSecs.includes(studentSec);
+      // Section criteria filter
+      if (section && section !== 'all' && section !== 'All') {
+        const targetSecs = section.split(',').map(x => x.trim().toLowerCase());
+        if (!targetSecs.includes('all')) {
+          const studentSec = String(s.section || '').trim().toLowerCase();
+          if (studentSec && !targetSecs.includes(studentSec)) return false;
+        }
+      }
+
+      // Scheme criteria filter:
+      if (scheme && scheme !== 'all' && scheme !== 'All') {
+        const studentScheme = String(s.scheme || '2022').trim().toLowerCase();
+        const targetSchemes = String(scheme).split(',').map(x => x.trim().toLowerCase());
+
+        if (!targetSchemes.includes('all') && !targetSchemes.includes('common')) {
+          // Direct match
+          if (targetSchemes.includes(studentScheme)) return true;
+
+          // 1st sem (Year 1) cross-cohort compatibility:
+          // In 1st sem, students often register with 2026 Scheme, 2025 Scheme, or default 2022 Scheme.
+          // If notes are uploaded for 2025 or 2026 or 2022, include the 1st sem batch students.
+          if (targetSem === '1' && (targetSchemes.includes('2025') || targetSchemes.includes('2026') || targetSchemes.includes('2022'))) {
+            if (studentScheme === '2026' || studentScheme === '2025' || studentScheme === '2022') {
+              return true;
+            }
+          }
+
+          return false;
+        }
+      }
+
+      return true;
     });
+
+    console.log(`🎯 Target students for notification: ${targetStudents.length} (Sem: ${sem}, Year: ${year}, Dept: ${dept}, Scheme: ${scheme})`);
+
+    if (targetStudents.length === 0) {
+      return res.json({ success: true, sentCount: 0, total: 0, message: 'No verified students matched the criteria.' });
+    }
 
     const icons = { 'Notes': '📄', 'Question Bank': '📝', 'PYQ': '📋' };
     const icon = icons[contentType] || '📁';
     const uploadDate = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' });
+    const isUpdateFlag = Boolean(isUpdate);
 
     // Send emails synchronously before responding (required for Serverless environment like Vercel)
     let sentCount = 0;
@@ -798,7 +845,7 @@ app.post('/api/notify-upload', verifyAdminMiddleware, async (req, res) => {
         const clientOrigin = req.headers.origin || req.get('origin') || APP_URL;
         const html = loadTemplate('content-upload.html', {
           STUDENT_NAME: student.name || student.usn,
-          CONTENT_TYPE: contentType,
+          CONTENT_TYPE: isUpdateFlag ? `${contentType} (Updated)` : contentType,
           CONTENT_ICON: icon,
           SUBJECT: subject,
           TITLE: title || subject,
@@ -809,9 +856,14 @@ app.post('/api/notify-upload', verifyAdminMiddleware, async (req, res) => {
           UPLOAD_DATE: uploadDate,
           APP_URL: clientOrigin
         });
+
+        const emailSubject = isUpdateFlag
+          ? `📢 Note Updated: ${subject} (${title || subject}) — TechBook`
+          : `New ${contentType} Uploaded: ${subject} — TechBook`;
+
         await sendEmail({
           to: student.email,
-          subject: `New ${contentType} Uploaded: ${subject} — TechBook`,
+          subject: emailSubject,
           html
         });
         sentCount++;
@@ -825,7 +877,54 @@ app.post('/api/notify-upload', verifyAdminMiddleware, async (req, res) => {
 
   } catch (err) {
     console.error('Notify upload error:', err.message);
-    res.status(500).json({ success: false, error: 'Failed to send notifications.' });
+    res.status(500).json({ success: false, error: 'Failed to send notifications: ' + err.message });
+  }
+});
+
+/**
+ * POST /api/check-matching-students
+ * Checks how many verified students will receive notification for given filters.
+ */
+app.post('/api/check-matching-students', verifyAdminMiddleware, async (req, res) => {
+  const { year, sem, dept, scheme, section } = req.body;
+  try {
+    const queryResult = await firestoreRunQuery({
+      structuredQuery: {
+        from: [{ collectionId: 'students' }],
+        where: {
+          fieldFilter: {
+            field: { fieldPath: 'email_verified' },
+            op: 'EQUAL',
+            value: { booleanValue: true }
+          }
+        }
+      }
+    });
+
+    if (!Array.isArray(queryResult.data)) return res.json({ success: true, count: 0 });
+
+    const students = queryResult.data.filter(r => r.document).map(r => parseDoc(r.document));
+    const target = students.filter(s => {
+      if (sem && sem !== 'all' && String(s.sem || '').trim() !== String(sem).trim()) return false;
+      if (year && year !== 'all' && String(s.year || '').trim() !== String(year).trim()) return false;
+      if (dept && dept !== 'all' && dept !== 'All' && String(s.dept || '').toLowerCase() !== dept.toLowerCase()) return false;
+      if (scheme && scheme !== 'all' && scheme !== 'All') {
+        const studentScheme = String(s.scheme || '2022').trim().toLowerCase();
+        const targets = String(scheme).split(',').map(x => x.trim().toLowerCase());
+        if (!targets.includes('all') && !targets.includes('common')) {
+          if (targets.includes(studentScheme)) return true;
+          if (String(sem) === '1' && (targets.includes('2025') || targets.includes('2026') || targets.includes('2022'))) {
+            if (studentScheme === '2026' || studentScheme === '2025' || studentScheme === '2022') return true;
+          }
+          return false;
+        }
+      }
+      return true;
+    });
+
+    res.json({ success: true, count: target.length });
+  } catch (err) {
+    res.json({ success: false, count: 0 });
   }
 });
 
