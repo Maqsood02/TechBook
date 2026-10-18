@@ -266,6 +266,7 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
       const course = val("reg-course");
       const dept = val("reg-dept");
       const year = val("reg-year");
+      const sem = val("reg-sem");
       const scheme = val("reg-scheme") || (sem === "1" || sem === "2" ? "2026" : "2022");
       const pass = val("reg-pass");
       const pass2 = val("reg-pass2");
