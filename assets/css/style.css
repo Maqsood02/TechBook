@@ -5154,3 +5154,34 @@
       0% { transform: scale(0.93) translateY(10px); opacity: 0; }
       100% { transform: scale(1) translateY(0); opacity: 1; }
     }
+
+    /* OTP Digit Input Boxes Styling Fix */
+    .reg-digit-box,
+    .verify-digit-box {
+      width: 44px !important;
+      min-width: 44px !important;
+      max-width: 44px !important;
+      height: 52px !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      text-align: center !important;
+      font-size: 22px !important;
+      font-weight: 700 !important;
+      line-height: 52px !important;
+      color: #0f172a !important;
+      background: #ffffff !important;
+      border: 1.5px solid #c7d2fe !important;
+      border-radius: 12px !important;
+      outline: none !important;
+      box-shadow: none !important;
+      box-sizing: border-box !important;
+      appearance: none !important;
+      -webkit-appearance: none !important;
+    }
+
+    .reg-digit-box:focus,
+    .verify-digit-box:focus {
+      border-color: #3d5af1 !important;
+      box-shadow: 0 0 0 3px rgba(61, 90, 241, 0.2) !important;
+      background: #ffffff !important;
+    }
