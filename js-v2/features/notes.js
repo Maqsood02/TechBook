@@ -1051,6 +1051,7 @@ async function getAdminHeaders() {
       document.getElementById('sn-detail-title').textContent = col.icon + ' ' + subj;
       document.getElementById('sn-detail-title').style.color = col.text;
       document.getElementById('sn-detail-sub').textContent = notes.length + ' note' + (notes.length > 1 ? 's' : '') + ' available';
+      const detailList = document.getElementById('sn-detail-list');
 
       const nowMs = Date.now();
       const thresholdMs = 3 * 24 * 60 * 60 * 1000; // 3 days
@@ -1108,7 +1109,9 @@ async function getAdminHeaders() {
         }
       }
       html += earlier.map(renderNoteCard).join('');
-      detailList.innerHTML = html || '<p style="text-align:center;padding:20px;color:var(--text-secondary);">No notes available for this selection.</p>';
+      if (detailList) {
+        detailList.innerHTML = html || '<p style="text-align:center;padding:20px;color:var(--text-secondary);">No notes available for this selection.</p>';
+      }
     };
 
     window.snBackToSubjects = () => {
