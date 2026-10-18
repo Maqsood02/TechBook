@@ -3830,9 +3830,10 @@
       <div style="padding:24px;max-height:80vh;overflow-y:auto;box-sizing:border-box;">
         <div id="edit-student-msg" style="margin-bottom:12px;"></div>
         
+        <input id="edit-student-original-usn" type="hidden" />
         <div class="form-group" style="margin-bottom:12px;">
-          <label style="font-weight:600;font-size:12px;color:#4b5563;">USN / Roll Number (Cannot change)</label>
-          <input id="edit-student-usn" type="text" readonly style="background:#f3f4f6;cursor:not-allowed;width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;box-sizing:border-box;" />
+          <label style="font-weight:600;font-size:12px;color:#4b5563;">USN / Roll Number *</label>
+          <input id="edit-student-usn" type="text" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;box-sizing:border-box;text-transform:uppercase;font-weight:700;" placeholder="e.g. 2026E01CS092" />
         </div>
 
         <div class="form-group" style="margin-bottom:12px;">

@@ -192,7 +192,8 @@ function initStudentManagement() {
   const saveStudentBtn = document.getElementById("btn-save-student");
   if (saveStudentBtn) {
     saveStudentBtn.addEventListener("click", async () => {
-      const usn = document.getElementById("edit-student-usn").value;
+      const origUsn = (document.getElementById("edit-student-original-usn")?.value || document.getElementById("edit-student-usn").value).trim().toUpperCase();
+      const newUsn = document.getElementById("edit-student-usn").value.trim().toUpperCase();
       const name = document.getElementById("edit-student-name").value.trim();
       const course = document.getElementById("edit-student-course").value;
       const dept = document.getElementById("edit-student-dept").value;
@@ -203,8 +204,8 @@ function initStudentManagement() {
       const verified = document.getElementById("edit-student-verified").value === "true";
       const msgEl = document.getElementById("edit-student-msg");
 
-      if (!name || !course || !dept || !year || !sem) {
-        if (msgEl) msgEl.innerHTML = '<div style="background:#fee2e2;border:1px solid #ef4444;color:#b91c1c;padding:8px 12px;border-radius:6px;font-size:13px;">⚠️ Fill in all required fields.</div>';
+      if (!newUsn || !name || !course || !dept || !year || !sem) {
+        if (msgEl) msgEl.innerHTML = '<div style="background:#fee2e2;border:1px solid #ef4444;color:#b91c1c;padding:8px 12px;border-radius:6px;font-size:13px;">⚠️ Fill in all required fields (including USN).</div>';
         return;
       }
 
@@ -212,40 +213,109 @@ function initStudentManagement() {
       saveStudentBtn.textContent = '⏳ Saving...';
 
       try {
-        await updateDoc(doc(db, "students", usn), {
-          name,
-          course,
-          dept,
-          year,
-          sem,
-          scheme,
-          email,
-          email_verified: verified
-        });
+        if (newUsn !== origUsn) {
+          // Check if a student already exists with newUsn
+          const targetDocSnap = await getDoc(doc(db, "students", newUsn));
+          if (targetDocSnap.exists()) {
+            if (msgEl) msgEl.innerHTML = `<div style="background:#fee2e2;border:1px solid #ef4444;color:#b91c1c;padding:8px 12px;border-radius:6px;font-size:13px;">⚠️ Cannot change USN: Student with USN '${newUsn}' already exists.</div>`;
+            saveStudentBtn.disabled = false;
+            saveStudentBtn.textContent = 'Save Changes';
+            return;
+          }
+
+          // Fetch original document to preserve passwords, registration timestamps, etc.
+          const origSnap = await getDoc(doc(db, "students", origUsn));
+          const origData = origSnap.exists() ? origSnap.data() : {};
+
+          const updatedData = {
+            ...origData,
+            id: newUsn,
+            usn: newUsn,
+            name,
+            course,
+            dept,
+            year,
+            sem,
+            scheme,
+            email,
+            email_verified: verified
+          };
+
+          // 1. Create document at new USN path
+          await setDoc(doc(db, "students", newUsn), updatedData);
+
+          // 2. Delete document at old USN path
+          await deleteDoc(doc(db, "students", origUsn));
+
+          // 3. Migrate any attendance records matching old USN
+          try {
+            const attQuery = query(collection(db, "attendance"), where("usn", "==", origUsn));
+            const attSnaps = await getDocs(attQuery);
+            for (const aDoc of attSnaps.docs) {
+              await updateDoc(doc(db, "attendance", aDoc.id), { usn: newUsn });
+            }
+          } catch (attErr) {
+            console.warn("Attendance migration note:", attErr.message);
+          }
+
+          // 4. Migrate user session if present
+          try {
+            const sessSnap = await getDoc(doc(db, "user_sessions", origUsn));
+            if (sessSnap.exists()) {
+              await setDoc(doc(db, "user_sessions", newUsn), { ...sessSnap.data(), usn: newUsn, id: newUsn });
+              await deleteDoc(doc(db, "user_sessions", origUsn));
+            }
+          } catch (_) {}
+
+          // 5. Update in-memory lists
+          [loadedStudents, loadedUserAccounts].forEach(list => {
+            const idx = list.findIndex(s => s.id === origUsn || s.usn === origUsn);
+            if (idx !== -1) {
+              list[idx] = { ...list[idx], ...updatedData, id: newUsn, usn: newUsn };
+            }
+          });
+
+          // Update hidden original USN field
+          const origEl = document.getElementById("edit-student-original-usn");
+          if (origEl) origEl.value = newUsn;
+
+        } else {
+          // Standard update when USN is unchanged
+          await updateDoc(doc(db, "students", origUsn), {
+            name,
+            course,
+            dept,
+            year,
+            sem,
+            scheme,
+            email,
+            email_verified: verified
+          });
+
+          // Refresh lists in memory
+          [loadedStudents, loadedUserAccounts].forEach(list => {
+            const idx = list.findIndex(s => s.id === origUsn);
+            if (idx !== -1) {
+              list[idx].name = name;
+              list[idx].course = course;
+              list[idx].dept = dept;
+              list[idx].year = year;
+              list[idx].sem = sem;
+              list[idx].scheme = scheme;
+              list[idx].email = email;
+              list[idx].email_verified = verified;
+            }
+          });
+        }
 
         if (msgEl) msgEl.innerHTML = '<div style="background:#d1fae5;border:1px solid #10b981;color:#065f46;padding:8px 12px;border-radius:6px;font-size:13px;">✅ Details updated successfully!</div>';
-
-        // Refresh lists in memory
-        [loadedStudents, loadedUserAccounts].forEach(list => {
-          const idx = list.findIndex(s => s.id === usn);
-          if (idx !== -1) {
-            list[idx].name = name;
-            list[idx].course = course;
-            list[idx].dept = dept;
-            list[idx].year = year;
-            list[idx].sem = sem;
-            list[idx].scheme = scheme;
-            list[idx].email = email;
-            list[idx].email_verified = verified;
-          }
-        });
 
         renderStudentList();
         renderUserAccountsList();
 
         setTimeout(() => {
           document.getElementById('edit-student-modal').style.display = 'none';
-        }, 1000);
+        }, 1200);
 
       } catch (err) {
         console.error("Update student document error:", err);
@@ -414,7 +484,10 @@ function createStudentCardElement(s, isBulkPreview = false) {
 
 // Open Edit Modal with selected student details
 function openEditStudentModal(student) {
-  document.getElementById("edit-student-usn").value = student.id;
+  const studentUsn = student.id || student.usn || "";
+  const origEl = document.getElementById("edit-student-original-usn");
+  if (origEl) origEl.value = studentUsn;
+  document.getElementById("edit-student-usn").value = studentUsn;
   document.getElementById("edit-student-name").value = student.name || "";
   document.getElementById("edit-student-course").value = student.course || "B.Tech";
   document.getElementById("edit-student-dept").value = student.dept || "CSE";
