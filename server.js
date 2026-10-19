@@ -507,6 +507,13 @@ const founderMessageLimiter = rateLimit({
   max: 10,
   message: { success: false, error: 'Too many messages sent. Please wait a few minutes.' }
 });
+const adminLoginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Strict anti-brute-force firewall
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: 'Too many login attempts. Access blocked for 15 minutes.' }
+});
 
 // ─── Email Transporter ───
 const SMTP_PORT = parseInt(process.env.SMTP_PORT || '465');
@@ -1450,6 +1457,100 @@ app.post('/api/create-admin', verifyAdminMiddleware, createAdminLimiter, async (
     console.error('Create admin error:', err.message);
     res.status(500).json({ success: false, error: 'Failed to create admin: ' + err.message });
   }
+});
+
+/**
+ * POST /api/admin-login
+ * Secure Backend Admin Authentication Endpoint
+ * Validates credentials strictly on the backend using server environment variables.
+ * Protects login credentials from client-side exposure.
+ */
+app.post('/api/admin-login', adminLoginLimiter, async (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).json({ success: false, error: 'Username and password are required.' });
+  }
+
+  const rawUser = username.trim().toLowerCase();
+  const pass = String(password);
+
+  let targetEmail = '';
+  let resolvedUsername = '';
+  let resolvedRole = 'admin';
+
+  if (
+    rawUser === 'cof@techbook' ||
+    rawUser === 'cof.techbook' ||
+    rawUser === 'cof' ||
+    rawUser === 'cof.techbook@techbook.ac.in' ||
+    rawUser === 'cof@techbook.ac.in' ||
+    rawUser === 'cof@techbook.com'
+  ) {
+    resolvedUsername = 'cof@techbook';
+    targetEmail = process.env.COF_ADMIN_EMAIL || 'cof.techbook@techbook.ac.in';
+    resolvedRole = 'co_founder';
+  } else if (
+    rawUser === 'techbook.com' ||
+    rawUser === 'techbook' ||
+    rawUser === 'techbook.com@techbook.ac.in' ||
+    rawUser === 'techbook@techbook.ac.in' ||
+    rawUser === 'techbook.com@techbook.com' ||
+    rawUser === 'techbook.ac.in@gmail.com'
+  ) {
+    resolvedUsername = 'techbook.com';
+    targetEmail = process.env.SUPER_ADMIN_EMAIL || 'techbook.ac.in@gmail.com';
+    resolvedRole = 'super_admin';
+  } else if (rawUser.endsWith('@techbook.ac.in')) {
+    resolvedUsername = rawUser.split('@')[0];
+    targetEmail = rawUser;
+  } else if (rawUser.includes('@')) {
+    resolvedUsername = rawUser.split('@')[0];
+    targetEmail = `${resolvedUsername}@techbook.ac.in`;
+  } else {
+    resolvedUsername = rawUser;
+    targetEmail = `${rawUser}@techbook.ac.in`;
+  }
+
+  // Server-side validation against environment credentials
+  const superAdminPass = process.env.SUPER_ADMIN_PASSWORD || process.env.ADMIN_PASSWORD;
+  const cofAdminPass = process.env.COF_ADMIN_PASSWORD;
+
+  let isValid = false;
+
+  if (resolvedRole === 'super_admin' && superAdminPass && pass === superAdminPass) {
+    isValid = true;
+  } else if (resolvedRole === 'co_founder' && cofAdminPass && pass === cofAdminPass) {
+    isValid = true;
+  } else {
+    // Check against Firebase Auth using server-side REST API
+    const authResult = await signInFirebase(targetEmail, pass);
+    if (authResult && authResult.idToken) {
+      isValid = true;
+    }
+  }
+
+  if (!isValid) {
+    console.warn(`⚠️ Failed admin login attempt for "${resolvedUsername}"`);
+    return res.status(401).json({ success: false, error: 'Incorrect username or password.' });
+  }
+
+  // Ensure Firebase Auth account is synchronized with server password
+  const serverPass = (resolvedRole === 'super_admin') ? superAdminPass : (resolvedRole === 'co_founder' ? cofAdminPass : pass);
+  let firebaseAuthData = await signInFirebase(targetEmail, serverPass || pass);
+  if (firebaseAuthData && firebaseAuthData.error && (firebaseAuthData.error.message === 'EMAIL_NOT_FOUND' || firebaseAuthData.error.message === 'USER_NOT_FOUND')) {
+    firebaseAuthData = await signUpFirebase(targetEmail, serverPass || pass);
+  }
+
+  console.log(`✅ Secure backend admin login successful for "${resolvedUsername}" (${targetEmail}) [Role: ${resolvedRole}]`);
+
+  return res.json({
+    success: true,
+    username: resolvedUsername,
+    role: resolvedRole,
+    email: targetEmail,
+    idToken: firebaseAuthData?.idToken || null,
+    expiresIn: firebaseAuthData?.expiresIn || '3600'
+  });
 });
 
 // ─── Serve index.html for all unmatched routes ───

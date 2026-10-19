@@ -589,13 +589,11 @@ import { $, val } from '../core/helpers.js';
           console.log("🧹 Migrating old 'admin' account to 'techbook.com'...");
           await setDoc(doc(db, "admins", "techbook.com"), {
             name: "TechBook Support",
-            passwordHash: CryptoJS.SHA256("Techbook@123").toString(),
             role: "super_admin",
             createdAt: serverTimestamp()
-          });
+          }, { merge: true });
           await deleteDoc(oldAdminRef);
           console.log("✅ Migration complete: 'admin' deleted, 'techbook.com' created.");
-          // Refresh list if admin list is currently open
           if (typeof window.loadAdminsList === 'function') {
             window.loadAdminsList();
           }
@@ -605,31 +603,16 @@ import { $, val } from '../core/helpers.js';
         const techbookRef = doc(db, "admins", "techbook.com");
         const techbookSnap = await getDoc(techbookRef);
         if (techbookSnap.exists() && !techbookSnap.data().name) {
-          console.log("✏️ Setting name 'TechBook Support' for 'techbook.com'...");
-          await setDoc(techbookRef, { name: "TechBook Support" }, { merge: true });
+          await setDoc(techbookRef, { name: "TechBook Support", role: "super_admin" }, { merge: true });
         }
 
-        // 3. Standard bootstrap if collection is empty
-        const snap = await getDocs(collection(db, "admins"));
-        if (snap.empty) {
-          console.log("🛠️ Bootstrapping default super_admin...");
-          await setDoc(doc(db, "admins", "techbook.com"), {
-            name: "TechBook Support",
-            passwordHash: CryptoJS.SHA256("Techbook@123").toString(),
-            role: "super_admin",
-            createdAt: serverTimestamp()
-          });
-        }
-
-        // 4. Force bootstrap default co-founder with correct role
+        // 3. Force bootstrap default co-founder with correct role
         const cofRef = doc(db, "admins", "cof@techbook");
-        console.log("🛠️ Enforcing default co-founder in Firestore...");
         await setDoc(cofRef, {
           name: "Chinmay K V",
-          passwordHash: CryptoJS.SHA256("COF@123").toString(),
           role: "co_founder",
           createdAt: serverTimestamp()
-        });
+        }, { merge: true });
       } catch (e) {
         if (e.code === 'permission-denied') {
           console.log("ℹ️ Admin collection restricted; skipping bootstrap.");
@@ -648,28 +631,7 @@ import { $, val } from '../core/helpers.js';
       const rawUser = document.getElementById("admin-user")?.value.trim().toLowerCase() || "";
       const password = document.getElementById("admin-pass")?.value || "";
 
-      let username = rawUser;
-      if (
-        rawUser === 'cof@techbook' ||
-        rawUser === 'cof.techbook' ||
-        rawUser === 'cof' ||
-        rawUser === 'cof.techbook@techbook.ac.in' ||
-        rawUser === 'cof@techbook.ac.in' ||
-        rawUser === 'cof@techbook.com'
-      ) {
-        username = 'cof@techbook';
-      } else if (
-        rawUser === 'techbook.com' ||
-        rawUser === 'techbook' ||
-        rawUser === 'techbook.com@techbook.ac.in' ||
-        rawUser === 'techbook@techbook.ac.in'
-      ) {
-        username = 'techbook.com';
-      } else if (rawUser.endsWith('@techbook.ac.in')) {
-        username = rawUser.split('@')[0];
-      }
-
-      if (!username || !password) {
+      if (!rawUser || !password) {
         return msg("admin-login-msg", "Please fill all fields", "error");
       }
 
@@ -677,74 +639,30 @@ import { $, val } from '../core/helpers.js';
       btn.disabled = true;
       btn.innerText = "Logging in...";
 
-      // ⚡ Master credentials authenticated bypass
-      if (isMasterBypass) {
-        const bypassRole = isCof ? 'co_founder' : 'super_admin';
-        console.log("⚡ Master bypass applied for:", username);
-        window._currentAdminRole = bypassRole;
-        window._currentAdminUser = username;
-
-        loginAdmin(username, bypassRole);
-        return;
-      }
-
       try {
-        // Run getDoc with an 8-second timeout
-        const docRef = doc(db, "admins", username);
-        let adminDoc = null;
+        const resp = await fetch(`${API_BASE_URL}/api/admin-login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: rawUser, password })
+        });
+        const data = await resp.json();
+
+        if (!resp.ok || !data.success) {
+          throw new Error(data.error || 'Invalid credentials');
+        }
+
+        // Authenticate client-side Firebase Auth session
         try {
-          adminDoc = await Promise.race([
-            getDoc(docRef),
-            new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 5000))
-          ]);
-        } catch (dbErr) {
-          console.warn("Database fetch deferred or timed out:", dbErr.message);
-          throw new Error("Unable to connect to database. Please check your network connection.");
-        }
+          const { signInWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js");
+          await signInWithEmailAndPassword(auth, data.email, password);
+        } catch (_) {}
 
-        if (adminDoc && adminDoc.exists()) {
-          const data = adminDoc.data();
-          const hash = CryptoJS.SHA256(password).toString();
-
-          if (data.passwordHash === hash || isMasterBypass) {
-            if (isMasterBypass && data.passwordHash !== hash) {
-              console.log("🛠️ Syncing admin password to Firestore...");
-              try {
-                const bypassName = username === 'cof@techbook' ? "Co-Founder" : "TechBook Support";
-                await setDoc(doc(db, "admins", username), { name: bypassName, passwordHash: hash }, { merge: true });
-              } catch (_) {}
-            }
-
-            window._currentAdminRole = (username === 'cof@techbook') ? 'co_founder' : (data.role || 'admin');
-            window._currentAdminUser = username;
-
-            console.log("Admin login successful. Role:", window._currentAdminRole);
-            loginAdmin(username, window._currentAdminRole);
-          } else {
-            msg("admin-login-msg", "Invalid password", "error");
-          }
-        } else {
-          // Document does not exist - check for first-time login
-          if (isMasterBypass) {
-            const newHash = CryptoJS.SHA256(password).toString();
-            const bypassName = username === 'cof@techbook' ? "Chinmay K V" : "TechBook Support";
-            const bypassRole = username === 'cof@techbook' ? "co_founder" : "super_admin";
-            try {
-              await setDoc(doc(db, "admins", username), {
-                name: bypassName,
-                passwordHash: newHash,
-                role: bypassRole,
-                createdAt: serverTimestamp()
-              });
-            } catch (_) {}
-            loginAdmin(username, bypassRole);
-          } else {
-            msg("admin-login-msg", "Admin account not found", "error");
-          }
-        }
-      } catch (e) {
-        console.error("Login error:", e);
-        msg("admin-login-msg", e.message, "error");
+        window._currentAdminRole = data.role;
+        window._currentAdminUser = data.username;
+        loginAdmin(data.username, data.role);
+        msg("admin-login-msg", "Login successful!", "success");
+      } catch (err) {
+        msg("admin-login-msg", err.message || "Invalid credentials", "error");
       } finally {
         btn.disabled = false;
         btn.innerText = origText;

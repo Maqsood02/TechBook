@@ -1532,81 +1532,71 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
 
           const isCof = (resolvedUsername === 'cof@techbook');
           const isSuperAdmin = (resolvedUsername === 'techbook.com');
-          
-          const isMasterBypass =
-            (isSuperAdmin && (pass === 'Techbook@123' || pass.toLowerCase() === 'techbook@123' || pass === 'Techbook.com@123' || pass === 'Techbook@techbook')) ||
-            (isCof && (pass === 'COF@123' || pass === 'COF@techbook' || pass.toLowerCase() === 'cof@123' || pass.toLowerCase() === 'cof@techbook' || pass === 'Techbook@123'));
 
-          let loginSuccess = false;
-          const emailCandidates = isSuperAdmin
-            ? ['techbook.ac.in@gmail.com', 'techbook.com@techbook.ac.in']
-            : (isCof ? ['cof.techbook@techbook.ac.in', email] : [email]);
-          const passCandidates = isMasterBypass
-            ? (isCof ? [pass, 'COF@123', 'COF@techbook', 'Techbook@123'] : [pass, 'Techbook@123', 'Techbook.com@123', 'Techbook@techbook'])
-            : [pass];
-
-          for (const candEmail of emailCandidates) {
-            if (loginSuccess) break;
-            for (const candPass of passCandidates) {
-              if (loginSuccess) break;
-              try {
-                await signInWithEmailAndPassword(auth, candEmail, candPass);
-                loginSuccess = true;
-                console.log(`✓ Admin Firebase Auth login successful as ${candEmail}`);
-              } catch (_) {}
+          // ── Verify admin credentials securely with the backend API ──
+          let serverAuth = null;
+          try {
+            const resp = await fetch(`${API_BASE_URL}/api/admin-login`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ username: usernameLower, password: pass })
+            });
+            const data = await resp.json();
+            if (resp.ok && data.success) {
+              serverAuth = data;
+            } else if (resp.status === 429) {
+              throw new Error(data.error || 'Too many attempts. Access blocked for 15 minutes.');
+            } else if (!resp.ok) {
+              throw new Error(data.error || 'Invalid admin credentials.');
             }
+          } catch (apiErr) {
+            throw apiErr;
           }
 
-          if (!loginSuccess) {
-            throw new Error('Incorrect admin credentials or unauthorized account.');
+          let loginSuccess = false;
+          const authEmail = serverAuth?.email || email;
+
+          // Authenticate client-side Firebase Auth using the exact password entered
+          try {
+            await signInWithEmailAndPassword(auth, authEmail, pass);
+            loginSuccess = true;
+            console.log(`✓ Admin Firebase Auth login successful as ${authEmail}`);
+          } catch (authErr) {
+            if (serverAuth && serverAuth.success) {
+              loginSuccess = true;
+            } else {
+              throw new Error('Incorrect password or unauthorized account.');
+            }
           }
 
           if (loginSuccess) {
-            // Verify or bootstrap Firestore admin record
-            const adminRef = doc(db, 'admins', resolvedUsername);
-            let adminDoc = null;
-            try {
-              adminDoc = await getDoc(adminRef);
-            } catch (dbErr) {
-              console.warn('Error fetching admin doc:', dbErr.message);
-            }
+            const finalRole = serverAuth?.role || (isCof ? 'co_founder' : (isSuperAdmin ? 'super_admin' : 'admin'));
+            const finalUser = serverAuth?.username || resolvedUsername;
 
-            if ((!adminDoc || !adminDoc.exists()) && isMasterBypass) {
-              const bypassName = isCof ? "Chinmay K V" : "TechBook Support";
-              const bypassRole = isCof ? "co_founder" : "super_admin";
-              try {
+            // Verify or bootstrap Firestore admin record if needed
+            try {
+              const adminRef = doc(db, 'admins', finalUser);
+              const adminDoc = await getDoc(adminRef);
+              if (!adminDoc || !adminDoc.exists()) {
                 await setDoc(adminRef, {
-                  name: bypassName,
-                  role: bypassRole,
+                  name: isCof ? "Chinmay K V" : "TechBook Support",
+                  role: finalRole,
                   createdAt: new Date().toISOString()
                 }, { merge: true });
-                adminDoc = await getDoc(adminRef);
-              } catch (setErr) {
-                console.warn('Could not bootstrap admin doc:', setErr.message);
               }
-            }
-
-            if (!adminDoc || !adminDoc.exists()) {
-              if (!isMasterBypass) {
-                await signOut(auth); // Clean up auth state if DB profile doesn't exist
-                throw new Error('Forbidden: Registered admin profile not found in database.');
-              }
-            }
-
-            const data = (adminDoc && adminDoc.exists()) ? adminDoc.data() : {};
-            const dbRole = isCof ? 'co_founder' : (data.role || (isSuperAdmin ? 'super_admin' : 'admin'));
+            } catch (_) {}
 
             msg('unified-login-msg', 'Login successful! Redirecting...', 'success');
             window.adminLoggedIn = true;
-            window._currentAdminRole = dbRole;
-            window._currentAdminUser = resolvedUsername;
+            window._currentAdminRole = finalRole;
+            window._currentAdminUser = finalUser;
 
             localStorage.setItem('techbook_admin_logged_in', 'true');
-            localStorage.setItem('techbook_admin_user', resolvedUsername);
-            localStorage.setItem('techbook_admin_role', dbRole);
+            localStorage.setItem('techbook_admin_user', finalUser);
+            localStorage.setItem('techbook_admin_role', finalRole);
 
-            if (window.loginAdmin) window.loginAdmin(resolvedUsername, dbRole);
-            window.selectRole(dbRole === 'co_founder' ? 'cof' : 'admin');
+            if (window.loginAdmin) window.loginAdmin(finalUser, finalRole);
+            window.selectRole(finalRole === 'co_founder' ? 'cof' : 'admin');
             
             $('unified-username').value = '';
             $('unified-password').value = '';
