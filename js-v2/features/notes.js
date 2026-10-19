@@ -17,8 +17,7 @@ async function getAdminHeaders() {
   } catch (_) {}
   return {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token || 'techbook_admin_v1'}`,
-    'x-admin-secret': 'techbook_admin_v1'
+    'Authorization': `Bearer ${token}`
   };
 }
 

@@ -419,24 +419,9 @@ import { $, val } from '../core/helpers.js';
 
     async function ensureAdminAuth() {
       if (!window.adminLoggedIn) return false;
-      const storedUser = window._currentAdminUser || localStorage.getItem('techbook_admin_user') || 'admin';
-      const storedRole = window._currentAdminRole || localStorage.getItem('techbook_admin_role') || 'admin';
       try {
         let user = auth.currentUser;
-        if (!user) {
-          const authCred = await Promise.race([
-            signInAnonymously(auth),
-            new Promise((_, reject) => setTimeout(() => reject(new Error("Anonymous Auth Timeout")), 4000))
-          ]);
-          user = authCred.user;
-        }
-        if (user && user.uid) {
-          await setDoc(doc(db, "admins_uids", user.uid), {
-            username: storedUser,
-            role: storedRole,
-            loginSecret: "techbook_admin_v1",
-            timestamp: serverTimestamp()
-          }, { merge: true });
+        if (user && user.email) {
           return true;
         }
       } catch (err) {
@@ -699,25 +684,6 @@ import { $, val } from '../core/helpers.js';
         window._currentAdminRole = bypassRole;
         window._currentAdminUser = username;
 
-        try {
-          let user = auth.currentUser;
-          if (!user) {
-            const authCred = await signInAnonymously(auth);
-            user = authCred.user;
-          }
-          if (user && user.uid) {
-            await setDoc(doc(db, "admins_uids", user.uid), {
-              username: username,
-              role: bypassRole,
-              loginSecret: "techbook_admin_v1",
-              timestamp: serverTimestamp()
-            }, { merge: true });
-            console.log("🔐 Admin UID verified and registered in Firestore");
-          }
-        } catch (authErr) {
-          console.warn("Admin auth sync notice:", authErr.message);
-        }
-
         loginAdmin(username, bypassRole);
         return;
       }
@@ -751,23 +717,6 @@ import { $, val } from '../core/helpers.js';
 
             window._currentAdminRole = (username === 'cof@techbook') ? 'co_founder' : (data.role || 'admin');
             window._currentAdminUser = username;
-
-            // Authenticate with Firebase anonymously to enable Security Rules
-            try {
-              const authCred = await Promise.race([
-                signInAnonymously(auth),
-                new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 6000))
-              ]);
-              await setDoc(doc(db, "admins_uids", authCred.user.uid), {
-                username: username,
-                role: window._currentAdminRole,
-                loginSecret: "techbook_admin_v1",
-                timestamp: serverTimestamp()
-              });
-              console.log("🔐 Admin Auth synced with Firebase");
-            } catch (authErr) {
-              console.warn("Auth sync failed or timed out:", authErr.message);
-            }
 
             console.log("Admin login successful. Role:", window._currentAdminRole);
             loginAdmin(username, window._currentAdminRole);

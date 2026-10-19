@@ -107,6 +107,10 @@ async function getFirebaseIdToken() {
 
   // 2. Verified admin accounts with role: admin / co_founder in Firestore rules
   candidates.push({
+    email: 'techbook.ac.in@gmail.com',
+    password: process.env.ADMIN_PASSWORD || 'Techbook@123'
+  });
+  candidates.push({
     email: 'cof.techbook@techbook.ac.in',
     password: process.env.COF_ADMIN_PASSWORD || 'COF@123'
   });
@@ -117,10 +121,6 @@ async function getFirebaseIdToken() {
   candidates.push({
     email: 'techbook.com@techbook.ac.in',
     password: 'Techbook.com@123'
-  });
-  candidates.push({
-    email: 'techbook.com@techbook.ac.in',
-    password: 'Techbook@techbook'
   });
 
   let lastError = null;
@@ -201,79 +201,44 @@ function verifyAdminToken(token) {
 }
 
 async function verifyAdminMiddleware(req, res, next) {
-  // 1. Direct admin dashboard secret validation (fast & reliable)
-  const adminSecret = req.headers['x-admin-secret'] || req.headers['x-admin-token'];
-  if (adminSecret === 'techbook_admin_v1') {
-    req.adminUser = 'dashboard_admin';
-    return next();
-  }
-
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ success: false, error: 'Unauthorized: Missing or invalid token format.' });
   }
 
   const token = authHeader.split(' ')[1];
-  if (token === 'techbook_admin_v1') {
-    req.adminUser = 'dashboard_admin';
-    return next();
+  if (!token || token.length < 20) {
+    return res.status(401).json({ success: false, error: 'Unauthorized: Invalid token format.' });
   }
 
   try {
     const verification = await verifyAdminToken(token);
-    if (!verification.valid) {
-      return res.status(401).json({ success: false, error: 'Unauthorized: Invalid token.' });
+    if (!verification.valid || !verification.email) {
+      return res.status(401).json({ success: false, error: 'Unauthorized: Invalid or expired admin credentials.' });
     }
 
-    // 2. Verified via registered Firebase Auth email
-    if (verification.email) {
-      const email = verification.email.toLowerCase();
-      const username = email.split('@')[0];
-      const resolvedUsername = (username === 'cof.techbook') ? 'cof@techbook' : username;
+    const email = verification.email.toLowerCase();
+    const username = email.split('@')[0];
+    const resolvedUsername = (username === 'cof.techbook') ? 'cof@techbook' : username;
 
-      // Master admin bypass
-      if (
-        email === 'techbook.com@techbook.ac.in' ||
-        email === 'cof.techbook@techbook.ac.in' ||
-        email === 'techbook.ac.in@gmail.com' ||
-        resolvedUsername === 'techbook.com' ||
-        resolvedUsername === 'cof@techbook'
-      ) {
-        req.adminUser = resolvedUsername;
-        return next();
-      }
-
-      // Check Firestore admins collection using server-side token
-      const serverToken = await getFirebaseIdToken();
-      const checkAdminDoc = async (id) => {
-        return new Promise((resolve) => {
-          const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/admins/${encodeURIComponent(id)}?key=${FIREBASE_API_KEY}`;
-          const urlObj = new URL(url);
-          const reqGet = https.request({
-            hostname: urlObj.hostname,
-            path: urlObj.pathname + urlObj.search,
-            method: 'GET',
-            headers: { 'Authorization': `Bearer ${serverToken}` }
-          }, (resGet) => resolve(resGet.statusCode === 200));
-          reqGet.on('error', () => resolve(false));
-          reqGet.end();
-        });
-      };
-
-      const isRegistered = (await checkAdminDoc(resolvedUsername)) ||
-                           (await checkAdminDoc(`${resolvedUsername}@techbook`)) ||
-                           (await checkAdminDoc(email));
-      if (isRegistered) {
-        req.adminUser = resolvedUsername;
-        return next();
-      }
+    // Master admin whitelist
+    if (
+      email === 'techbook.com@techbook.ac.in' ||
+      email === 'cof.techbook@techbook.ac.in' ||
+      email === 'techbook.ac.in@gmail.com' ||
+      resolvedUsername === 'techbook.com' ||
+      resolvedUsername === 'cof@techbook'
+    ) {
+      req.adminUser = resolvedUsername;
+      req.adminEmail = email;
+      return next();
     }
 
-    // 3. Verified via Anonymous Session UID registered in admins_uids
-    if (verification.uid) {
-      const serverToken = await getFirebaseIdToken();
-      const isUidAdmin = await new Promise((resolve) => {
-        const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/admins_uids/${encodeURIComponent(verification.uid)}?key=${FIREBASE_API_KEY}`;
+    // Check Firestore admins collection using server-side token
+    const serverToken = await getFirebaseIdToken();
+    const checkAdminDoc = async (id) => {
+      return new Promise((resolve) => {
+        const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/admins/${encodeURIComponent(id)}?key=${FIREBASE_API_KEY}`;
         const urlObj = new URL(url);
         const reqGet = https.request({
           hostname: urlObj.hostname,
@@ -284,11 +249,15 @@ async function verifyAdminMiddleware(req, res, next) {
         reqGet.on('error', () => resolve(false));
         reqGet.end();
       });
+    };
 
-      if (isUidAdmin) {
-        req.adminUser = verification.uid;
-        return next();
-      }
+    const isRegistered = (await checkAdminDoc(resolvedUsername)) ||
+                         (await checkAdminDoc(`${resolvedUsername}@techbook`)) ||
+                         (await checkAdminDoc(email));
+    if (isRegistered) {
+      req.adminUser = resolvedUsername;
+      req.adminEmail = email;
+      return next();
     }
 
     return res.status(403).json({ success: false, error: 'Forbidden: Caller is not a registered admin.' });
@@ -517,6 +486,26 @@ const verifyLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 30,
   message: { success: false, error: 'Too many verification attempts.' }
+});
+const adminActionLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  message: { success: false, error: 'Too many administrative requests. Please slow down.' }
+});
+const createAdminLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 10,
+  message: { success: false, error: 'Too many admin creation attempts. Please wait an hour.' }
+});
+const quizResultLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { success: false, error: 'Too many quiz result requests. Please wait a moment.' }
+});
+const founderMessageLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { success: false, error: 'Too many messages sent. Please wait a few minutes.' }
 });
 
 // ─── Email Transporter ───
@@ -849,7 +838,7 @@ app.post('/api/verify-otp', verifyLimiter, async (req, res) => {
  * POST /api/notify-upload
  * Sends content upload notification emails to eligible students.
  */
-app.post('/api/notify-upload', verifyAdminMiddleware, async (req, res) => {
+app.post('/api/notify-upload', verifyAdminMiddleware, adminActionLimiter, async (req, res) => {
   const { contentType, subject, title, dept, year, sem, section, scheme, isUpdate } = req.body;
 
   if (!contentType || !subject || !dept || !year || !sem) {
@@ -996,7 +985,7 @@ app.post('/api/notify-upload', verifyAdminMiddleware, async (req, res) => {
  * POST /api/check-matching-students
  * Checks how many verified students will receive notification for given filters.
  */
-app.post('/api/check-matching-students', verifyAdminMiddleware, async (req, res) => {
+app.post('/api/check-matching-students', verifyAdminMiddleware, adminActionLimiter, async (req, res) => {
   const { year, sem, dept, scheme, section } = req.body;
   try {
     const queryResult = await firestoreRunQuery({
@@ -1043,7 +1032,7 @@ app.post('/api/check-matching-students', verifyAdminMiddleware, async (req, res)
  * POST /api/notify-promo
  * Sends promo upload notification emails to all verified students.
  */
-app.post('/api/notify-promo', verifyAdminMiddleware, async (req, res) => {
+app.post('/api/notify-promo', verifyAdminMiddleware, adminActionLimiter, async (req, res) => {
   const { title, description, mediaUrl, mediaType } = req.body;
 
   if (!title) {
@@ -1141,7 +1130,7 @@ app.post('/api/notify-promo', verifyAdminMiddleware, async (req, res) => {
  * POST /api/notify-launch
  * Sends new feature launch notification emails to all verified students.
  */
-app.post('/api/notify-launch', verifyAdminMiddleware, async (req, res) => {
+app.post('/api/notify-launch', verifyAdminMiddleware, adminActionLimiter, async (req, res) => {
   const { launchName, launchUrl } = req.body;
 
   if (!launchName || !launchUrl) {
@@ -1209,7 +1198,7 @@ app.post('/api/notify-launch', verifyAdminMiddleware, async (req, res) => {
  * POST /api/notify-quiz
  * Sends quiz published notification to eligible students.
  */
-app.post('/api/notify-quiz', verifyAdminMiddleware, async (req, res) => {
+app.post('/api/notify-quiz', verifyAdminMiddleware, adminActionLimiter, async (req, res) => {
   const { quizName, subject, questionCount, duration, difficulty, instructions, dept, year, sem } = req.body;
 
   if (!quizName || !subject || !dept || !year || !sem) {
@@ -1278,7 +1267,7 @@ app.post('/api/notify-quiz', verifyAdminMiddleware, async (req, res) => {
  * POST /api/notify-quiz-result
  * Sends quiz result email to a single student (using their verified email from request body).
  */
-app.post('/api/notify-quiz-result', async (req, res) => {
+app.post('/api/notify-quiz-result', quizResultLimiter, async (req, res) => {
   const { usn, studentEmail, studentName, quizName, subject, marksObtained, totalMarks, percentage, completionTime } = req.body;
 
   if (!usn || !quizName) {
@@ -1332,7 +1321,7 @@ app.post('/api/notify-quiz-result', async (req, res) => {
  * POST /api/notify-founder-message
  * Sends an email notification to the Super Admin (Founder) when Co-Founder sends a message.
  */
-app.post('/api/notify-founder-message', verifyAdminMiddleware, async (req, res) => {
+app.post('/api/notify-founder-message', verifyAdminMiddleware, founderMessageLimiter, async (req, res) => {
   const { senderName, message } = req.body;
 
   if (!message) {
@@ -1394,7 +1383,7 @@ app.post('/api/notify-founder-message', verifyAdminMiddleware, async (req, res) 
  * Securely creates a new admin account in Firebase Auth and registers it in Firestore.
  * Access restricted to verified Admins/Super Admins only.
  */
-app.post('/api/create-admin', verifyAdminMiddleware, async (req, res) => {
+app.post('/api/create-admin', verifyAdminMiddleware, createAdminLimiter, async (req, res) => {
   const { name, username, password, role } = req.body;
 
   if (!name || !username || !password || !role) {

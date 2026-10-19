@@ -917,8 +917,7 @@ let lastPyqFetchTime = 0;
             method: 'POST',
             headers: { 
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token || 'techbook_admin_v1'}`,
-              'x-admin-secret': 'techbook_admin_v1'
+              'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({
               contentType: 'PYQ',

@@ -21,15 +21,12 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      return signedIn() && (
-        exists(/databases/$(database)/documents/admins_uids/$(request.auth.uid)) ||
-        (hasEmail() && exists(/databases/$(database)/documents/admins/$(getUsername()))) ||
-        (hasEmail() && exists(/databases/$(database)/documents/admins/$(userEmail()))) ||
-        (hasEmail() && (
-          userEmail() == 'techbook.com@techbook.ac.in' ||
-          userEmail() == 'cof.techbook@techbook.ac.in' ||
-          userEmail() == 'techbook.ac.in@gmail.com'
-        ))
+      return signedIn() && hasEmail() && (
+        exists(/databases/$(database)/documents/admins/$(getUsername())) ||
+        exists(/databases/$(database)/documents/admins/$(userEmail())) ||
+        userEmail() == 'techbook.com@techbook.ac.in' ||
+        userEmail() == 'cof.techbook@techbook.ac.in' ||
+        userEmail() == 'techbook.ac.in@gmail.com'
       );
     }
 
@@ -74,7 +71,10 @@ service cloud.firestore {
 
     // ── Password Reset Requests ──
     match /password_reset_requests/{id} {
-      allow create: if true;
+      allow create: if request.resource.data.keys().hasAll(['usn', 'timestamp']) &&
+                       request.resource.data.usn is string &&
+                       request.resource.data.usn.size() > 0 &&
+                       request.resource.data.usn.size() <= 20;
       allow read, update, delete: if isAdmin();
     }
 
@@ -150,7 +150,7 @@ service cloud.firestore {
     }
 
     match /admins_uids/{uid} {
-      allow read, write: if isAdmin() || (signedIn() && request.auth.uid == uid);
+      allow read, write: if isAdmin();
     }
 
     // ── Promos (Public view, Admin manage) ──

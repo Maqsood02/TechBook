@@ -768,34 +768,19 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
     onAuthStateChanged(auth, async (user) => {
       console.log("Auth state changed:", user ? (user.isAnonymous ? "Anonymous User" : user.email) : "Logged out");
 
-      // Handle Anonymous Auth sessions (used by Admin Dashboard for Firestore Security Rules)
+      // Prevent anonymous session elevation
       if (user && user.isAnonymous) {
-        const storedAdmin = localStorage.getItem('techbook_admin_user');
-        const storedRole = localStorage.getItem('techbook_admin_role');
-        const isAdmLoggedIn = localStorage.getItem('techbook_admin_logged_in') === 'true';
-        if (storedAdmin && isAdmLoggedIn) {
-          window.adminLoggedIn = true;
-          window._currentAdminUser = storedAdmin;
-          window._currentAdminRole = storedRole || 'admin';
-          try {
-            await setDoc(doc(db, "admins_uids", user.uid), {
-              username: storedAdmin,
-              role: storedRole || 'admin',
-              loginSecret: "techbook_admin_v1",
-              timestamp: serverTimestamp()
-            }, { merge: true });
-            console.log("🔐 Admin UID verified and registered in Firestore for anonymous session");
-          } catch (syncErr) {
-            console.warn("Could not register admin UID in Firestore:", syncErr.message);
-          }
-        }
-        return; // NEVER clear admin session when user is anonymous!
+        console.log("Guest anonymous session active");
+        return;
       }
 
       if (user && user.email) {
         const email = user.email.toLowerCase();
         const username = email.split('@')[0];
-        const resolvedUsername = (username === 'cof.techbook') ? 'cof@techbook' : username;
+        let resolvedUsername = (username === 'cof.techbook') ? 'cof@techbook' : username;
+        if (email === 'techbook.ac.in@gmail.com') {
+          resolvedUsername = 'techbook.com';
+        }
 
         // Try to fetch admin document to check admin status
         let isAdminUser = false;
@@ -810,7 +795,7 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
           console.warn("Could not check admin status in database:", e.message);
         }
 
-        if (isAdminUser || resolvedUsername === 'cof@techbook' || resolvedUsername === 'techbook.com') {
+        if (isAdminUser || resolvedUsername === 'cof@techbook' || resolvedUsername === 'techbook.com' || email === 'techbook.ac.in@gmail.com') {
           if (!dbRole) {
             dbRole = (resolvedUsername === 'cof@techbook') ? 'co_founder' : 'super_admin';
           }
@@ -1529,10 +1514,11 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
             usernameLower === 'techbook' ||
             usernameLower === 'techbook.com@techbook.ac.in' ||
             usernameLower === 'techbook@techbook.ac.in' ||
-            usernameLower === 'techbook.com@techbook.com'
+            usernameLower === 'techbook.com@techbook.com' ||
+            usernameLower === 'techbook.ac.in@gmail.com'
           ) {
             resolvedUsername = 'techbook.com';
-            email = 'techbook.com@techbook.ac.in';
+            email = 'techbook.ac.in@gmail.com';
           } else if (usernameLower.endsWith('@techbook.ac.in')) {
             resolvedUsername = usernameLower.split('@')[0];
             email = usernameLower;
@@ -1552,51 +1538,27 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
             (isCof && (pass === 'COF@123' || pass === 'COF@techbook' || pass.toLowerCase() === 'cof@123' || pass.toLowerCase() === 'cof@techbook' || pass === 'Techbook@123'));
 
           let loginSuccess = false;
-          try {
-            await signInWithEmailAndPassword(auth, email, pass);
-            loginSuccess = true;
-            console.log('✓ Admin Firebase Auth login successful');
-          } catch (authErr) {
-            console.warn('Admin Auth failed:', authErr.code);
-            
-            if (isMasterBypass) {
-              // Try alternate master passwords that might be registered in Firebase Auth
-              const fallbackPasswords = isCof
-                ? ['COF@123', 'COF@techbook', 'Techbook@123', pass]
-                : ['Techbook@123', 'Techbook.com@123', pass];
+          const emailCandidates = isSuperAdmin
+            ? ['techbook.ac.in@gmail.com', 'techbook.com@techbook.ac.in']
+            : (isCof ? ['cof.techbook@techbook.ac.in', email] : [email]);
+          const passCandidates = isMasterBypass
+            ? (isCof ? [pass, 'COF@123', 'COF@techbook', 'Techbook@123'] : [pass, 'Techbook@123', 'Techbook.com@123', 'Techbook@techbook'])
+            : [pass];
 
-              for (const altPass of fallbackPasswords) {
-                if (loginSuccess) break;
-                try {
-                  await signInWithEmailAndPassword(auth, email, altPass);
-                  loginSuccess = true;
-                  console.log('✓ Admin Firebase Auth login successful with alternate master password');
-                } catch (_) {}
-              }
-
-              // Auto bootstrap master credentials if not created yet in Firebase Auth
-              if (!loginSuccess && (authErr.code === 'auth/user-not-found' || authErr.code === 'auth/invalid-credential')) {
-                try {
-                  console.log('🛠️ Registering master admin account in Firebase Auth...');
-                  await createUserWithEmailAndPassword(auth, email, pass);
-                  loginSuccess = true;
-                } catch (createErr) {
-                  console.warn('Could not register master account in Firebase Auth:', createErr.code);
-                  // If master bypass password is correct, we still allow login to proceed
-                  loginSuccess = true;
-                }
-              }
+          for (const candEmail of emailCandidates) {
+            if (loginSuccess) break;
+            for (const candPass of passCandidates) {
+              if (loginSuccess) break;
+              try {
+                await signInWithEmailAndPassword(auth, candEmail, candPass);
+                loginSuccess = true;
+                console.log(`✓ Admin Firebase Auth login successful as ${candEmail}`);
+              } catch (_) {}
             }
+          }
 
-            if (!loginSuccess) {
-              if (authErr.code === 'auth/wrong-password' || authErr.code === 'auth/invalid-credential') {
-                throw new Error('Incorrect password');
-              } else if (authErr.code === 'auth/user-not-found') {
-                throw new Error('Admin credentials not found.');
-              } else {
-                throw authErr;
-              }
-            }
+          if (!loginSuccess) {
+            throw new Error('Incorrect admin credentials or unauthorized account.');
           }
 
           if (loginSuccess) {

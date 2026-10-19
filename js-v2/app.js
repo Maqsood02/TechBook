@@ -6,16 +6,16 @@ import './core/helpers.js';
 import './core/activity_tracker.js';
 
 // Features & Components
-import './features/auth.js?v=20261019c';
-import './features/promos.js?v=20261019c';
-import './features/attendance.js?v=20261019c';
-import './features/notes.js?v=20261019c';
-import './features/qbank.js?v=20261019c';
-import './features/pyq.js?v=20261019c';
-import './features/quiz.js?v=20261019c';
-import './features/chatbot.js?v=20261019c';
-import './features/manage_students.js?v=20261019c';
-import './features/launches.js?v=20261019c';
+import './features/auth.js?v=20261020_sec';
+import './features/promos.js?v=20261020_sec';
+import './features/attendance.js?v=20261020_sec';
+import './features/notes.js?v=20261020_sec';
+import './features/qbank.js?v=20261020_sec';
+import './features/pyq.js?v=20261020_sec';
+import './features/quiz.js?v=20261020_sec';
+import './features/chatbot.js?v=20261020_sec';
+import './features/manage_students.js?v=20261020_sec';
+import './features/launches.js?v=20261020_sec';
 
 
 console.log('🚀 TechBook App fully initialized');
