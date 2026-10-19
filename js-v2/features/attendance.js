@@ -418,15 +418,30 @@ import { $, val } from '../core/helpers.js';
     window.loginAdmin = loginAdmin;
 
     async function ensureAdminAuth() {
-      if (!window.adminLoggedIn) return false;
       try {
-        let user = auth.currentUser;
-        if (user && user.email) {
-          return true;
+        if (typeof auth.authStateReady === 'function') {
+          await auth.authStateReady();
         }
       } catch (err) {
-        console.warn("ensureAdminAuth notice:", err.message);
+        console.warn("authStateReady error:", err.message);
       }
+
+      const user = auth.currentUser;
+      if (user && user.email && !user.isAnonymous) {
+        const emailLower = user.email.toLowerCase();
+        const isAdminEmail = 
+          emailLower === 'techbook.ac.in@gmail.com' ||
+          emailLower === 'cof.techbook@techbook.ac.in' ||
+          emailLower === 'techbook.com@techbook.ac.in' ||
+          emailLower.endsWith('@techbook.ac.in');
+
+        if (isAdminEmail) {
+          window.adminLoggedIn = true;
+          return true;
+        }
+      }
+
+      window.adminLoggedIn = false;
       return false;
     }
     window.ensureAdminAuth = ensureAdminAuth;
@@ -483,8 +498,8 @@ import { $, val } from '../core/helpers.js';
         `;
       }
 
-      await ensureAdminAuth();
-      if (window.adminLoggedIn) {
+      const isAuthed = await ensureAdminAuth();
+      if (isAuthed && window.adminLoggedIn) {
         loadAdminDashboard();
       }
       if (typeof window.updateNavbarLoginBtn === 'function') {
@@ -497,17 +512,30 @@ import { $, val } from '../core/helpers.js';
         const isAdmLoggedIn = localStorage.getItem('techbook_admin_logged_in') === 'true';
         const storedUser = localStorage.getItem('techbook_admin_user');
         const storedRole = localStorage.getItem('techbook_admin_role');
-        if (isAdmLoggedIn && storedUser) {
+
+        if (!isAdmLoggedIn || !storedUser) return;
+
+        // Ensure Firebase Auth is ready from IndexedDB
+        const isAuthed = await ensureAdminAuth();
+        if (isAuthed) {
           window.adminLoggedIn = true;
           window._currentAdminUser = storedUser;
           window._currentAdminRole = storedRole || 'admin';
+          if (window._currentAdminRole !== 'co_founder') {
+            loadAdminDashboard();
+          }
+        } else {
+          console.warn("Stored admin session found, but Firebase Auth session is expired or not authenticated. Prompting login.");
+          window.adminLoggedIn = false;
+          window._currentAdminRole = null;
+          window._currentAdminUser = null;
+          localStorage.removeItem('techbook_admin_logged_in');
 
-          // Ensure Firebase Auth is verified and ready before triggering dashboard load
-          ensureAdminAuth().then(() => {
-            if (window.adminLoggedIn && window._currentAdminRole !== 'co_founder') {
-              loadAdminDashboard();
-            }
-          });
+          const loginBlock = document.getElementById("admin-login-block");
+          const adminArea = document.getElementById("admin-area");
+          if (loginBlock) loginBlock.classList.remove("hidden");
+          if (adminArea) adminArea.classList.add("hidden");
+          msg("admin-login-msg", "Admin session expired. Please enter your credentials to log in.", "info");
         }
       } catch (e) {
         console.error("Error restoring admin session:", e);
@@ -652,16 +680,18 @@ import { $, val } from '../core/helpers.js';
         }
 
         // Authenticate client-side Firebase Auth session
-        try {
-          const { signInWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js");
-          await signInWithEmailAndPassword(auth, data.email, password);
-        } catch (_) {}
+        const { signInWithEmailAndPassword, signOut } = await import("https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js");
+        if (auth.currentUser && auth.currentUser.isAnonymous) {
+          try { await signOut(auth); } catch (_) {}
+        }
+        await signInWithEmailAndPassword(auth, data.email, password);
 
         window._currentAdminRole = data.role;
         window._currentAdminUser = data.username;
         loginAdmin(data.username, data.role);
         msg("admin-login-msg", "Login successful!", "success");
       } catch (err) {
+        console.error("Admin login error:", err);
         msg("admin-login-msg", err.message || "Invalid credentials", "error");
       } finally {
         btn.disabled = false;
@@ -930,12 +960,13 @@ import { $, val } from '../core/helpers.js';
     let adminRefreshInterval = null; // Store interval ID
 
     async function loadAdminDashboard() {
-      if (!window.adminLoggedIn) {
-        console.log("loadAdminDashboard: skipped because admin is not logged in");
+      const isAuthed = await ensureAdminAuth();
+      if (!isAuthed || !window.adminLoggedIn) {
+        console.warn("loadAdminDashboard blocked: Admin not authenticated with Firebase Auth.");
+        document.getElementById("admin-login-block")?.classList.remove("hidden");
+        document.getElementById("admin-area")?.classList.add("hidden");
         return;
       }
-      await ensureAdminAuth();
-      if (!window.adminLoggedIn) return;
       console.log("Loading admin dashboard...");
       try {
         const role = window._currentAdminRole || 'admin';
@@ -1307,6 +1338,8 @@ import { $, val } from '../core/helpers.js';
     async function getStudentMap() {
       if (Object.keys(_studentMapCache).length > 0) return _studentMapCache;
       try {
+        const isAuthed = await ensureAdminAuth();
+        if (!isAuthed) return _studentMapCache;
         const snap = await getDocs(collection(db, "students"));
         snap.forEach(d => { _studentMapCache[d.id] = d.data(); });
       } catch (err) {
@@ -1381,12 +1414,18 @@ import { $, val } from '../core/helpers.js';
         if (tbody && tbody.children.length === 0) {
           tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:24px;color:#6366f1;">⏳ Loading attendance records...</td></tr>';
         }
-        getDocs(collection(db, "attendance")).then(snap => {
-          _cachedAttendanceSnapshot = snap;
-          applyCurrentAttendanceFilter();
-        }).catch(err => {
-          console.error("Error fetching attendance records:", err);
-          if (tbody) tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:20px;color:#ef4444;">Error loading records: ${err.message}</td></tr>`;
+        ensureAdminAuth().then(isAuthed => {
+          if (!isAuthed) {
+            if (tbody) tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:20px;color:#ef4444;">Admin session not authenticated.</td></tr>`;
+            return;
+          }
+          getDocs(collection(db, "attendance")).then(snap => {
+            _cachedAttendanceSnapshot = snap;
+            applyCurrentAttendanceFilter();
+          }).catch(err => {
+            console.error("Error fetching attendance records:", err);
+            if (tbody) tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:20px;color:#ef4444;">Error loading records: ${err.message}</td></tr>`;
+          });
         });
         return;
       }
@@ -1415,8 +1454,14 @@ import { $, val } from '../core/helpers.js';
       loadAttendanceTable(fakeSnap);
     }
 
-    function startAdminAttendanceListener() {
+    async function startAdminAttendanceListener() {
       if (_adminAttListenerUnsub) return;
+
+      const isAuthed = await ensureAdminAuth();
+      if (!isAuthed || !window.adminLoggedIn) {
+        console.warn("startAdminAttendanceListener skipped: Admin not authenticated.");
+        return;
+      }
 
       console.log("Setting up real-time attendance snapshot listener...");
       try {

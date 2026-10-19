@@ -14,6 +14,10 @@ window.trackUserActivity = async function (description, logToHistory = false) {
   if (!auth.currentUser || (!window._currentStudentUSN && !window._currentAdminUser)) {
     return;
   }
+  // For admin sessions, require authenticated non-anonymous Firebase user with email
+  if (window._currentAdminUser && (!auth.currentUser.email || auth.currentUser.isAnonymous)) {
+    return;
+  }
   let userId = '';
   let name = '';
   let role = '';

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'techbook-cache-v54';
+const CACHE_NAME = 'techbook-cache-v56';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -9,10 +9,10 @@ const ASSETS_TO_CACHE = [
 
 // Install Service Worker
 self.addEventListener('install', event => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => cache.addAll(ASSETS_TO_CACHE))
-      .then(() => self.skipWaiting())
   );
 });
 
@@ -23,6 +23,7 @@ self.addEventListener('activate', event => {
       return Promise.all(
         keys.map(key => {
           if (key !== CACHE_NAME) {
+            console.log('Purging old service worker cache:', key);
             return caches.delete(key);
           }
         })

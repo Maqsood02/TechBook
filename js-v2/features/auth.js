@@ -1062,6 +1062,13 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
     =============================== */
     async function loadPasswordResetRequests() {
       try {
+        if (typeof window.ensureAdminAuth === 'function') {
+          const isAuthed = await window.ensureAdminAuth();
+          if (!isAuthed) {
+            console.warn("loadPasswordResetRequests skipped: Admin not authenticated.");
+            return;
+          }
+        }
         const snapshot = await getDocs(collection(db, "password_reset_requests"));
         const container = $("reset-requests-container");
         container.innerHTML = "";
@@ -1558,15 +1565,16 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
 
           // Authenticate client-side Firebase Auth using the exact password entered
           try {
+            const { signOut } = await import("https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js");
+            if (auth.currentUser && auth.currentUser.isAnonymous) {
+              try { await signOut(auth); } catch (_) {}
+            }
             await signInWithEmailAndPassword(auth, authEmail, pass);
             loginSuccess = true;
             console.log(`✓ Admin Firebase Auth login successful as ${authEmail}`);
           } catch (authErr) {
-            if (serverAuth && serverAuth.success) {
-              loginSuccess = true;
-            } else {
-              throw new Error('Incorrect password or unauthorized account.');
-            }
+            console.error("Admin Firebase Auth sign-in failed:", authErr);
+            throw new Error('Firebase Auth verification failed: ' + (authErr.message || 'Incorrect password.'));
           }
 
           if (loginSuccess) {

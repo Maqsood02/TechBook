@@ -102,6 +102,12 @@ function initStudentManagement() {
       loadBtn.textContent = '⏳ Loading...';
 
       try {
+        if (typeof window.ensureAdminAuth === 'function') {
+          const isAuthed = await window.ensureAdminAuth();
+          if (!isAuthed) {
+            throw new Error("Admin session not authenticated. Please log in.");
+          }
+        }
         let q = collection(db, "students");
         const conditions = [];
 
@@ -155,6 +161,12 @@ function initStudentManagement() {
       loadUsersBtn.textContent = '⏳ Loading...';
 
       try {
+        if (typeof window.ensureAdminAuth === 'function') {
+          const isAuthed = await window.ensureAdminAuth();
+          if (!isAuthed) {
+            throw new Error("Admin session not authenticated. Please log in.");
+          }
+        }
         let q = collection(db, "students");
         if (deptVal) {
           q = query(q, where("dept", "==", deptVal));
