@@ -333,18 +333,31 @@ export default function OtpVerificationModal({
                       handleKeyDown(index, e);
                       if (e.key === 'Enter' && index === 5) handleVerifyOtp();
                     }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#3d5af1';
+                      e.target.style.background = '#ffffff';
+                      e.target.style.transform = 'scale(1.08)';
+                      e.target.style.boxShadow = '0 0 0 4px rgba(61, 90, 241, 0.15)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = digit ? '#818cf8' : '#c7d2fe';
+                      e.target.style.background = digit ? '#ffffff' : '#f8fafc';
+                      e.target.style.transform = 'scale(1)';
+                      e.target.style.boxShadow = 'none';
+                    }}
                     style={{
-                      width: '44px',
-                      height: '52px',
+                      width: '46px',
+                      height: '54px',
                       borderRadius: '12px',
-                      border: '1.5px solid #c7d2fe',
-                      background: '#f8fafc',
+                      border: digit ? '1.5px solid #818cf8' : '1.5px solid #c7d2fe',
+                      background: digit ? '#ffffff' : '#f8fafc',
                       fontSize: '22px',
                       fontWeight: 700,
                       textAlign: 'center',
                       color: '#0f172a',
                       outline: 'none',
-                      boxSizing: 'border-box'
+                      boxSizing: 'border-box',
+                      transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
                     }}
                   />
                 ))}
@@ -357,20 +370,23 @@ export default function OtpVerificationModal({
               style={{
                 width: '100%',
                 padding: '14px',
-                background: 'linear-gradient(135deg, #3d5af1 0%, #6366f1 100%)',
+                background: otpDigits.join('').length === 6
+                  ? 'linear-gradient(135deg, #3d5af1 0%, #6366f1 100%)'
+                  : '#cbd5e1',
                 color: '#ffffff',
                 border: 'none',
                 borderRadius: '12px',
                 fontSize: '14px',
                 fontWeight: 700,
-                cursor: loading ? 'not-allowed' : 'pointer',
-                opacity: (loading || otpDigits.join('').length !== 6) ? 0.7 : 1,
-                boxShadow: '0 8px 18px rgba(61, 90, 241, 0.25)',
+                cursor: (loading || otpDigits.join('').length !== 6) ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.7 : 1,
+                boxShadow: otpDigits.join('').length === 6 ? '0 8px 18px rgba(61, 90, 241, 0.25)' : 'none',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '8px',
-                touchAction: 'manipulation'
+                touchAction: 'manipulation',
+                transition: 'all 0.25s'
               }}
             >
               {loading ? (
@@ -390,11 +406,27 @@ export default function OtpVerificationModal({
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              marginTop: '16px',
+              marginTop: '18px',
+              paddingTop: '14px',
+              borderTop: '1px solid #f1f5f9',
               fontSize: '12.5px'
             }}>
               {cooldown > 0 ? (
-                <span style={{ color: '#94a3b8' }}>Resend in {cooldown}s</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <svg width="20" height="20" viewBox="0 0 36 36">
+                    <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#e2e8f0" strokeWidth="3.5" />
+                    <path
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      stroke="#3d5af1"
+                      strokeWidth="3.5"
+                      strokeDasharray="100, 100"
+                      strokeDashoffset={100 - (cooldown / 60) * 100}
+                      style={{ transition: 'stroke-dashoffset 1s linear' }}
+                    />
+                  </svg>
+                  <span style={{ color: '#64748b' }}>Resend in <strong style={{ color: '#0f172a' }}>{cooldown}s</strong></span>
+                </div>
               ) : (
                 <button
                   type="button"
@@ -403,7 +435,7 @@ export default function OtpVerificationModal({
                     background: 'none',
                     border: 'none',
                     color: '#3d5af1',
-                    fontWeight: 600,
+                    fontWeight: 700,
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
@@ -427,6 +459,7 @@ export default function OtpVerificationModal({
                   border: 'none',
                   color: '#64748b',
                   cursor: 'pointer',
+                  fontWeight: 600,
                   padding: 0
                 }}
               >
