@@ -6,13 +6,12 @@
     "public": ".",
     "ignore": [
       "firebase.json",
-      ".firebaserc",
-      ".firebase",
-      ".git",
-      ".gitignore",
-      ".gemini",
-      ".env",
-      "node_modules",
+      "**/.*",
+      "**/node_modules/**",
+      "otp-verification-app/**",
+      "components/**",
+      "email-templates/**",
+      "scratch/**",
       "server.js",
       "techbook-ai-worker.js",
       "test.js",
@@ -21,7 +20,7 @@
       "TODO.md",
       "FIREBASE_RULES.txt",
       "sample_students.csv",
-      "scratch",
+      "vercel.json",
       "**/*.log"
     ],
     "headers": [
