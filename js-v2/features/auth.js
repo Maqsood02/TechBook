@@ -595,13 +595,15 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
       try {
         // Hash the new password using SHA-256
         const newPasswordHash = CryptoJS.SHA256(newPass).toString();
+        const nowIso = new Date().toISOString();
 
         // Create reset request with status pending
         await setDoc(doc(db, "password_reset_requests", usn), {
           usn,
           name,
           newPasswordHash,
-          requestedAt: new Date().toISOString(),
+          requestedAt: nowIso,
+          timestamp: nowIso,
           status: 'pending'
         });
 

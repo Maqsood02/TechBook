@@ -6,7 +6,7 @@ import './core/helpers.js';
 import './core/activity_tracker.js';
 
 // Features & Components
-import './features/auth.js?v=20261020_v4';
+import './features/auth.js?v=20261024_v1';
 import './features/promos.js?v=20261020_v4';
 import './features/attendance.js?v=20261020_v4';
 import './features/notes.js?v=20261020_v4';
