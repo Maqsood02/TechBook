@@ -560,7 +560,7 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
     });
 
     /* ===============================
-       🔐 DIRECT PASSWORD RESET (NO EMAIL)
+       🔐 DIRECT PASSWORD RESET (NO ADMIN APPROVAL)
     =============================== */
     $("btn-reset-pass")?.addEventListener("click", async () => {
       const usn = val("forgot-usn").toUpperCase();
@@ -581,52 +581,94 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
         return msg("forgot-msg", "Passwords do not match. Please verify", "error");
       }
 
-      // Rate limit reset submissions: max 1 request every 45 seconds per USN
-      const lastResetKey = 'tb_reset_ts_' + usn;
-      const lastResetTime = localStorage.getItem(lastResetKey);
-      if (lastResetTime && Date.now() - parseInt(lastResetTime) < 45000) {
-        return msg("forgot-msg", "Please wait a moment before submitting another reset request.", "error");
-      }
-
       const btn = $("btn-reset-pass");
       const origText = btn ? btn.innerText : "🔑 Reset Password";
-      if (btn) { btn.disabled = true; btn.innerText = "Submitting..."; }
+      if (btn) { btn.disabled = true; btn.innerText = "⏳ Updating password..."; }
 
       try {
-        // Hash the new password using SHA-256
+        // 1. Verify student exists in database
+        const studentRef = doc(db, "students", usn);
+        const studentSnap = await getDoc(studentRef);
+
+        if (!studentSnap.exists()) {
+          if (btn) { btn.disabled = false; btn.innerText = origText; }
+          return msg("forgot-msg", `❌ USN "${usn}" is not registered in the student database.`, "error");
+        }
+
+        // 2. Verify student's name against record
+        const sData = studentSnap.data() || {};
+        const recordName = (sData.name || '').trim().toLowerCase();
+        const inputName = name.trim().toLowerCase();
+
+        if (recordName && inputName) {
+          const cleanRecord = recordName.replace(/[^a-z0-9]/g, '');
+          const cleanInput = inputName.replace(/[^a-z0-9]/g, '');
+          const partsInput = inputName.split(/\s+/).filter(p => p.length >= 2);
+          const partsRecord = recordName.split(/\s+/).filter(p => p.length >= 2);
+
+          const matches =
+            cleanRecord === cleanInput ||
+            cleanRecord.includes(cleanInput) ||
+            cleanInput.includes(cleanRecord) ||
+            partsInput.some(p => recordName.includes(p)) ||
+            partsRecord.some(p => inputName.includes(p));
+
+          if (!matches) {
+            if (btn) { btn.disabled = false; btn.innerText = origText; }
+            return msg("forgot-msg", "❌ Name verification failed. Please enter the full name used during registration.", "error");
+          }
+        }
+
+        // 3. Directly update student passwordHash in Firestore (no admin approval needed!)
         const newPasswordHash = CryptoJS.SHA256(newPass).toString();
         const nowIso = new Date().toISOString();
 
-        // Create reset request with status pending
-        await setDoc(doc(db, "password_reset_requests", usn), {
-          usn,
-          name,
-          newPasswordHash,
-          requestedAt: nowIso,
-          timestamp: nowIso,
-          status: 'pending'
-        });
+        await setDoc(studentRef, {
+          passwordHash: newPasswordHash,
+          passwordResetAt: nowIso
+        }, { merge: true });
 
-        localStorage.setItem(lastResetKey, Date.now().toString());
-        console.log("✓ Password reset request submitted for:", usn);
+        // 4. Update request log for administrative history tracking
+        try {
+          await setDoc(doc(db, "password_reset_requests", usn), {
+            usn,
+            name: sData.name || name,
+            newPasswordHash,
+            requestedAt: nowIso,
+            timestamp: nowIso,
+            status: 'approved',
+            approvedAt: nowIso,
+            directReset: true
+          }, { merge: true });
+        } catch (logErr) {
+          console.warn("Could not log reset history:", logErr);
+        }
 
-        msg("forgot-msg", "✓ Password reset request submitted! Admin will approve it shortly.", "success");
+        console.log("✓ Password directly updated for:", usn);
+        msg("forgot-msg", "✓ Password updated successfully! Redirecting to login...", "success");
 
         setTimeout(() => {
           $("back-to-login")?.click();
           const backLinks = document.querySelectorAll(".unified-back-to-login");
           backLinks.forEach(l => l.click());
-          // Clear form
+          // Pre-fill USN on login forms
+          if ($("login-usn")) $("login-usn").value = usn;
+          if ($("unified-username")) $("unified-username").value = usn;
+          if ($("unified-password")) {
+            $("unified-password").value = "";
+            $("unified-password").focus();
+          }
+          // Clear reset form
           $("forgot-usn").value = "";
           $("forgot-name").value = "";
           if ($("forgot-new-pass")) $("forgot-new-pass").value = "";
           if ($("forgot-confirm-pass")) $("forgot-confirm-pass").value = "";
           if (btn) { btn.disabled = false; btn.innerText = origText; }
-        }, 2200);
+        }, 1800);
 
       } catch (e) {
-        console.error("Password reset request error:", e);
-        msg("forgot-msg", "❌ Error: " + (e.message || "Failed to submit request"), "error");
+        console.error("Password reset error:", e);
+        msg("forgot-msg", "❌ Error: " + (e.message || "Failed to update password"), "error");
         if (btn) { btn.disabled = false; btn.innerText = origText; }
       }
     });
@@ -1444,11 +1486,14 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
 
             // Check if password matches approved reset password hash in Firestore
             let matchedFallback = false;
+            let sDoc = null;
             try {
-              if (authError.code === 'auth/wrong-password' || authError.code === 'auth/invalid-credential') {
+              if (authError.code === 'auth/wrong-password' || authError.code === 'auth/invalid-credential' || authError.code === 'auth/user-not-found') {
                 const passHash = CryptoJS.SHA256(pass).toString();
-                const tempCred = await signInAnonymously(auth);
-                const sDoc = await getDoc(doc(db, 'students', usn));
+                if (!auth.currentUser) {
+                  try { await signInAnonymously(auth); } catch (_) {}
+                }
+                sDoc = await getDoc(doc(db, 'students', usn));
                 if (sDoc.exists() && (sDoc.data().passwordHash === passHash || sDoc.data().password === pass)) {
                   matchedFallback = true;
                   console.log('✓ Student verified via approved reset password hash');
@@ -1470,19 +1515,21 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
           }
 
           // 2. Verify student record (role authorization check) with 7-second timeout
-          let studentDoc = null;
-          try {
-            studentDoc = await Promise.race([
-              getDoc(doc(db, 'students', usn)),
-              new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 7000))
-            ]);
-          } catch (dbErr) {
-            console.warn('Firestore student fetch timed out or failed:', dbErr.message);
-            await signOut(auth); // Clear auth if doc cannot be fetched
-            if (dbErr.message === 'Timeout') {
-              throw new Error('Connection timed out. Please check your network/internet connection.');
-            } else {
-              throw dbErr;
+          let studentDoc = sDoc;
+          if (!studentDoc) {
+            try {
+              studentDoc = await Promise.race([
+                getDoc(doc(db, 'students', usn)),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 7000))
+              ]);
+            } catch (dbErr) {
+              console.warn('Firestore student fetch timed out or failed:', dbErr.message);
+              await signOut(auth); // Clear auth if doc cannot be fetched
+              if (dbErr.message === 'Timeout') {
+                throw new Error('Connection timed out. Please check your network/internet connection.');
+              } else {
+                throw dbErr;
+              }
             }
           }
 

@@ -39,7 +39,12 @@ service cloud.firestore {
 
     // ── Students Collection ──
     match /students/{studentId} {
-      allow read: if signedIn();
+      allow read: if true;
+      allow update: if (isAdmin() || isOwner(studentId)) || (
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['passwordHash', 'passwordResetAt']) &&
+        request.resource.data.passwordHash is string &&
+        request.resource.data.passwordHash.size() == 64
+      );
       allow write: if isAdmin() || isOwner(studentId);
       allow create: if signedIn() && !exists(/databases/$(database)/documents/admins/$(studentId.lower())) && isOwner(studentId);
     }
@@ -77,7 +82,6 @@ service cloud.firestore {
         request.resource.data.usn is string &&
         request.resource.data.usn.size() > 0 &&
         request.resource.data.usn.size() <= 20 &&
-        request.resource.data.status == 'pending' &&
         id.lower() == request.resource.data.usn.lower()
       );
     }
