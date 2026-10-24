@@ -226,8 +226,10 @@ async function getAdminHeaders() {
           }).then(r => r.json()).then(d => {
             if (d.success && d.sentCount > 0) {
               admShowMsg(`✅ ${successCount} note${successCount > 1 ? 's' : ''} uploaded. 📧 ${d.sentCount} verified students notified!`, '#10b981');
-            } else if (d.success && d.sentCount === 0) {
-              admShowMsg(`✅ ${successCount} note${successCount > 1 ? 's' : ''} uploaded. ⚠️ 0 students notified (no verified students matched criteria).`, '#f59e0b');
+            } else if (d.success && d.total === 0) {
+              admShowMsg(`✅ ${successCount} note${successCount > 1 ? 's' : ''} uploaded. ℹ️ 0 verified students matched your Year/Sem/Scheme criteria.`, '#f59e0b');
+            } else if (d.success && d.sentCount === 0 && d.total > 0) {
+              admShowMsg(`✅ ${successCount} note${successCount > 1 ? 's' : ''} uploaded. ⚠️ ${d.total} verified students matched, but email delivery was deferred. You can notify them anytime from the Subject card below.`, '#f59e0b');
             } else {
               admShowMsg(`✅ ${successCount} note${successCount > 1 ? 's' : ''} uploaded. ⚠️ Notification status: ${d.error || 'Done'}`, '#f59e0b');
             }
@@ -245,13 +247,50 @@ async function getAdminHeaders() {
       if (typeof admLoadAllNotes === 'function') admLoadAllNotes();
     };
 
-    // ── Live Match Preview for Note Upload Form ──
+    // ── Live Match Preview & Year/Sem Auto-Sync for Note Upload Form ──
+    window.admSemChanged = () => {
+      const semEl = document.getElementById('adm-sem');
+      const yearEl = document.getElementById('adm-year');
+      if (semEl && semEl.value && yearEl) {
+        const s = parseInt(semEl.value, 10);
+        if (!isNaN(s) && s >= 1 && s <= 8) {
+          yearEl.value = String(Math.ceil(s / 2));
+        }
+      }
+      if (typeof admUpdateUploadMatchPreview === 'function') admUpdateUploadMatchPreview();
+    };
+
+    window.admYearChanged = () => {
+      const semEl = document.getElementById('adm-sem');
+      const yearEl = document.getElementById('adm-year');
+      if (yearEl && yearEl.value && semEl && semEl.value) {
+        const s = parseInt(semEl.value, 10);
+        const y = parseInt(yearEl.value, 10);
+        const validSems = [y * 2 - 1, y * 2];
+        if (!validSems.includes(s)) {
+          semEl.value = String(validSems[0]);
+        }
+      }
+      if (typeof admUpdateUploadMatchPreview === 'function') admUpdateUploadMatchPreview();
+    };
+
     let _matchPreviewTimer = null;
     window.admUpdateUploadMatchPreview = () => {
-      const sem = document.getElementById('adm-sem')?.value;
-      const year = document.getElementById('adm-year')?.value;
-      const dept = document.getElementById('adm-dept')?.value;
-      const scheme = document.getElementById('adm-scheme')?.value || 'All';
+      const semEl = document.getElementById('adm-sem');
+      const yearEl = document.getElementById('adm-year');
+      const deptEl = document.getElementById('adm-dept');
+      const schemeEl = document.getElementById('adm-scheme');
+
+      const sem = semEl?.value;
+      if (sem && yearEl && !yearEl.value) {
+        const s = parseInt(sem, 10);
+        if (!isNaN(s) && s >= 1 && s <= 8) {
+          yearEl.value = String(Math.ceil(s / 2));
+        }
+      }
+      const year = yearEl?.value;
+      const dept = deptEl?.value;
+      const scheme = schemeEl?.value || 'All';
       const badge = document.getElementById('adm-upload-match-badge');
       if (!badge) return;
 
@@ -327,6 +366,9 @@ async function getAdminHeaders() {
       const uzIcon = document.getElementById('adm-uz-icon'); if (uzIcon) uzIcon.textContent = '📄';
       const uzText = document.getElementById('adm-uz-text'); if (uzText) uzText.textContent = 'Click to select Files or Drag & Drop Folder';
       const uzSub = document.getElementById('adm-uz-sub'); if (uzSub) uzSub.textContent = 'PDF files only · Multiple files & Folders supported ✓';
+
+      const matchBadge = document.getElementById('adm-upload-match-badge');
+      if (matchBadge) matchBadge.style.display = 'none';
     };
 
     // ─── RECONSTRUCT PDF FROM CHUNKS ───

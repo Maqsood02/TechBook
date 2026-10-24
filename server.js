@@ -954,39 +954,43 @@ app.post('/api/notify-upload', verifyAdminMiddleware, adminActionLimiter, async 
     const uploadDate = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' });
     const isUpdateFlag = Boolean(isUpdate);
 
-    // Send emails synchronously before responding (required for Serverless environment like Vercel)
+    // Send emails in concurrent batches of 5 to avoid serverless function timeouts while respecting SMTP limits
+    const BATCH_SIZE = 5;
     let sentCount = 0;
-    for (const student of targetStudents) {
-      if (!student.email) continue;
-      try {
-        const clientOrigin = req.headers.origin || req.get('origin') || APP_URL;
-        const html = loadTemplate('content-upload.html', {
-          STUDENT_NAME: student.name || student.usn,
-          CONTENT_TYPE: isUpdateFlag ? `${contentType} (Updated)` : contentType,
-          CONTENT_ICON: icon,
-          SUBJECT: subject,
-          TITLE: title || subject,
-          DEPT: dept,
-          YEAR: String(year),
-          SEM: String(sem),
-          SCHEME: String(scheme || '2022'),
-          UPLOAD_DATE: uploadDate,
-          APP_URL: clientOrigin
-        });
+    for (let i = 0; i < targetStudents.length; i += BATCH_SIZE) {
+      const batch = targetStudents.slice(i, i + BATCH_SIZE);
+      await Promise.allSettled(batch.map(async (student) => {
+        if (!student.email) return;
+        try {
+          const clientOrigin = req.headers.origin || req.get('origin') || APP_URL;
+          const html = loadTemplate('content-upload.html', {
+            STUDENT_NAME: student.name || student.usn,
+            CONTENT_TYPE: isUpdateFlag ? `${contentType} (Updated)` : contentType,
+            CONTENT_ICON: icon,
+            SUBJECT: subject,
+            TITLE: title || subject,
+            DEPT: dept,
+            YEAR: String(year),
+            SEM: String(sem),
+            SCHEME: String(scheme || '2022'),
+            UPLOAD_DATE: uploadDate,
+            APP_URL: clientOrigin
+          });
 
-        const emailSubject = isUpdateFlag
-          ? `📢 Note Updated: ${subject} (${title || subject}) — TechBook`
-          : `New ${contentType} Uploaded: ${subject} — TechBook`;
+          const emailSubject = isUpdateFlag
+            ? `📢 Note Updated: ${subject} (${title || subject}) — TechBook`
+            : `New ${contentType} Uploaded: ${subject} — TechBook`;
 
-        await sendEmail({
-          to: student.email,
-          subject: emailSubject,
-          html
-        });
-        sentCount++;
-      } catch (emailErr) {
-        console.error(`Failed email to ${student.email}:`, emailErr.message);
-      }
+          await sendEmail({
+            to: student.email,
+            subject: emailSubject,
+            html
+          });
+          sentCount++;
+        } catch (emailErr) {
+          console.error(`Failed email to ${student.email}:`, emailErr.message);
+        }
+      }));
     }
 
     console.log(`✅ Upload notification complete: ${sentCount}/${targetStudents.length} emails sent`);
@@ -1136,28 +1140,32 @@ app.post('/api/notify-promo', verifyAdminMiddleware, adminActionLimiter, async (
       `;
     }
 
+    const BATCH_SIZE = 5;
     let sentCount = 0;
-    for (const student of students) {
-      if (!student.email) continue;
-      try {
-        const clientOrigin = req.headers.origin || req.get('origin') || APP_URL;
-        const html = loadTemplate('promo.html', {
-          STUDENT_NAME: student.name || student.usn,
-          PROMO_TITLE: title,
-          PROMO_DESC: description || 'No description provided.',
-          PROMO_MEDIA_HTML: mediaHtml,
-          APP_URL: clientOrigin
-        });
+    for (let i = 0; i < students.length; i += BATCH_SIZE) {
+      const batch = students.slice(i, i + BATCH_SIZE);
+      await Promise.allSettled(batch.map(async (student) => {
+        if (!student.email) return;
+        try {
+          const clientOrigin = req.headers.origin || req.get('origin') || APP_URL;
+          const html = loadTemplate('promo.html', {
+            STUDENT_NAME: student.name || student.usn,
+            PROMO_TITLE: title,
+            PROMO_DESC: description || 'No description provided.',
+            PROMO_MEDIA_HTML: mediaHtml,
+            APP_URL: clientOrigin
+          });
 
-        await sendEmail({
-          to: student.email,
-          subject: `📢 New Announcement: ${title} — TechBook`,
-          html
-        });
-        sentCount++;
-      } catch (emailErr) {
-        console.error(`Failed email to ${student.email}:`, emailErr.message);
-      }
+          await sendEmail({
+            to: student.email,
+            subject: `📢 New Announcement: ${title} — TechBook`,
+            html
+          });
+          sentCount++;
+        } catch (emailErr) {
+          console.error(`Failed email to ${student.email}:`, emailErr.message);
+        }
+      }));
     }
 
     console.log(`✅ Promo notification complete: ${sentCount}/${students.length} emails sent`);
