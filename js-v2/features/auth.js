@@ -1477,6 +1477,8 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
             usn = usn.split('@')[0].toUpperCase();
           }
 
+          let sDoc = null;
+
           // 1. Try Firebase Auth first so the user is authenticated and authorized to query Firestore
           try {
             await signInWithEmailAndPassword(auth, `${usn.toLowerCase()}@techbook.ac.in`, pass);
@@ -1486,7 +1488,6 @@ import { $, val, API_BASE_URL } from '../core/helpers.js';
 
             // Check if password matches approved reset password hash in Firestore
             let matchedFallback = false;
-            let sDoc = null;
             try {
               if (authError.code === 'auth/wrong-password' || authError.code === 'auth/invalid-credential' || authError.code === 'auth/user-not-found') {
                 const passHash = CryptoJS.SHA256(pass).toString();
