@@ -1152,6 +1152,8 @@ document.getElementById('btn-publish-quiz')?.addEventListener('click', async () 
       const dept = document.getElementById('qz-dept')?.value || '';
       const year = document.getElementById('qz-year')?.value || '';
       const sem = document.getElementById('qz-sem')?.value || '';
+      const is4thYear = String(year) === '4' || String(sem) === '7' || String(sem) === '8';
+      const targetDept = is4thYear ? 'All' : (dept || 'All');
       if (dept || year || sem) {
         const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
         fetch(`${API_BASE_URL}/api/notify-quiz`, {
@@ -1166,7 +1168,7 @@ document.getElementById('btn-publish-quiz')?.addEventListener('click', async () 
             questionCount: _generatedQuiz.count,
             duration: _generatedQuiz.timeLimit,
             difficulty: _generatedQuiz.difficulty,
-            dept: dept || 'All',
+            dept: targetDept,
             year: year || '1',
             sem: sem || '1'
           })

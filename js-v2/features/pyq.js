@@ -912,6 +912,9 @@ let lastPyqFetchTime = 0;
         // ── Send email notifications to eligible students ──
         try {
           const dept = document.getElementById('pyq-dept')?.value || '';
+          const is4thYear = String(year) === '4' || String(sem) === '7' || String(sem) === '8';
+          const targetDept = is4thYear ? 'All' : (dept || 'All');
+          const targetScheme = is4thYear ? 'All' : scheme;
           const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
           fetch(`${API_BASE_URL}/api/notify-upload`, {
             method: 'POST',
@@ -923,10 +926,10 @@ let lastPyqFetchTime = 0;
               contentType: 'PYQ',
               subject,
               title: subject + ' PYQ ' + examYear,
-              dept: dept || 'All',
+              dept: targetDept,
               year,
               sem,
-              scheme,
+              scheme: targetScheme,
               section: sec
             })
           }).then(r => r.json()).then(d => {

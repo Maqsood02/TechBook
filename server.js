@@ -879,24 +879,29 @@ app.post('/api/notify-upload', verifyAdminMiddleware, adminActionLimiter, async 
     console.log(`🔍 Total verified students fetched: ${students.length}`);
 
     // 2. Filter students by Semester, Year, Department, Section, and Scheme
+    const targetSem = String(sem || '').trim();
+    const targetYear = String(year || '').trim();
+    const is4thYear = targetYear === '4' || targetSem === '7' || targetSem === '8';
+
     const targetStudents = students.filter(s => {
       // Semester filter (required)
       const studentSem = String(s.sem || '').trim();
-      const targetSem = String(sem).trim();
       if (studentSem !== targetSem) return false;
 
       // Year filter (if specified)
-      if (year && year !== 'all' && year !== 'All') {
+      if (targetYear && targetYear !== 'all' && targetYear !== 'All') {
         const studentYear = String(s.year || '').trim();
-        const targetYear = String(year).trim();
         if (studentYear && targetYear && studentYear !== targetYear) return false;
       }
 
-      // Department filter
-      if (dept && dept !== 'all' && dept !== 'All') {
-        const studentDept = String(s.dept || '').trim().toLowerCase();
-        const targetDept = String(dept).trim().toLowerCase();
-        if (studentDept !== targetDept && studentDept !== 'all') return false;
+      // Department filter:
+      // For 4th year (Year 4 / Sem 7 & Sem 8), notifications apply to ALL branches!
+      if (!is4thYear) {
+        if (dept && dept !== 'all' && dept !== 'All') {
+          const studentDept = String(s.dept || '').trim().toLowerCase();
+          const targetDept = String(dept).trim().toLowerCase();
+          if (studentDept !== targetDept && studentDept !== 'all') return false;
+        }
       }
 
       // Section criteria filter
@@ -909,6 +914,11 @@ app.post('/api/notify-upload', verifyAdminMiddleware, adminActionLimiter, async 
       }
 
       // Scheme criteria filter:
+      // For 4th year cohort (Sem 7/8, Year 4), all schemes are compatible across the graduating batch
+      if (is4thYear) {
+        return true;
+      }
+
       if (scheme && scheme !== 'all' && scheme !== 'All') {
         const studentScheme = String(s.scheme || '2022').trim().toLowerCase();
         const targetSchemes = String(scheme).split(',').map(x => x.trim().toLowerCase());
@@ -1011,16 +1021,43 @@ app.post('/api/check-matching-students', verifyAdminMiddleware, adminActionLimit
     if (!Array.isArray(queryResult.data)) return res.json({ success: true, count: 0 });
 
     const students = queryResult.data.filter(r => r.document).map(r => parseDoc(r.document));
+    const targetSem = String(sem || '').trim();
+    const targetYear = String(year || '').trim();
+    const is4thYear = targetYear === '4' || targetSem === '7' || targetSem === '8';
+
     const target = students.filter(s => {
-      if (sem && sem !== 'all' && String(s.sem || '').trim() !== String(sem).trim()) return false;
-      if (year && year !== 'all' && String(s.year || '').trim() !== String(year).trim()) return false;
-      if (dept && dept !== 'all' && dept !== 'All' && String(s.dept || '').toLowerCase() !== dept.toLowerCase()) return false;
+      const studentSem = String(s.sem || '').trim();
+      const studentYear = String(s.year || '').trim();
+
+      if (targetSem && targetSem !== 'all' && studentSem !== targetSem) return false;
+      if (targetYear && targetYear !== 'all' && studentYear && studentYear !== targetYear) return false;
+      // Department filter:
+      // For 4th year, notifications apply to ALL branches!
+      if (!is4thYear) {
+        if (dept && dept !== 'all' && dept !== 'All' && String(s.dept || '').toLowerCase() !== dept.toLowerCase()) return false;
+      }
+
+      // Section criteria filter
+      if (section && section !== 'all' && section !== 'All') {
+        const targetSecs = section.split(',').map(x => x.trim().toLowerCase());
+        if (!targetSecs.includes('all')) {
+          const studentSec = String(s.section || '').trim().toLowerCase();
+          if (studentSec && !targetSecs.includes(studentSec)) return false;
+        }
+      }
+
+      // Scheme criteria filter:
+      // For 4th year cohort (Sem 7/8, Year 4), all schemes are compatible across the graduating batch
+      if (is4thYear) {
+        return true;
+      }
+
       if (scheme && scheme !== 'all' && scheme !== 'All') {
         const studentScheme = String(s.scheme || '2022').trim().toLowerCase();
         const targets = String(scheme).split(',').map(x => x.trim().toLowerCase());
         if (!targets.includes('all') && !targets.includes('common')) {
           if (targets.includes(studentScheme)) return true;
-          if (String(sem) === '1' && (targets.includes('2025') || targets.includes('2026') || targets.includes('2022'))) {
+          if (targetSem === '1' && (targets.includes('2025') || targets.includes('2026') || targets.includes('2022'))) {
             if (studentScheme === '2026' || studentScheme === '2025' || studentScheme === '2022') return true;
           }
           return false;
@@ -1219,7 +1256,8 @@ app.post('/api/notify-quiz', verifyAdminMiddleware, adminActionLimiter, async (r
       { fieldFilter: { field: { fieldPath: 'email_verified' }, op: 'EQUAL', value: { booleanValue: true } } }
     ];
 
-    if (dept && dept !== 'All') {
+    const is4thYear = String(year) === '4' || String(sem) === '7' || String(sem) === '8';
+    if (!is4thYear && dept && dept !== 'All') {
       filters.push({ fieldFilter: { field: { fieldPath: 'dept' }, op: 'EQUAL', value: { stringValue: dept } } });
     }
 

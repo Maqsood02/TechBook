@@ -358,6 +358,7 @@
                     <select id="reg-dept" required style="width:100%; padding:10px 12px; border:1.5px solid #e5e7eb; border-radius:10px; background:#fff;">
                       <option value="" disabled selected>Select Your Department</option>
                       <option value="CSE">CSE - Computer Science</option>
+                      <option value="ISE">ISE - Information Science & Engineering</option>
                       <option value="AIML">AIML - Artificial Intelligence & Machine Learning</option>
                       <option value="DS">DS - Data Science</option>
                       <option value="CYB">CYB - Cyber Security</option>
@@ -2219,6 +2220,7 @@
                       <select id="areg-dept">
                         <option value="" disabled selected>Select Department</option>
                         <option value="CSE">CSE</option>
+                        <option value="ISE">ISE</option>
                         <option value="AIML">AIML</option>
                         <option value="DS">DS</option>
                         <option value="CYB">CYB</option>
@@ -2284,6 +2286,7 @@
                         <select id="bulk-filter-dept">
                           <option value="" selected>— All —</option>
                           <option value="CSE">CSE</option>
+                          <option value="ISE">ISE</option>
                           <option value="AIML">AIML</option>
                           <option value="DS">DS</option>
                           <option value="CYB">CYB</option>
@@ -2360,6 +2363,7 @@
                         <select id="bulk-new-dept">
                           <option value="" selected>— no change —</option>
                           <option value="CSE">CSE</option>
+                          <option value="ISE">ISE</option>
                           <option value="AIML">AIML</option>
                           <option value="DS">DS</option>
                           <option value="CYB">CYB</option>
@@ -2423,6 +2427,7 @@
                         <select id="user-filter-dept" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;box-sizing:border-box;">
                           <option value="">— All —</option>
                           <option value="CSE">CSE</option>
+                          <option value="ISE">ISE</option>
                           <option value="AIML">AIML</option>
                           <option value="DS">DS</option>
                           <option value="CYB">CYB</option>
@@ -2742,6 +2747,7 @@
                       <select id="adm-dept" onchange="if(typeof admUpdateUploadMatchPreview==='function') admUpdateUploadMatchPreview()">
                         <option value="All">All Departments</option>
                         <option value="CSE">CSE</option>
+                        <option value="ISE">ISE</option>
                         <option value="AIML">AIML</option>
                         <option value="DS">DS</option>
                         <option value="CYB">CYB</option>
@@ -3855,6 +3861,7 @@
             <label style="font-weight:600;font-size:12px;color:#4b5563;">Department *</label>
             <select id="edit-student-dept" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;box-sizing:border-box;">
               <option value="CSE">CSE</option>
+              <option value="ISE">ISE</option>
               <option value="AIML">AIML</option>
               <option value="DS">DS</option>
               <option value="CYB">CYB</option>
@@ -3988,6 +3995,7 @@
             <select id="adm-edit-note-dept" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;box-sizing:border-box;">
               <option value="All">All Departments</option>
               <option value="CSE">CSE</option>
+              <option value="ISE">ISE</option>
               <option value="AIML">AIML</option>
               <option value="DS">DS</option>
               <option value="CYB">CYB</option>
@@ -4040,6 +4048,10 @@
           <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:12.5px;">
             <span style="color:#64748b;">Target Semester:</span>
             <strong id="adm-notify-target-sem" style="color:#1e293b;">Sem 1</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:12.5px;">
+            <span style="color:#64748b;">Target Branch:</span>
+            <strong id="adm-notify-target-branch" style="color:#1e293b;">All Branches</strong>
           </div>
           <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:12.5px;">
             <span style="color:#64748b;">Target Scheme:</span>

@@ -206,6 +206,9 @@ async function getAdminHeaders() {
         // ── Send email notifications to eligible students ──
         try {
           const dept = document.getElementById('adm-dept')?.value || 'All';
+          const is4thYear = String(year) === '4' || String(sem) === '7' || String(sem) === '8';
+          const targetDept = is4thYear ? 'All' : (dept || 'All');
+          const targetScheme = is4thYear ? 'All' : scheme;
           const headers = await getAdminHeaders();
           fetch(`${API_BASE_URL}/api/notify-upload`, {
             method: 'POST',
@@ -214,10 +217,10 @@ async function getAdminHeaders() {
               contentType: 'Notes',
               subject,
               title: titleInput || subject,
-              dept: dept || 'All',
+              dept: targetDept,
               year,
               sem,
-              scheme,
+              scheme: targetScheme,
               section: sec
             })
           }).then(r => r.json()).then(d => {
@@ -266,11 +269,14 @@ async function getAdminHeaders() {
       if (_matchPreviewTimer) clearTimeout(_matchPreviewTimer);
       _matchPreviewTimer = setTimeout(async () => {
         try {
+          const is4thYear = String(year) === '4' || String(sem) === '7' || String(sem) === '8';
+          const targetDept = is4thYear ? 'All' : dept;
+          const targetScheme = is4thYear ? 'All' : scheme;
           const headers = await getAdminHeaders();
           const res = await fetch(`${API_BASE_URL}/api/check-matching-students`, {
             method: 'POST',
             headers,
-            body: JSON.stringify({ sem, year, dept, scheme })
+            body: JSON.stringify({ sem, year, dept: targetDept, scheme: targetScheme })
           });
           const data = await res.json();
           if (data.success) {
@@ -278,12 +284,13 @@ async function getAdminHeaders() {
               badge.style.background = '#eff6ff';
               badge.style.border = '1.5px solid #bfdbfe';
               badge.style.color = '#1e40af';
-              badge.innerHTML = `<span>👥 <strong>${data.count} verified student${data.count > 1 ? 's' : ''}</strong> in Sem ${sem} (${scheme === 'All' ? 'All Schemes' : scheme + ' Scheme'}) will receive email notification.</span>`;
+              const scopeLabel = is4thYear ? 'All Branches · 4th Year Cohort' : (scheme === 'All' ? 'All Schemes' : scheme + ' Scheme');
+              badge.innerHTML = `<span>👥 <strong>${data.count} verified student${data.count > 1 ? 's' : ''}</strong> in Sem ${sem} (${scopeLabel}) will receive email notification.</span>`;
             } else {
               badge.style.background = '#fffbeb';
               badge.style.border = '1.5px solid #fde68a';
               badge.style.color = '#92400e';
-              badge.innerHTML = `<span>⚠️ <strong>0 verified students</strong> currently match Scheme '${scheme}' in Sem ${sem}.<br><span style="font-size:11px;font-weight:400;">Tip: If 1st sem students registered under 2026/2022 Scheme, select <strong>"All Schemes (Common)"</strong> to notify all of them.</span></span>`;
+              badge.innerHTML = `<span>⚠️ <strong>0 verified students</strong> currently match in Sem ${sem}.</span>`;
             }
           }
         } catch (_) {
@@ -592,6 +599,9 @@ async function getAdminHeaders() {
         let notifyText = '';
         if (shouldNotify) {
           try {
+            const is4thYear = String(year) === '4' || String(sem) === '7' || String(sem) === '8';
+            const targetDept = is4thYear ? 'All' : (dept || 'All');
+            const targetScheme = is4thYear ? 'All' : scheme;
             const headers = await getAdminHeaders();
             const notifyRes = await fetch(`${API_BASE_URL}/api/notify-upload`, {
               method: 'POST',
@@ -600,10 +610,10 @@ async function getAdminHeaders() {
                 contentType: 'Notes',
                 subject: subj,
                 title,
-                dept: dept || 'All',
+                dept: targetDept,
                 year,
                 sem,
-                scheme,
+                scheme: targetScheme,
                 section: sec,
                 isUpdate: true
               })
@@ -642,10 +652,22 @@ async function getAdminHeaders() {
       const scheme = papers[0]?.scheme || 'All';
       const dept = papers[0]?.dept || 'All';
 
+      const is4thYear = String(year) === '4' || String(sem) === '7' || String(sem) === '8';
+      const targetDept = is4thYear ? 'All' : (dept || 'All');
+      const targetScheme = is4thYear ? 'All' : scheme;
+
       document.getElementById('adm-notify-subj-name').value = subj;
       document.getElementById('adm-notify-subj-title').textContent = `${subj} (${papers.length} notes)`;
       document.getElementById('adm-notify-target-sem').textContent = `Sem ${sem} (Year ${year})`;
-      document.getElementById('adm-notify-target-scheme').textContent = scheme === 'All' ? 'All Schemes (Common)' : `${scheme} Scheme`;
+
+      const branchEl = document.getElementById('adm-notify-target-branch');
+      if (branchEl) {
+        branchEl.textContent = is4thYear ? 'All Branches (Year 4)' : (targetDept === 'All' ? 'All Branches' : targetDept);
+      }
+
+      document.getElementById('adm-notify-target-scheme').textContent = is4thYear
+        ? 'All Schemes (4th Year Cohort)'
+        : (scheme === 'All' ? 'All Schemes (Common)' : `${scheme} Scheme`);
       document.getElementById('adm-notify-custom-title').value = `${papers.length} Lecture Notes Available`;
 
       const countEl = document.getElementById('adm-notify-target-count');
@@ -662,7 +684,7 @@ async function getAdminHeaders() {
         const res = await fetch(`${API_BASE_URL}/api/check-matching-students`, {
           method: 'POST',
           headers,
-          body: JSON.stringify({ sem, year, dept, scheme })
+          body: JSON.stringify({ sem, year, dept: targetDept, scheme: targetScheme })
         });
         const d = await res.json();
         if (d.success) {
@@ -683,6 +705,10 @@ async function getAdminHeaders() {
       const scheme = papers[0]?.scheme || 'All';
       const dept = papers[0]?.dept || 'All';
 
+      const is4thYear = String(year) === '4' || String(sem) === '7' || String(sem) === '8';
+      const targetDept = is4thYear ? 'All' : (dept || 'All');
+      const targetScheme = is4thYear ? 'All' : scheme;
+
       const btn = document.getElementById('btn-confirm-notify-subject');
       const msg = document.getElementById('adm-notify-subject-msg');
 
@@ -699,10 +725,10 @@ async function getAdminHeaders() {
             contentType: 'Notes',
             subject: subj,
             title: customTitle,
-            dept: dept || 'All',
+            dept: targetDept,
             year,
             sem,
-            scheme,
+            scheme: targetScheme,
             section: 'all',
             isUpdate: true
           })
@@ -715,7 +741,7 @@ async function getAdminHeaders() {
               document.getElementById('adm-notify-subject-modal').style.display = 'none';
             }, 1800);
           } else {
-            if (msg) msg.innerHTML = `<span style="color:#f59e0b;font-size:12px;">⚠️ No verified students matched Scheme '${scheme}' in Sem ${sem}.</span>`;
+            if (msg) msg.innerHTML = `<span style="color:#f59e0b;font-size:12px;">⚠️ No verified students matched in Sem ${sem}.</span>`;
           }
         } else {
           if (msg) msg.innerHTML = `<span style="color:#ef4444;font-size:12px;">❌ Error: ${d.error || 'Failed to send'}</span>`;
@@ -921,11 +947,12 @@ async function getAdminHeaders() {
           const targetSchemes = String(n.scheme).split(',').map(s => s.trim().toLowerCase());
           const userScheme = String(scheme).trim().toLowerCase();
           const matches = targetSchemes.includes(userScheme) || targetSchemes.includes('all') || targetSchemes.includes('common');
-          // Cohort compatibility for 1st sem (2025/2026/2022)
+          // Cohort compatibility for 1st sem (2025/2026/2022) and 4th year
           const isSem1Cohort = (String(sem) === '1' || String(n.sem) === '1') &&
             ['2022', '2025', '2026'].includes(userScheme) &&
             targetSchemes.some(ts => ['2022', '2025', '2026'].includes(ts));
-          if (!matches && !isSem1Cohort) return false;
+          const is4thYearCohort = (String(year) === '4' || String(sem) === '7' || String(sem) === '8' || String(n.year) === '4' || String(n.sem) === '7' || String(n.sem) === '8');
+          if (!matches && !isSem1Cohort && !is4thYearCohort) return false;
         }
         if (sec) {
           // n.section can be 'all', 'A', 'B', or 'A,B,C' (comma-separated)

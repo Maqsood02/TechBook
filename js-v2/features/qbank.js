@@ -647,6 +647,9 @@ let lastQbankFetchTime = 0;
         // ── Send email notifications to eligible students ──
         try {
           const dept = document.getElementById('qbank-dept')?.value || '';
+          const is4thYear = String(year) === '4' || String(sem) === '7' || String(sem) === '8';
+          const targetDept = is4thYear ? 'All' : (dept || 'All');
+          const targetScheme = is4thYear ? 'All' : scheme;
           const token = auth.currentUser ? await auth.currentUser.getIdToken() : '';
           fetch(`${API_BASE_URL}/api/notify-upload`, {
             method: 'POST',
@@ -658,10 +661,10 @@ let lastQbankFetchTime = 0;
               contentType: 'Question Bank',
               subject,
               title: titleInput || subject,
-              dept: dept || 'All',
+              dept: targetDept,
               year,
               sem,
-              scheme,
+              scheme: targetScheme,
               section: sec
             })
           }).then(r => r.json()).then(d => {
