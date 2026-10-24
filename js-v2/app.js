@@ -6,10 +6,10 @@ import './core/helpers.js';
 import './core/activity_tracker.js';
 
 // Features & Components
-import './features/auth.js?v=20261024_direct_reset';
+import './features/auth.js?v=20261024_v6';
 import './features/promos.js?v=20261020_v4';
 import './features/attendance.js?v=20261020_v4';
-import './features/notes.js?v=20261020_v4';
+import './features/notes.js?v=20261024_v6';
 import './features/qbank.js?v=20261020_v4';
 import './features/pyq.js?v=20261020_v4';
 import './features/quiz.js?v=20261020_v4';
